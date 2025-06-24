@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QGI/QGC Kiosk v0.3</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .kiosk-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 20"><defs><radialGradient id="grad" cx="50%" cy="0%" r="50%"><stop offset="0%" style="stop-color:rgba(255,255,255,0.1);stop-opacity:1" /><stop offset="100%" style="stop-color:rgba(255,255,255,0);stop-opacity:0" /></radialGradient></defs><rect width="100" height="20" fill="url(%23grad)"/></svg>') repeat-x;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .tagline {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .order-content {
+            padding: 40px;
+        }
+
+        .step {
+            margin-bottom: 40px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .step.active {
+            animation-delay: 0.1s;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .step-title {
+            font-size: 1.8rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .step-number {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+        }
+
+        .size-input-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .input-field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-field label {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+
+        .input-field input {
+            padding: 12px 15px;
+            border: 2px solid #e0e6ed;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-field input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .size-note {
+            background: linear-gradient(135deg, #ffeaa7, #fdcb6e);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            border-left: 4px solid #e17055;
+        }
+
+        .size-note strong {
+            color: #2d3436;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .option-card {
+            background: white;
+            border: 3px solid #e0e6ed;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.5s;
+        }
+
+        .option-card:hover::before {
+            left: 100%;
+        }
+
+        .option-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.2);
+        }
+
+        .option-card.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .option-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .option-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .option-description {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .color-option {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            border: 4px solid white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .clear { background: linear-gradient(45deg, #f8f9fa, #e9ecef); }
+        .bronze { background: linear-gradient(45deg, #cd7f32, #a0522d); }
+        .gray { background: linear-gradient(45deg, #6c757d, #495057); }
+        .blue { background: linear-gradient(45deg, #007bff, #0056b3); }
+        .green { background: linear-gradient(45deg, #28a745, #1e7e34); }
+
+        .additions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .addition-card {
+            background: white;
+            border: 2px solid #e0e6ed;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .addition-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        .addition-card.selected {
+            border-color: #28a745;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+
+        .addition-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .addition-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .payment-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .payment-methods {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .payment-option {
+            background: white;
+            border: 2px solid #e0e6ed;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .payment-option:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .payment-option.selected {
+            border-color: #28a745;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-next {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            margin-top: 20px;
+        }
+
+        .confirmation-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(10px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .confirmation-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            max-width: 500px;
+            margin: 20px;
+            animation: modalPop 0.5s ease;
+        }
+
+        @keyframes modalPop {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .success-icon {
+            font-size: 4rem;
+            color: #28a745;
+            margin-bottom: 20px;
+        }
+
+        .price-alert {
+            background: linear-gradient(135deg, #ffeaa7, #fdcb6e);
+            border: 2px solid #e17055;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .price-alert-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: #e0e6ed;
+            border-radius: 3px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 3px;
+            transition: width 1s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="kiosk-container">
+        <div class="header">
+            <div class="logo">Quality Glass Industries</div>
+            <div class="tagline">Smart Glass Ordering System</div>
+        </div>
+
+        <div class="order-content">
+            <!-- Step 1: Glass Size -->
+            <div class="step active" id="step1">
+                <div class="step-title">
+                    <span class="step-number">1</span>
+                    Enter Glass Dimensions
+                </div>
+                <div class="size-input-section">
+                    <div class="input-group">
+                        <div class="input-field">
+                            <label for="glassWidth">Width (inches)</label>
+                            <input type="number" id="glassWidth" step="0.125" min="1" max="120" placeholder="e.g. 24.5">
+                        </div>
+                        <div class="input-field">
+                            <label for="glassHeight">Height (inches)</label>
+                            <input type="number" id="glassHeight" step="0.125" min="1" max="120" placeholder="e.g. 36.25">
+                        </div>
+                    </div>
+                    <div class="size-note">
+                        <strong>Note:</strong> Standard sizes may be adjusted to available stock dimensions. Custom sizes available upon request.
+                    </div>
+                    <button class="btn btn-next" id="nextStep1" disabled>Continue to Glass Thickness</button>
+                </div>
+            </div>
+            <!-- Step 2: Glass Thickness -->
+            <div class="step" id="step2">
+                <div class="step-title">
+                    <span class="step-number">2</span>
+                    Select Glass Thickness
+                </div>
+                <div class="options-grid">
+                    <div class="option-card" data-value="1/8 in">
+                        <span class="option-icon">🔸</span>
+                        <div class="option-title">1/8"</div>
+                        <div class="option-description">Thin glass - Picture frames, small windows</div>
+                    </div>
+                    <div class="option-card" data-value="1/4 in">
+                        <span class="option-icon">🔹</span>
+                        <div class="option-title">1/4"</div>
+                        <div class="option-description">Standard glass - Shelving, cabinet doors</div>
+                    </div>
+                    <div class="option-card" data-value="3/8 in">
+                        <span class="option-icon">🔷</span>
+                        <div class="option-title">3/8"</div>
+                        <div class="option-description">Medium thick - Display cases, partitions</div>
+                    </div>
+                    <div class="option-card" data-value="1/2 in">
+                        <span class="option-icon">🔶</span>
+                        <div class="option-title">1/2"</div>
+                        <div class="option-description">Thick glass - Table tops, countertops</div>
+                    </div>
+                    <div class="option-card" data-value="3/4 in">
+                        <span class="option-icon">🔲</span>
+                        <div class="option-title">3/4"</div>
+                        <div class="option-description">Extra thick - Heavy duty structural use</div>
+                    </div>
+                </div>
+                <button class="btn btn-next" id="nextStep2" disabled>Continue to Glass Color</button>
+            </div>
+
+            <!-- Step 3: Glass Color -->
+            <div class="step" id="step3">
+                <div class="step-title">
+                    <span class="step-number">3</span>
+                    Choose Glass Color
+                </div>
+                <div class="options-grid">
+                    <div class="option-card" data-value="clear">
+                        <div class="color-option clear"></div>
+                        <div class="option-title">Clear</div>
+                        <div class="option-description">Standard transparent glass</div>
+                    </div>
+                    <div class="option-card" data-value="bronze">
+                        <div class="color-option bronze"></div>
+                        <div class="option-title">Bronze</div>
+                        <div class="option-description">Warm tinted glass</div>
+                    </div>
+                    <div class="option-card" data-value="gray">
+                        <div class="color-option gray"></div>
+                        <div class="option-title">Gray</div>
+                        <div class="option-description">Neutral tinted glass</div>
+                    </div>
+                    <div class="option-card" data-value="blue">
+                        <div class="color-option blue"></div>
+                        <div class="option-title">Blue</div>
+                        <div class="option-description">Cool tinted glass</div>
+                    </div>
+                    <div class="option-card" data-value="green">
+                        <div class="color-option green"></div>
+                        <div class="option-title">Green</div>
+                        <div class="option-description">Energy-saving tinted glass</div>
+                    </div>
+                </div>
+                <button class="btn btn-next" id="nextStep3" disabled>Continue to Optional Additions</button>
+            </div>
+
+
+            <!-- Step 4: Additions -->
+            <div class="step" id="step4">
+                <div class="step-title">
+                    <span class="step-number">4</span>
+                    Optional Additions
+                </div>
+                <div class="additions-grid">
+                    <div class="addition-card" data-value="diamond-fusion">
+                        <div class="addition-header">
+                            <span class="addition-name">Diamon-Fusion® Treatment</span>
+                        </div>
+                        <div class="option-description">Protective coating that makes glass easier to clean and more resistant to stains</div>
+                    </div>
+                    <div class="addition-card" data-value="tempering">
+                        <div class="addition-header">
+                            <span class="addition-name">Tempering</span>
+                        </div>
+                        <div class="option-description">Heat treatment for increased strength and safety - breaks into small pieces</div>
+                    </div>
+                    <div class="addition-card" data-value="sandblasting">
+                        <div class="addition-header">
+                            <span class="addition-name">Sandblasting</span>
+                        </div>
+                        <div class="option-description">Frosted finish for privacy while maintaining light transmission</div>
+                    </div>
+                    <div class="addition-card" data-value="edge-polishing">
+                        <div class="addition-header">
+                            <span class="addition-name">Edge Polishing</span>
+                        </div>
+                        <div class="option-description">Smooth, polished edges for a premium finish and safer handling</div>
+                    </div>
+                </div>
+                <button class="btn btn-next" id="nextStep4">Continue to Payment</button>
+            </div>
+
+            <!-- Payment Section -->
+            <div class="payment-section" id="paymentSection" style="display: none;">
+                <div class="step-title">
+                    <span class="step-number">5</span>
+                    Payment Method
+                </div>
+                <div class="payment-methods">
+                    <div class="payment-option" data-value="card">
+                        <span class="option-icon">💳</span>
+                        <div class="option-title">Credit/Debit Card</div>
+                    </div>
+                    <div class="payment-option" data-value="cash">
+                        <span class="option-icon">💵</span>
+                        <div class="option-title">Cash</div>
+                    </div>
+                    <div class="payment-option" data-value="digital">
+                        <span class="option-icon">📱</span>
+                        <div class="option-title">Apple Pay or Google Pay</div>
+                    </div>
+                </div>
+                <button class="btn" id="confirmOrder" disabled>Confirm Order</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="confirmation-modal" id="confirmationModal">
+        <div class="confirmation-content">
+            <div class="success-icon">✅</div>
+            <h2>Order Confirmed!</h2>
+            <p>Your glass order has been successfully placed.</p>
+            
+            <div class="price-alert">
+                <div class="price-alert-icon">💰</div>
+                <h3>See Salesperson to Get Price</h3>
+                <p>Please visit our sales counter for pricing and payment processing.</p>
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <p><strong>Order ID:</strong> <span id="orderId"></span></p>
+            <p><strong>Estimated completion:</strong> <span id="estimatedTime"></span></p>
+            <button class="btn" onclick="resetOrder()">Place New Order</button>
+        </div>
+    </div>
+
+    <script>
+        let orderData = {
+            width: null,
+            height: null,
+            color: null,
+            thickness: null,
+            additions: [],
+            payment: null
+        };
+
+        let currentStep = 1;
+
+        // Handle size input validation
+        document.getElementById('glassWidth').addEventListener('input', validateSizeInputs);
+        document.getElementById('glassHeight').addEventListener('input', validateSizeInputs);
+
+        function validateSizeInputs() {
+            const width = parseFloat(document.getElementById('glassWidth').value);
+            const height = parseFloat(document.getElementById('glassHeight').value);
+            const nextBtn = document.getElementById('nextStep1');
+            
+            if (width > 0 && height > 0) {
+                nextBtn.disabled = false;
+                orderData.width = width;
+                orderData.height = height;
+            } else {
+                nextBtn.disabled = true;
+            }
+        }
+
+        // Handle next button for step 1
+        document.getElementById('nextStep1').addEventListener('click', function() {
+            showNextStep();
+        });
+
+        // Handle next button for step 2
+        document.getElementById('nextStep2').addEventListener('click', function() {
+            showNextStep();
+        });
+
+        // Handle next button for step 3
+        document.getElementById('nextStep3').addEventListener('click', function() {
+            showNextStep();
+        });
+
+        // Handle next button for step 4
+        document.getElementById('nextStep4').addEventListener('click', function() {
+            document.getElementById('paymentSection').style.display = 'block';
+            document.getElementById('paymentSection').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+
+        // Handle option selection
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.option-card')) {
+                const card = e.target.closest('.option-card');
+                const step = card.closest('.step');
+                const stepId = step.id;
+                
+                // Remove selection from siblings
+                step.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+                
+                // Store selection
+                const value = card.dataset.value;
+                
+                if (stepId === 'step2') {
+                    orderData.color = value;
+                    document.getElementById('nextStep2').disabled = false;
+                } else if (stepId === 'step3') {
+                    orderData.thickness = value;
+                    document.getElementById('nextStep3').disabled = false;
+                }
+            }
+            
+            if (e.target.closest('.addition-card')) {
+                const card = e.target.closest('.addition-card');
+                const value = card.dataset.value;
+                
+                card.classList.toggle('selected');
+                
+                if (card.classList.contains('selected')) {
+                    orderData.additions.push(value);
+                } else {
+                    orderData.additions = orderData.additions.filter(a => a !== value);
+                }
+            }
+            
+            if (e.target.closest('.payment-option')) {
+                const card = e.target.closest('.payment-option');
+                document.querySelectorAll('.payment-option').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+                
+                orderData.payment = card.dataset.value;
+                document.getElementById('confirmOrder').disabled = false;
+            }
+        });
+
+        function showNextStep() {
+            currentStep++;
+            const nextStep = document.getElementById('step' + currentStep);
+            if (nextStep) {
+                nextStep.classList.add('active');
+                nextStep.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        document.getElementById('confirmOrder').addEventListener('click', function() {
+            // Generate order ID
+            const orderId = 'QG' + Math.random().toString(36).substring(2, 10).toUpperCase();
+            
+            // Calculate estimated time (AI prediction simulation)
+            const baseTime = 96; // base 96 hours
+            const complexityFactor = orderData.additions.length * 3;
+            const estimatedHours = Math.ceil(baseTime + complexityFactor);
+            
+            document.getElementById('orderId').textContent = orderId;
+            document.getElementById('estimatedTime').textContent = `${estimatedHours} hours`;
+            
+            // Show confirmation modal
+            document.getElementById('confirmationModal').style.display = 'flex';
+            
+            // Animate progress bar
+            setTimeout(() => {
+                document.getElementById('progressFill').style.width = '100%';
+            }, 500);
+        });
+
+// Add this configuration at the top of your script section
+const SERVER_CONFIG = {
+    baseUrl: 'http://localhost:3000', // Change this to your server's IP/port
+    endpoints: {
+        saveOrder: '/api/orders',
+        getOrderStatus: '/api/orders/:id'
+    }
+};
+
+// Replace your existing confirmOrder event listener with this:
+document.getElementById('confirmOrder').addEventListener('click', async function() {
+    try {
+        // Show loading state
+        this.disabled = true;
+        this.textContent = 'Processing...';
+        
+        // Generate order ID
+        const orderId = 'QG' + Math.random().toString(36).substring(2, 10).toUpperCase();
+        
+        // Prepare order data for server
+        const orderPayload = {
+            orderId: orderId,
+            timestamp: new Date().toISOString(),
+            dimensions: {
+                width: orderData.width,
+                height: orderData.height
+            },
+            specifications: {
+                color: orderData.color,
+                thickness: orderData.thickness,
+                additions: orderData.additions
+            },
+            payment: {
+                method: orderData.payment
+            },
+            status: 'pending'
+        };
+        
+        // Send to server
+        const response = await fetch(`${SERVER_CONFIG.baseUrl}${SERVER_CONFIG.endpoints.saveOrder}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(orderPayload)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Server error: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        
+        // Calculate estimated time
+        const baseTime = 96;
+        const complexityFactor = orderData.additions.length * 3;
+        const estimatedHours = Math.ceil(baseTime + complexityFactor);
+        
+        // Update UI with server response
+        document.getElementById('orderId').textContent = result.orderId || orderId;
+        document.getElementById('estimatedTime').textContent = `${estimatedHours} hours`;
+        
+        // Show confirmation modal
+        document.getElementById('confirmationModal').style.display = 'flex';
+        
+        // Animate progress bar
+        setTimeout(() => {
+            document.getElementById('progressFill').style.width = '100%';
+        }, 500);
+        
+    } catch (error) {
+        console.error('Failed to save order:', error);
+        
+        // Show error to user
+        alert('Failed to save order to server. Please try again or contact staff.');
+    } finally {
+        // Reset button
+        this.disabled = false;
+        this.textContent = 'Confirm Order';
+    }
+});
+
+// Optional: Add function to check order status
+async function checkOrderStatus(orderId) {
+    try {
+        const response = await fetch(`${SERVER_CONFIG.baseUrl}${SERVER_CONFIG.endpoints.getOrderStatus.replace(':id', orderId)}`);
+        if (response.ok) {
+            return await response.json();
+        }
+    } catch (error) {
+        console.error('Failed to check order status:', error);
+    }
+    return null;
+}
+
+        function resetOrder() {
+            // Reset order data
+            orderData = {
+                width: null,
+                height: null,
+                color: null,
+                thickness: null,
+                additions: [],
+                payment: null
+            };
+            
+            currentStep = 1;
+            
+            // Hide modal
+            document.getElementById('confirmationModal').style.display = 'none';
+            
+            // Reset UI
+            document.querySelectorAll('.step').forEach((step, index) => {
+                if (index > 0) {
+                    step.classList.remove('active');
+                }
+            });
+            
+            document.querySelectorAll('.option-card, .addition-card, .payment-option').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Reset input fields
+            document.getElementById('glassWidth').value = '';
+            document.getElementById('glassHeight').value = '';
+            document.getElementById('nextStep1').disabled = true;
+            document.getElementById('nextStep2').disabled = true;
+            document.getElementById('nextStep3').disabled = true;
+            
+            document.getElementById('paymentSection').style.display = 'none';
+            document.getElementById('confirmOrder').disabled = true;
+            document.getElementById('progressFill').style.width = '0%';
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
