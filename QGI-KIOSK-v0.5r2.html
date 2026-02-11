@@ -1,0 +1,1381 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QGI Kiosk, v0.5r2</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .kiosk-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 20"><defs><radialGradient id="grad" cx="50%" cy="0%" r="50%"><stop offset="0%" style="stop-color:rgba(255,255,255,0.1);stop-opacity:1" /><stop offset="100%" style="stop-color:rgba(255,255,255,0);stop-opacity:0" /></radialGradient></defs><rect width="100" height="20" fill="url(%23grad)"/></svg>') repeat-x;
+        }
+
+        .lang-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.2);
+            border: 2px solid white;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .lang-toggle:hover {
+            background: white;
+            color: #2c3e50;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .tagline {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .order-content {
+            padding: 40px;
+        }
+
+        .step {
+            margin-bottom: 40px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .step.active {
+            animation-delay: 0.1s;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .step-title {
+            font-size: 1.8rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .step-number {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+        }
+
+        .size-input-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .input-field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-field label {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+
+        .input-field input {
+            padding: 12px 15px;
+            border: 2px solid #e0e6ed;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-field input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .custom-numpad {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            z-index: 2000;
+            min-width: 400px;
+        }
+
+        .custom-numpad.active {
+            display: block;
+        }
+
+        .numpad-display {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 2rem;
+            text-align: right;
+            margin-bottom: 20px;
+            min-height: 60px;
+            border: 2px solid #e0e6ed;
+        }
+
+        .numpad-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .numpad-btn {
+            padding: 20px;
+            font-size: 1.5rem;
+            border: 2px solid #e0e6ed;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .numpad-btn:hover {
+            background: #f8f9fa;
+            transform: scale(1.05);
+        }
+
+        .numpad-btn:active {
+            transform: scale(0.95);
+        }
+
+        .numpad-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .numpad-action-btn {
+            padding: 15px;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .numpad-clear {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .numpad-confirm {
+            background: #28a745;
+            color: white;
+        }
+
+        .size-note {
+            background: linear-gradient(135deg, #ffeaa7, #fdcb6e);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            border-left: 4px solid #e17055;
+        }
+
+        .size-note strong {
+            color: #2d3436;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .option-card {
+            background: white;
+            border: 3px solid #e0e6ed;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.5s;
+        }
+
+        .option-card:hover::before {
+            left: 100%;
+        }
+
+        .option-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.2);
+        }
+
+        .option-card.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .option-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .option-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .option-description {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .color-option {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            border: 4px solid white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .clear { background: linear-gradient(45deg, #f8f9fa, #e9ecef); }
+        .bronze { background: linear-gradient(45deg, #cd7f32, #a0522d); }
+        .gray { background: linear-gradient(45deg, #6c757d, #495057); }
+        .blue { background: linear-gradient(45deg, #007bff, #0056b3); }
+        .green { background: linear-gradient(45deg, #28a745, #1e7e34); }
+        .antique { background: linear-gradient(45deg, #8b7355, #654321); }
+        .mirror-clear { background: linear-gradient(45deg, #e8e8e8, #c0c0c0); }
+        .mirror-dark { background: linear-gradient(45deg, #4a4a4a, #2a2a2a); }
+
+        .additions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .addition-card {
+            background: white;
+            border: 2px solid #e0e6ed;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .addition-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        .addition-card.selected {
+            border-color: #28a745;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+
+        .addition-card.requires-sales {
+            border-color: #ffc107;
+        }
+
+        .addition-card.requires-sales::after {
+            content: '⚠️ Sales Required';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #ffc107;
+            color: #000;
+            padding: 4px 8px;
+            border-radius: 5px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        .addition-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .addition-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .payment-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .payment-methods {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .payment-option {
+            background: white;
+            border: 2px solid #e0e6ed;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .payment-option:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .payment-option.selected {
+            border-color: #28a745;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-next {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            margin-top: 20px;
+        }
+
+        .confirmation-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(10px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .confirmation-content {
+            background: white;
+            border-radius: 20px;
+            padding: clamp(20px, 3vw, 40px);
+            text-align: center;
+            max-width: min(900px, 90vw);
+            margin: auto;
+            animation: modalPop 0.5s ease;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        @keyframes modalPop {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .success-icon {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            color: #28a745;
+            margin-bottom: clamp(10px, 2vw, 20px);
+        }
+
+        .confirmation-content h2 {
+            font-size: clamp(1.5rem, 4vw, 2rem);
+            margin-bottom: clamp(8px, 1.5vw, 15px);
+        }
+
+        .confirmation-content > p {
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            margin-bottom: clamp(10px, 2vw, 20px);
+        }
+
+        .price-alert {
+            background: linear-gradient(135deg, #ffeaa7, #fdcb6e);
+            border: 2px solid #e17055;
+            border-radius: 15px;
+            padding: clamp(12px, 2.5vw, 20px);
+            margin: clamp(10px, 2vw, 20px) 0;
+            text-align: center;
+        }
+
+        .price-alert-icon {
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            margin-bottom: 10px;
+        }
+
+        .price-alert h3 {
+            font-size: clamp(1rem, 2.5vw, 1.5rem);
+            margin-bottom: 0.5em;
+        }
+
+        .price-alert p {
+            font-size: clamp(0.875rem, 2vw, 1rem);
+        }
+
+        .qr-code-container {
+            background: white;
+            padding: clamp(12px, 2.5vw, 20px);
+            border-radius: 15px;
+            margin: clamp(10px, 2vw, 20px) 0;
+            border: 3px solid #667eea;
+        }
+
+        .qr-code-container h3 {
+            margin-bottom: clamp(8px, 1.5vw, 15px);
+            color: #2c3e50;
+            font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+        }
+
+        .qr-code-instruction {
+            background: #e3f2fd;
+            padding: clamp(10px, 2vw, 15px);
+            border-radius: 10px;
+            margin-bottom: clamp(10px, 2vw, 15px);
+            color: #1976d2;
+            font-weight: bold;
+            font-size: clamp(0.85rem, 2vw, 1rem);
+        }
+
+        #qrcode {
+            display: flex;
+            justify-content: center;
+            margin: clamp(10px, 2vw, 20px) 0;
+        }
+
+        #qrcode canvas, #qrcode img {
+            max-width: min(256px, 40vw) !important;
+            height: auto !important;
+        }
+
+        .qr-code-container p {
+            margin-top: clamp(8px, 1.5vw, 15px);
+            font-size: clamp(1rem, 2.5vw, 1.5rem);
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: #e0e6ed;
+            border-radius: 3px;
+            margin: clamp(10px, 2vw, 20px) 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 3px;
+            transition: width 1s ease;
+        }
+
+        .confirmation-content .btn {
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            padding: clamp(12px, 2vw, 15px) clamp(24px, 4vw, 30px);
+            margin-top: clamp(10px, 2vw, 15px);
+        }
+
+        .numpad-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1999;
+        }
+
+        .numpad-overlay.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="kiosk-container">
+        <div class="header">
+            <button class="lang-toggle" onclick="toggleLanguage()" id="langToggle">🌐 ES</button>
+            <div class="logo">Quality Glass Industries</div>
+            <div class="tagline" data-i18n="tagline">Smart Glass Ordering System v0.4</div>
+        </div>
+
+        <div class="order-content">
+            <!-- Step 1: Glass Size -->
+            <div class="step active" id="step1">
+                <div class="step-title">
+                    <span class="step-number">1</span>
+                    <span data-i18n="step1Title">Enter Glass Dimensions</span>
+                </div>
+                <div class="size-input-section">
+                    <div class="input-group">
+                        <div class="input-field">
+                            <label for="glassWidth" data-i18n="widthLabel">Width (inches)</label>
+                            <input type="text" id="glassWidth" data-i18n-placeholder="widthPlaceholder" placeholder="e.g. 24.5" inputmode="none">
+                        </div>
+                        <div class="input-field">
+                            <label for="glassHeight" data-i18n="heightLabel">Height (inches)</label>
+                            <input type="text" id="glassHeight" data-i18n-placeholder="heightPlaceholder" placeholder="e.g. 36.25" inputmode="none">
+                        </div>
+                    </div>
+                    <div class="size-note">
+                        <strong data-i18n="noteLabel">Note:</strong>
+                        <span data-i18n="noteText"> Standard sizes may be adjusted to available stock dimensions. Custom sizes available upon request.</span>
+                    </div>
+                    <button class="btn btn-next" id="nextStep1" disabled>
+                        <span data-i18n="continueThickness">Continue to Glass Thickness</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Step 2: Glass Thickness -->
+            <div class="step" id="step2">
+                <div class="step-title">
+                    <span class="step-number">2</span>
+                    <span data-i18n="step2Title">Select Glass Thickness</span>
+                </div>
+                <div class="options-grid" id="thicknessGrid">
+                    <!-- Will be populated by JS -->
+                </div>
+                <button class="btn btn-next" id="nextStep2" disabled>
+                    <span data-i18n="continueColor">Continue to Glass Color</span>
+                </button>
+            </div>
+
+            <!-- Step 3: Glass Color -->
+            <div class="step" id="step3">
+                <div class="step-title">
+                    <span class="step-number">3</span>
+                    <span data-i18n="step3Title">Choose Glass Color</span>
+                </div>
+                <div class="options-grid" id="colorGrid">
+                    <!-- Will be populated by JS -->
+                </div>
+                <button class="btn btn-next" id="nextStep3" disabled>
+                    <span data-i18n="continueAdditions">Continue to Optional Additions</span>
+                </button>
+            </div>
+
+            <!-- Step 4: Additions -->
+            <div class="step" id="step4">
+                <div class="step-title">
+                    <span class="step-number">4</span>
+                    <span data-i18n="step4Title">Optional Additions</span>
+                </div>
+                <div class="additions-grid" id="additionsGrid">
+                    <!-- Will be populated by JS -->
+                </div>
+                <button class="btn btn-next" id="nextStep4">
+                    <span data-i18n="continuePayment">Continue to Payment</span>
+                </button>
+            </div>
+
+            <!-- Payment Section -->
+            <div class="payment-section" id="paymentSection" style="display: none;">
+                <div class="step-title">
+                    <span class="step-number">5</span>
+                    <span data-i18n="step5Title">Payment Method</span>
+                </div>
+                <div class="payment-methods" id="paymentGrid">
+                    <!-- Will be populated by JS -->
+                </div>
+                <button class="btn" id="confirmOrder" disabled>
+                    <span data-i18n="confirmOrder">Confirm Order</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="numpad-overlay" id="numpadOverlay"></div>
+    
+    <div class="custom-numpad" id="customNumpad">
+        <div class="numpad-display" id="numpadDisplay">0</div>
+        <div class="numpad-grid">
+            <button class="numpad-btn" data-value="1">1</button>
+            <button class="numpad-btn" data-value="2">2</button>
+            <button class="numpad-btn" data-value="3">3</button>
+            <button class="numpad-btn" data-value="4">4</button>
+            <button class="numpad-btn" data-value="5">5</button>
+            <button class="numpad-btn" data-value="6">6</button>
+            <button class="numpad-btn" data-value="7">7</button>
+            <button class="numpad-btn" data-value="8">8</button>
+            <button class="numpad-btn" data-value="9">9</button>
+            <button class="numpad-btn" data-value=".">.</button>
+            <button class="numpad-btn" data-value="0">0</button>
+            <button class="numpad-btn" data-value="⌫">⌫</button>
+        </div>
+        <div class="numpad-actions">
+            <button class="numpad-action-btn numpad-clear" onclick="clearNumpad()">
+                <span data-i18n="clear">Clear</span>
+            </button>
+            <button class="numpad-action-btn numpad-confirm" onclick="confirmNumpad()">
+                <span data-i18n="confirm">Confirm</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="confirmation-modal" id="confirmationModal">
+        <div class="confirmation-content">
+            <div class="success-icon">✅</div>
+            <h2 data-i18n="orderConfirmed">Order Confirmed!</h2>
+            <p data-i18n="orderPlaced">Your glass order has been successfully placed.</p>
+            
+            <div class="qr-code-container">
+                <h3 data-i18n="yourOrderCode">Your Order Code</h3>
+                <div class="qr-code-instruction" data-i18n="scanQR">
+                    📱 Scan this QR code with your phone's camera to instantly track your order online
+                </div>
+                <div id="qrcode"></div>
+                <p style="margin-top: 15px; font-size: 1.5rem; font-weight: bold; color: #2c3e50;">
+                    <span data-i18n="orderId">Order ID:</span> <span id="orderId"></span>
+                </p>
+            </div>
+            
+            <div class="price-alert">
+                <div class="price-alert-icon">💰</div>
+                <h3 data-i18n="seeSalesperson">See Salesperson to Get Price</h3>
+                <p data-i18n="visitCounter">Please visit our sales counter for pricing and payment processing.</p>
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <p><strong data-i18n="estimatedCompletion">Estimated completion:</strong> <span id="estimatedTime"></span></p>
+            <button class="btn" onclick="resetOrder()">
+                <span data-i18n="placeNewOrder">Place New Order</span>
+            </button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <script>
+        const SERVER_CONFIG = {
+            baseUrl: 'https://vague-nonspeculatively-florida.ngrok-free.dev',
+            endpoints: {
+                saveOrder: '/api/orders',
+                getOrderStatus: '/api/orders/:id'
+            }
+        };
+
+        const translations = {
+            en: {
+                tagline: "Smart Glass Ordering System v0.4",
+                step1Title: "Enter Glass Dimensions",
+                widthLabel: "Width (inches)",
+                heightLabel: "Height (inches)",
+                widthPlaceholder: "e.g. 24.5",
+                heightPlaceholder: "e.g. 36.25",
+                noteLabel: "Note:",
+                noteText: " Standard sizes may be adjusted to available stock dimensions. Custom sizes available upon request.",
+                continueThickness: "Continue to Glass Thickness",
+                step2Title: "Select Glass Thickness",
+                continueColor: "Continue to Glass Color",
+                step3Title: "Choose Glass Color",
+                continueAdditions: "Continue to Optional Additions",
+                step4Title: "Optional Additions",
+                continuePayment: "Continue to Payment",
+                step5Title: "Payment Method",
+                confirmOrder: "Confirm Order",
+                clear: "Clear",
+                confirm: "Confirm",
+                orderConfirmed: "Order Confirmed!",
+                orderPlaced: "Your glass order has been successfully placed.",
+                yourOrderCode: "Your Order Code",
+                scanQR: "📱 Scan this QR code with your phone's camera to instantly track your order online",
+                orderId: "Order ID:",
+                seeSalesperson: "See Salesperson to Get Price",
+                visitCounter: "Please visit our sales counter for pricing and payment processing.",
+                estimatedCompletion: "Estimated completion:",
+                placeNewOrder: "Place New Order",
+                thickness1: "1/8\"",
+                thickness1Desc: "Thin glass - Picture frames, small windows",
+                thickness2: "1/4\"",
+                thickness2Desc: "Standard glass - Shelving, cabinet doors",
+                thickness3: "3/8\"",
+                thickness3Desc: "Medium thick - Display cases, partitions",
+                thickness4: "1/2\"",
+                thickness4Desc: "Thick glass - Table tops, countertops",
+                thickness5: "3/4\"",
+                thickness5Desc: "Extra thick - Heavy duty structural use",
+                colorClear: "Clear",
+                colorClearDesc: "Standard transparent glass",
+                colorBronze: "Bronze",
+                colorBronzeDesc: "Warm tinted glass",
+                colorGray: "Gray",
+                colorGrayDesc: "Neutral tinted glass",
+                colorBlue: "Blue",
+                colorBlueDesc: "Cool tinted glass",
+                colorGreen: "Green",
+                colorGreenDesc: "Energy-saving tinted glass",
+                colorAntique: "Antique (Stained)",
+                colorAntiqueDesc: "Decorative stained glass finish",
+                colorMirrorClear: "Mirror - Clear",
+                colorMirrorClearDesc: "Standard reflective mirror",
+                colorMirrorDark: "Mirror - Dark",
+                colorMirrorDarkDesc: "Tinted reflective mirror",
+                additionDiamonFusion: "Diamon-Fusion® Treatment",
+                additionDiamonFusionDesc: "Protective coating that makes glass easier to clean and more resistant to stains",
+                additionTempering: "Tempering",
+                additionTemperingDesc: "Heat treatment for increased strength and safety - breaks into small pieces",
+                additionSandblasting: "Sandblasting",
+                additionSandblastingDesc: "Frosted finish for privacy while maintaining light transmission",
+                additionBeveling: "Beveling",
+                additionBevelingDesc: "Angled edge cut for decorative finish - requires consultation with sales team for angle specifications",
+                additionEdgeRounding: "Edge Rounding",
+                additionEdgeRoundingDesc: "Rounded edge finish - requires consultation with sales team for radius specifications",
+                paymentCash: "Cash",
+                paymentCard: "Credit/Debit Card",
+                paymentDigital: "Apple Pay / Google Pay / ATH Móvil"
+            },
+            es: {
+                tagline: "Sistema Inteligente de Pedidos de Vidrio v0.4",
+                step1Title: "Ingrese Dimensiones del Vidrio",
+                widthLabel: "Ancho (pulgadas)",
+                heightLabel: "Alto (pulgadas)",
+                widthPlaceholder: "ej. 24.5",
+                heightPlaceholder: "ej. 36.25",
+                noteLabel: "Nota:",
+                noteText: " Los tamaños estándar pueden ajustarse a las dimensiones de inventario disponible. Tamaños personalizados disponibles bajo pedido.",
+                continueThickness: "Continuar al Grosor del Vidrio",
+                step2Title: "Seleccione Grosor del Vidrio",
+                continueColor: "Continuar al Color del Vidrio",
+                step3Title: "Escoja Color del Vidrio",
+                continueAdditions: "Continuar a Adiciones Opcionales",
+                step4Title: "Adiciones Opcionales",
+                continuePayment: "Continuar al Pago",
+                step5Title: "Método de Pago",
+                confirmOrder: "Confirmar Orden",
+                clear: "Borrar",
+                confirm: "Confirmar",
+                orderConfirmed: "¡Orden Confirmada!",
+                orderPlaced: "Su orden de vidrio ha sido realizada exitosamente.",
+                yourOrderCode: "Su Código de Orden",
+                scanQR: "📱 Escanee este código QR con la cámara de su teléfono para rastrear su orden en línea instantáneamente",
+                orderId: "ID de Orden:",
+                seeSalesperson: "Vea al Vendedor para Obtener Precio",
+                visitCounter: "Por favor visite nuestro mostrador de ventas para precios y procesamiento de pago.",
+                estimatedCompletion: "Tiempo estimado de completado:",
+                placeNewOrder: "Realizar Nueva Orden",
+                thickness1: "1/8\"",
+                thickness1Desc: "Vidrio delgado - Marcos de fotos, ventanas pequeñas",
+                thickness2: "1/4\"",
+                thickness2Desc: "Vidrio estándar - Estanterías, puertas de gabinete",
+                thickness3: "3/8\"",
+                thickness3Desc: "Grosor medio - Vitrinas, divisiones",
+                thickness4: "1/2\"",
+                thickness4Desc: "Vidrio grueso - Topes de mesa, encimeras",
+                thickness5: "3/4\"",
+                thickness5Desc: "Extra grueso - Uso estructural pesado",
+                colorClear: "Claro",
+                colorClearDesc: "Vidrio transparente estándar",
+                colorBronze: "Bronce",
+                colorBronzeDesc: "Vidrio tintado cálido",
+                colorGray: "Gris",
+                colorGrayDesc: "Vidrio tintado neutral",
+                colorBlue: "Azul",
+                colorBlueDesc: "Vidrio tintado frío",
+                colorGreen: "Verde",
+                colorGreenDesc: "Vidrio tintado ahorrador de energía",
+                colorAntique: "Antiguo (Manchado)",
+                colorAntiqueDesc: "Acabado de vidrio manchado decorativo",
+                colorMirrorClear: "Espejo - Claro",
+                colorMirrorClearDesc: "Espejo reflectante estándar",
+                colorMirrorDark: "Espejo - Oscuro",
+                colorMirrorDarkDesc: "Espejo reflectante tintado",
+                additionDiamonFusion: "Tratamiento Diamon-Fusion®",
+                additionDiamonFusionDesc: "Revestimiento protector que hace el vidrio más fácil de limpiar y más resistente a manchas",
+                additionTempering: "Templado",
+                additionTemperingDesc: "Tratamiento térmico para mayor resistencia y seguridad - se rompe en pedazos pequeños",
+                additionSandblasting: "Arenado",
+                additionSandblastingDesc: "Acabado esmerilado para privacidad manteniendo transmisión de luz",
+                additionBeveling: "Biselado",
+                additionBevelingDesc: "Corte de borde angular para acabado decorativo - requiere consulta con equipo de ventas para especificaciones de ángulo",
+                additionEdgeRounding: "Redondeo de Bordes",
+                additionEdgeRoundingDesc: "Acabado de borde redondeado - requiere consulta con equipo de ventas para especificaciones de radio",
+                paymentCash: "Efectivo",
+                paymentCard: "Tarjeta de Crédito/Débito",
+                paymentDigital: "Apple Pay / Google Pay / ATH Móvil"
+            }
+        };
+
+        let currentLang = localStorage.getItem('qgi-lang') || 'en';
+        let orderData = {
+            width: null,
+            height: null,
+            color: null,
+            thickness: null,
+            additions: [],
+            payment: null
+        };
+
+        let currentStep = 1;
+        let currentNumpadTarget = null;
+        let numpadValue = '';
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'en' ? 'es' : 'en';
+            localStorage.setItem('qgi-lang', currentLang);
+            updateLanguage();
+            populateOptions();
+        }
+
+        function updateLanguage() {
+            const lang = translations[currentLang];
+            
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (lang[key]) {
+                    el.textContent = lang[key];
+                }
+            });
+
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                if (lang[key]) {
+                    el.placeholder = lang[key];
+                }
+            });
+            
+            document.getElementById('langToggle').textContent = currentLang === 'en' ? '🌐 ES' : '🌐 EN';
+        }
+
+        function populateOptions() {
+            const lang = translations[currentLang];
+            
+            // Thickness options
+            document.getElementById('thicknessGrid').innerHTML = `
+                <div class="option-card" data-value="1/8 in">
+                    <span class="option-icon">🔸</span>
+                    <div class="option-title">${lang.thickness1}</div>
+                    <div class="option-description">${lang.thickness1Desc}</div>
+                </div>
+                <div class="option-card" data-value="1/4 in">
+                    <span class="option-icon">🔹</span>
+                    <div class="option-title">${lang.thickness2}</div>
+                    <div class="option-description">${lang.thickness2Desc}</div>
+                </div>
+                <div class="option-card" data-value="3/8 in">
+                    <span class="option-icon">🔷</span>
+                    <div class="option-title">${lang.thickness3}</div>
+                    <div class="option-description">${lang.thickness3Desc}</div>
+                </div>
+                <div class="option-card" data-value="1/2 in">
+                    <span class="option-icon">🔶</span>
+                    <div class="option-title">${lang.thickness4}</div>
+                    <div class="option-description">${lang.thickness4Desc}</div>
+                </div>
+                <div class="option-card" data-value="3/4 in">
+                    <span class="option-icon">🔲</span>
+                    <div class="option-title">${lang.thickness5}</div>
+                    <div class="option-description">${lang.thickness5Desc}</div>
+                </div>
+            `;
+
+            // Color options
+            document.getElementById('colorGrid').innerHTML = `
+                <div class="option-card" data-value="clear">
+                    <div class="color-option clear"></div>
+                    <div class="option-title">${lang.colorClear}</div>
+                    <div class="option-description">${lang.colorClearDesc}</div>
+                </div>
+                <div class="option-card" data-value="bronze">
+                    <div class="color-option bronze"></div>
+                    <div class="option-title">${lang.colorBronze}</div>
+                    <div class="option-description">${lang.colorBronzeDesc}</div>
+                </div>
+                <div class="option-card" data-value="gray">
+                    <div class="color-option gray"></div>
+                    <div class="option-title">${lang.colorGray}</div>
+                    <div class="option-description">${lang.colorGrayDesc}</div>
+                </div>
+                <div class="option-card" data-value="blue">
+                    <div class="color-option blue"></div>
+                    <div class="option-title">${lang.colorBlue}</div>
+                    <div class="option-description">${lang.colorBlueDesc}</div>
+                </div>
+                <div class="option-card" data-value="green">
+                    <div class="color-option green"></div>
+                    <div class="option-title">${lang.colorGreen}</div>
+                    <div class="option-description">${lang.colorGreenDesc}</div>
+                </div>
+                <div class="option-card" data-value="antique">
+                    <div class="color-option antique"></div>
+                    <div class="option-title">${lang.colorAntique}</div>
+                    <div class="option-description">${lang.colorAntiqueDesc}</div>
+                </div>
+                <div class="option-card" data-value="mirror-clear">
+                    <div class="color-option mirror-clear"></div>
+                    <div class="option-title">${lang.colorMirrorClear}</div>
+                    <div class="option-description">${lang.colorMirrorClearDesc}</div>
+                </div>
+                <div class="option-card" data-value="mirror-dark">
+                    <div class="color-option mirror-dark"></div>
+                    <div class="option-title">${lang.colorMirrorDark}</div>
+                    <div class="option-description">${lang.colorMirrorDarkDesc}</div>
+                </div>
+            `;
+
+            // Additions
+            document.getElementById('additionsGrid').innerHTML = `
+                <div class="addition-card" data-value="diamon-fusion">
+                    <div class="addition-header">
+                        <span class="addition-name">${lang.additionDiamonFusion}</span>
+                    </div>
+                    <div class="option-description">${lang.additionDiamonFusionDesc}</div>
+                </div>
+                <div class="addition-card" data-value="tempering">
+                    <div class="addition-header">
+                        <span class="addition-name">${lang.additionTempering}</span>
+                    </div>
+                    <div class="option-description">${lang.additionTemperingDesc}</div>
+                </div>
+                <div class="addition-card" data-value="sandblasting">
+                    <div class="addition-header">
+                        <span class="addition-name">${lang.additionSandblasting}</span>
+                    </div>
+                    <div class="option-description">${lang.additionSandblastingDesc}</div>
+                </div>
+                <div class="addition-card requires-sales" data-value="beveling">
+                    <div class="addition-header">
+                        <span class="addition-name">${lang.additionBeveling}</span>
+                    </div>
+                    <div class="option-description">${lang.additionBevelingDesc}</div>
+                </div>
+                <div class="addition-card requires-sales" data-value="edge-rounding">
+                    <div class="addition-header">
+                        <span class="addition-name">${lang.additionEdgeRounding}</span>
+                    </div>
+                    <div class="option-description">${lang.additionEdgeRoundingDesc}</div>
+                </div>
+            `;
+
+            // Payment options
+            document.getElementById('paymentGrid').innerHTML = `
+                <div class="payment-option" data-value="credit-debit">
+                    <span class="option-icon">💳</span>
+                    <div class="option-title">${lang.paymentCard}</div>
+                </div>
+                <div class="payment-option" data-value="cash">
+                    <span class="option-icon">💵</span>
+                    <div class="option-title">${lang.paymentCash}</div>
+                </div>
+                <div class="payment-option" data-value="apple-google-ath">
+                    <span class="option-icon">📱</span>
+                    <div class="option-title">${lang.paymentDigital}</div>
+                </div>
+            `;
+        }
+
+        function isKioskMode() {
+            const ua = navigator.userAgent.toLowerCase();
+            const isTv = /tv|smarttv|googletv|appletv|hbbtv|pov_tv|netcast|nettv/i.test(ua);
+            const isLargeTouch = window.matchMedia('(min-width: 1024px) and (pointer: coarse)').matches;
+            return isTv || isLargeTouch;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            updateLanguage();
+            populateOptions();
+            
+            const widthInput = document.getElementById('glassWidth');
+            const heightInput = document.getElementById('glassHeight');
+            
+            if (isKioskMode()) {
+                widthInput.readOnly = true;
+                heightInput.readOnly = true;
+                
+                widthInput.addEventListener('click', function() {
+                    openNumpad(this);
+                });
+                
+                heightInput.addEventListener('click', function() {
+                    openNumpad(this);
+                });
+            } else {
+                widthInput.type = 'number';
+                widthInput.step = '0.125';
+                widthInput.min = '1';
+                widthInput.max = '120';
+                widthInput.inputmode = 'decimal';
+                
+                heightInput.type = 'number';
+                heightInput.step = '0.125';
+                heightInput.min = '1';
+                heightInput.max = '120';
+                heightInput.inputmode = 'decimal';
+                
+                widthInput.addEventListener('input', validateSizeInputs);
+                heightInput.addEventListener('input', validateSizeInputs);
+            }
+        });
+
+        function openNumpad(targetInput) {
+            currentNumpadTarget = targetInput;
+            numpadValue = targetInput.value || '';
+            document.getElementById('numpadDisplay').textContent = numpadValue || '0';
+            document.getElementById('customNumpad').classList.add('active');
+            document.getElementById('numpadOverlay').classList.add('active');
+        }
+
+        function closeNumpad() {
+            document.getElementById('customNumpad').classList.remove('active');
+            document.getElementById('numpadOverlay').classList.remove('active');
+            currentNumpadTarget = null;
+        }
+
+        function clearNumpad() {
+            numpadValue = '';
+            document.getElementById('numpadDisplay').textContent = '0';
+        }
+
+        function confirmNumpad() {
+            if (currentNumpadTarget && numpadValue) {
+                const value = parseFloat(numpadValue);
+                if (!isNaN(value) && value > 0 && value <= 120) {
+                    currentNumpadTarget.value = numpadValue;
+                    closeNumpad();
+                    validateSizeInputs();
+                } else {
+                    alert(currentLang === 'en' ? 'Please enter a valid dimension between 1 and 120 inches' : 'Por favor ingrese una dimensión válida entre 1 y 120 pulgadas');
+                }
+            } else {
+                closeNumpad();
+            }
+        }
+
+        document.querySelectorAll('.numpad-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const value = this.dataset.value;
+                
+                if (value === '⌫') {
+                    numpadValue = numpadValue.slice(0, -1);
+                } else if (value === '.') {
+                    if (!numpadValue.includes('.')) {
+                        numpadValue += value;
+                    }
+                } else {
+                    if (numpadValue.length < 6) {
+                        numpadValue += value;
+                    }
+                }
+                
+                document.getElementById('numpadDisplay').textContent = numpadValue || '0';
+            });
+        });
+
+        document.getElementById('numpadOverlay').addEventListener('click', closeNumpad);
+
+        function validateSizeInputs() {
+            const width = parseFloat(document.getElementById('glassWidth').value);
+            const height = parseFloat(document.getElementById('glassHeight').value);
+            const nextBtn = document.getElementById('nextStep1');
+            
+            if (width > 0 && height > 0 && width <= 120 && height <= 120) {
+                nextBtn.disabled = false;
+                orderData.width = width;
+                orderData.height = height;
+            } else {
+                nextBtn.disabled = true;
+            }
+        }
+
+        document.getElementById('nextStep1').addEventListener('click', showNextStep);
+        document.getElementById('nextStep2').addEventListener('click', showNextStep);
+        document.getElementById('nextStep3').addEventListener('click', showNextStep);
+        document.getElementById('nextStep4').addEventListener('click', function() {
+            document.getElementById('paymentSection').style.display = 'block';
+            document.getElementById('paymentSection').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.option-card')) {
+                const card = e.target.closest('.option-card');
+                const step = card.closest('.step');
+                const stepId = step.id;
+                
+                step.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+                
+                const value = card.dataset.value;
+                
+                if (stepId === 'step2') {
+                    orderData.thickness = value;
+                    document.getElementById('nextStep2').disabled = false;
+                } else if (stepId === 'step3') {
+                    orderData.color = value;
+                    document.getElementById('nextStep3').disabled = false;
+                }
+            }
+            
+            if (e.target.closest('.addition-card')) {
+                const card = e.target.closest('.addition-card');
+                const value = card.dataset.value;
+                
+                card.classList.toggle('selected');
+                
+                if (card.classList.contains('selected')) {
+                    orderData.additions.push(value);
+                } else {
+                    orderData.additions = orderData.additions.filter(a => a !== value);
+                }
+            }
+            
+            if (e.target.closest('.payment-option')) {
+                const card = e.target.closest('.payment-option');
+                document.querySelectorAll('.payment-option').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+                
+                orderData.payment = card.dataset.value;
+                document.getElementById('confirmOrder').disabled = false;
+            }
+        });
+
+        function showNextStep() {
+            currentStep++;
+            const nextStep = document.getElementById('step' + currentStep);
+            if (nextStep) {
+                nextStep.classList.add('active');
+                nextStep.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        document.getElementById('confirmOrder').addEventListener('click', async function() {
+            try {
+                this.disabled = true;
+                this.textContent = currentLang === 'en' ? 'Processing...' : 'Procesando...';
+                
+                const orderId = 'QG' + Math.random().toString(36).substring(2, 10).toUpperCase();
+                
+                const orderPayload = {
+                    orderId: orderId,
+                    timestamp: new Date().toISOString(),
+                    dimensions: {
+                        width: orderData.width,
+                        height: orderData.height
+                    },
+                    specifications: {
+                        color: orderData.color,
+                        thickness: orderData.thickness,
+                        additions: orderData.additions
+                    },
+                    payment: {
+                        method: orderData.payment
+                    },
+                    status: 'pending',
+                    customerName: null,
+                    customerId: null
+                };
+                
+                const response = await fetch(`${SERVER_CONFIG.baseUrl}${SERVER_CONFIG.endpoints.saveOrder}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'ngrok-skip-browser-warning': 'true'
+                    },
+                    body: JSON.stringify(orderPayload)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                if (!result.success) {
+                    throw new Error(result.message || 'Failed to save order');
+                }
+                
+                const baseTime = 96;
+                const complexityFactor = orderData.additions.length * 3;
+                const estimatedHours = Math.ceil(baseTime + complexityFactor);
+                
+                document.getElementById('orderId').textContent = result.orderId || orderId;
+                document.getElementById('estimatedTime').textContent = `${estimatedHours} ${currentLang === 'en' ? 'hours' : 'horas'}`;
+                
+                const customerPortalUrl = `https://legobele.github.io/qgi-customer-portal/?order=${result.orderId || orderId}`;
+                document.getElementById('qrcode').innerHTML = '';
+                new QRCode(document.getElementById('qrcode'), {
+                    text: customerPortalUrl,
+                    width: 256,
+                    height: 256,
+                    colorDark: '#000000',
+                    colorLight: '#ffffff',
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+                
+                document.getElementById('confirmationModal').style.display = 'flex';
+                
+                setTimeout(() => {
+                    document.getElementById('progressFill').style.width = '100%';
+                }, 500);
+                
+            } catch (error) {
+                console.error('Failed to save order:', error);
+                
+                alert((currentLang === 'en' ? `Failed to save order to server.\n\nError: ${error.message}\n\nPlease try again or contact staff.` : `Error al guardar orden en el servidor.\n\nError: ${error.message}\n\nPor favor intente de nuevo o contacte al personal.`));
+            } finally {
+                this.disabled = false;
+                this.textContent = currentLang === 'en' ? 'Confirm Order' : 'Confirmar Orden';
+            }
+        });
+
+        function resetOrder() {
+            orderData = {
+                width: null,
+                height: null,
+                color: null,
+                thickness: null,
+                additions: [],
+                payment: null
+            };
+            
+            currentStep = 1;
+            
+            document.getElementById('confirmationModal').style.display = 'none';
+            
+            document.querySelectorAll('.step').forEach((step, index) => {
+                if (index > 0) {
+                    step.classList.remove('active');
+                }
+            });
+            
+            document.querySelectorAll('.option-card, .addition-card, .payment-option').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            document.getElementById('glassWidth').value = '';
+            document.getElementById('glassHeight').value = '';
+            document.getElementById('nextStep1').disabled = true;
+            document.getElementById('nextStep2').disabled = true;
+            document.getElementById('nextStep3').disabled = true;
+            
+            document.getElementById('paymentSection').style.display = 'none';
+            document.getElementById('confirmOrder').disabled = true;
+            document.getElementById('progressFill').style.width = '0%';
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
