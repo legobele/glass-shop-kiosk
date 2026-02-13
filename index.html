@@ -811,48 +811,6 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script>
-        // update screen info
-        function updateScreenInfo() {
-            document.getElementById('screenSize').textContent = 
-                `${window.screen.width}x${window.screen.height}`;
-            document.getElementById('viewportSize').textContent = 
-                `${window.innerWidth}x${window.innerHeight}`;
-        }
-        
-        updateScreenInfo();
-        window.addEventListener('resize', updateScreenInfo);
-
-        function showModal() {
-            // generate QR code
-            const customerPortalUrl = `https://legobele.github.io/qgi-customer-portal/?order=QG1HZLVYSG`;
-            document.getElementById('qrcode').innerHTML = '';
-            new QRCode(document.getElementById('qrcode'), {
-                text: customerPortalUrl,
-                width: 256,
-                height: 256,
-                colorDark: '#000000',
-                colorLight: '#ffffff',
-                correctLevel: QRCode.CorrectLevel.H
-            });
-            
-            // show modal
-            const modal = document.getElementById('confirmationModal');
-            modal.classList.add('show');
-            
-            // animate progress bar
-            setTimeout(() => {
-                document.getElementById('progressFill').style.width = '100%';
-            }, 500);
-        }
-
-        function closeModal() {
-            const modal = document.getElementById('confirmationModal');
-            modal.classList.remove('show');
-            document.getElementById('progressFill').style.width = '0%';
-        }
-        });
-    </script>
 
     <script>
         const SERVER_CONFIG = {
