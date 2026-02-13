@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1376,6 +1375,407 @@
             
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
+
+        // ============================================================
+        // ACCESSIBILITY MENU
+        // ============================================================
+        
+        let accessibilitySettings = {
+            highContrast: false,
+            reducedMotion: false,
+            colorTone: 'default',
+            fontSize: 'default',
+            focusIndicators: false
+        };
+
+        window.MakeMeAccessible = function() {
+            const existingMenu = document.getElementById('accessibility-menu');
+            if (existingMenu) {
+                existingMenu.remove();
+                return;
+            }
+
+            const menu = document.createElement('div');
+            menu.id = 'accessibility-menu';
+            menu.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: white;
+                padding: 30px;
+                border-radius: 15px;
+                box-shadow: 0 10px 50px rgba(0,0,0,0.3);
+                z-index: 10000;
+                max-width: 500px;
+                width: 90%;
+                max-height: 80vh;
+                overflow-y: auto;
+            `;
+
+            menu.innerHTML = `
+                <div style="margin-bottom: 20px;">
+                    <h2 style="margin: 0 0 10px 0; color: #2c3e50;">accessibility settings</h2>
+                    <p style="margin: 0; color: #7f8c8d; font-size: 0.9rem;">customize the interface</p>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                        <input type="checkbox" id="high-contrast-toggle" style="width: 20px; height: 20px;">
+                        <div>
+                            <strong style="display: block; color: #2c3e50;">high contrast mode</strong>
+                            <span style="font-size: 0.85rem; color: #7f8c8d;">makes text easier to read</span>
+                        </div>
+                    </label>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                        <input type="checkbox" id="reduced-motion-toggle" style="width: 20px; height: 20px;">
+                        <div>
+                            <strong style="display: block; color: #2c3e50;">reduce motion</strong>
+                            <span style="font-size: 0.85rem; color: #7f8c8d;">removes animations</span>
+                        </div>
+                    </label>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                        <input type="checkbox" id="focus-indicators-toggle" style="width: 20px; height: 20px;">
+                        <div>
+                            <strong style="display: block; color: #2c3e50;">enhanced focus indicators</strong>
+                            <span style="font-size: 0.85rem; color: #7f8c8d;">shows where keyboard focus is</span>
+                        </div>
+                    </label>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; color: #2c3e50; font-weight: 600;">color tone</label>
+                    <select id="color-tone-select" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1rem;">
+                        <option value="default">default (blue/purple)</option>
+                        <option value="warm">warm (orange/brown)</option>
+                        <option value="cool">cool (muted blue)</option>
+                        <option value="monochrome">monochrome (grayscale)</option>
+                    </select>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; color: #2c3e50; font-weight: 600;">font size</label>
+                    <select id="font-size-select" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1rem;">
+                        <option value="default">default</option>
+                        <option value="large">large (+20%)</option>
+                        <option value="xlarge">extra large (+40%)</option>
+                    </select>
+                </div>
+
+                <div style="display: flex; gap: 10px;">
+                    <button id="apply-accessibility" style="flex: 1; padding: 12px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">apply</button>
+                    <button id="close-accessibility" style="flex: 1; padding: 12px; background: #ecf0f1; color: #2c3e50; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">close</button>
+                </div>
+            `;
+
+            document.body.appendChild(menu);
+
+            document.getElementById('apply-accessibility').onclick = function() {
+                accessibilitySettings.highContrast = document.getElementById('high-contrast-toggle').checked;
+                accessibilitySettings.reducedMotion = document.getElementById('reduced-motion-toggle').checked;
+                accessibilitySettings.focusIndicators = document.getElementById('focus-indicators-toggle').checked;
+                accessibilitySettings.colorTone = document.getElementById('color-tone-select').value;
+                accessibilitySettings.fontSize = document.getElementById('font-size-select').value;
+                
+                applyAccessibilitySettings();
+                menu.remove();
+            };
+
+            document.getElementById('close-accessibility').onclick = function() {
+                menu.remove();
+            };
+        };
+
+        function applyAccessibilitySettings() {
+            let styleId = 'accessibility-overrides';
+            let existingStyle = document.getElementById(styleId);
+            if (existingStyle) existingStyle.remove();
+
+            let css = '';
+
+            if (accessibilitySettings.highContrast) {
+                css += `body { filter: contrast(1.3); }`;
+            }
+
+            if (accessibilitySettings.reducedMotion) {
+                css += `
+                    *, *::before, *::after {
+                        animation-duration: 0.01ms !important;
+                        transition-duration: 0.01ms !important;
+                    }
+                `;
+            }
+
+            if (accessibilitySettings.focusIndicators) {
+                css += `
+                    *:focus {
+                        outline: 3px solid #fbbf24 !important;
+                        outline-offset: 2px !important;
+                    }
+                `;
+            }
+
+            if (accessibilitySettings.colorTone === 'warm') {
+                css += `
+                    body { background: linear-gradient(135deg, #d35400 0%, #e67e22 100%) !important; }
+                    .glass-calculator { background: linear-gradient(135deg, rgba(211, 84, 0, 0.1), rgba(230, 126, 34, 0.1)) !important; }
+                `;
+            } else if (accessibilitySettings.colorTone === 'cool') {
+                css += `
+                    body { background: linear-gradient(135deg, #2c5f7c 0%, #34788a 100%) !important; }
+                    .glass-calculator { background: linear-gradient(135deg, rgba(44, 95, 124, 0.1), rgba(52, 120, 138, 0.1)) !important; }
+                `;
+            } else if (accessibilitySettings.colorTone === 'monochrome') {
+                css += `* { filter: grayscale(100%) !important; }`;
+            }
+
+            if (accessibilitySettings.fontSize === 'large') {
+                css += `body { font-size: 120% !important; }`;
+            } else if (accessibilitySettings.fontSize === 'xlarge') {
+                css += `body { font-size: 140% !important; }`;
+            }
+
+            if (css) {
+                const style = document.createElement('style');
+                style.id = styleId;
+                style.textContent = css;
+                document.head.appendChild(style);
+            }
+        }
+
+        console.log('%c🎨 accessibility menu available:', 'font-size: 14px; font-weight: bold;');
+        console.log('%cwindow.MakeMeAccessible()', 'font-size: 12px; color: #667eea;');
+
+        // ============================================================
+        // AUTISM PRIDE EASTER EGGS - because we love the tism
+        // ============================================================
+        
+        let autismPrideMode = false;
+        let neurotypicalFreeMode = false;
+
+        window.IPrideInMyTism = function() {
+            if (autismPrideMode) {
+                console.log('autism pride mode already active bestie');
+                return;
+            }
+
+            autismPrideMode = true;
+            console.log('%c🌈 AUTISM PRIDE MODE ACTIVATED', 'font-size: 16px; font-weight: bold; color: #ff69b4;');
+            console.log('adding special autism-themed options...');
+
+            // add the CSS for the new color option
+            const autismColorStyles = document.createElement('style');
+            autismColorStyles.id = 'autism-color-styles';
+            autismColorStyles.textContent = `
+                .undiagnosed-autism {
+                    background: linear-gradient(135deg, 
+                        #ff0000 0%, #ff7f00 14%, #ffff00 28%, 
+                        #00ff00 42%, #0000ff 57%, #4b0082 71%, 
+                        #9400d3 85%, #ff0000 100%);
+                    background-size: 200% 200%;
+                    animation: rainbow-shift 3s ease infinite;
+                }
+
+                @keyframes rainbow-shift {
+                    0% { background-position: 0% 50%; }
+                    50% { background-position: 100% 50%; }
+                    100% { background-position: 0% 50%; }
+                }
+
+                .special-interest-glass {
+                    border: 3px dashed #9400d3 !important;
+                    position: relative;
+                }
+
+                .special-interest-glass::before {
+                    content: '✨';
+                    position: absolute;
+                    top: 5px;
+                    right: 5px;
+                    font-size: 1.2rem;
+                }
+
+                .autistic-vibes {
+                    border: 3px solid #00bcd4 !important;
+                    background: linear-gradient(135deg, rgba(0, 188, 212, 0.1), rgba(156, 39, 176, 0.1)) !important;
+                }
+
+                .autistic-vibes::before {
+                    content: '♾️';
+                    position: absolute;
+                    top: 5px;
+                    right: 5px;
+                    font-size: 1.2rem;
+                }
+            `;
+            document.head.appendChild(autismColorStyles);
+
+            // add the undiagnosed autism color option
+            const colorGrid = document.getElementById('colorGrid');
+            const autismColorOption = document.createElement('div');
+            autismColorOption.className = 'option-card';
+            autismColorOption.setAttribute('data-value', 'undiagnosed-autism');
+            autismColorOption.innerHTML = `
+                <div class="color-option undiagnosed-autism"></div>
+                <div class="option-title">Undiagnosed Autism</div>
+                <div class="option-description">the color of neurodivergence ✨</div>
+            `;
+            colorGrid.appendChild(autismColorOption);
+
+            // add click handler
+            autismColorOption.addEventListener('click', function() {
+                document.querySelectorAll('#colorGrid .option-card').forEach(card => card.classList.remove('selected'));
+                this.classList.add('selected');
+                orderData.color = 'undiagnosed-autism';
+                console.log('selected: undiagnosed autism glass (very valid choice)');
+            });
+
+            // add the special interest in glass addition
+            const additionsGrid = document.getElementById('additionsGrid');
+            const specialInterestOption = document.createElement('div');
+            specialInterestOption.className = 'addition-card special-interest-glass';
+            specialInterestOption.setAttribute('data-value', 'special-interest-glass');
+            specialInterestOption.innerHTML = `
+                <div class="addition-header">
+                    <span class="addition-name">Special Interest in Glass</span>
+                </div>
+                <div class="option-description">for when glass is literally your hyperfixation</div>
+            `;
+            additionsGrid.appendChild(specialInterestOption);
+
+            // add click handler
+            specialInterestOption.addEventListener('click', function() {
+                this.classList.toggle('selected');
+                const value = this.getAttribute('data-value');
+                const index = orderData.additions.indexOf(value);
+                
+                if (index > -1) {
+                    orderData.additions.splice(index, 1);
+                    console.log('removed special interest (how dare you)');
+                } else {
+                    orderData.additions.push(value);
+                    console.log('added special interest ✨ (very valid)');
+                }
+            });
+
+            console.log('✅ autism pride options added!');
+            console.log('- new color: "Undiagnosed Autism" (rainbow gradient)');
+            console.log('- new addition: "Special Interest in Glass"');
+            console.log('run window.ImNotANeurotypical() for even more chaos');
+        };
+
+        window.ImNotANeurotypical = function() {
+            console.log('%csure asf ur not neurotypical', 'font-size: 14px; font-weight: bold; color: #9c27b0;');
+
+            if (!autismPrideMode) {
+                console.log('activating autism pride mode first...');
+                window.IPrideInMyTism();
+            }
+
+            if (neurotypicalFreeMode) {
+                console.log('neurotypical-free mode already active');
+                return;
+            }
+
+            neurotypicalFreeMode = true;
+            console.log('%c✨ NEUROTYPICALITY-FREE MODE ACTIVATED', 'font-size: 16px; font-weight: bold; color: #00bcd4;');
+
+            // add neurotypicality-free toggle checkbox to color section
+            const colorSection = document.querySelector('.step').nextElementSibling;
+            const toggleDiv = document.createElement('div');
+            toggleDiv.style.cssText = `
+                margin: 20px 0;
+                padding: 15px;
+                background: linear-gradient(135deg, rgba(156, 39, 176, 0.1), rgba(0, 188, 212, 0.1));
+                border: 2px solid #9c27b0;
+                border-radius: 12px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            `;
+            toggleDiv.innerHTML = `
+                <input type="checkbox" id="neurotypical-free-toggle" style="width: 24px; height: 24px; cursor: pointer;">
+                <label for="neurotypical-free-toggle" style="font-weight: 600; cursor: pointer; user-select: none;">
+                    ♾️ Make this order Neurotypicality-Free
+                    <span style="display: block; font-size: 0.85rem; color: #7f8c8d; margin-top: 5px;">
+                        appends "Neurotypicality-Free" to your color choice
+                    </span>
+                </label>
+            `;
+
+            // insert after the color grid
+            const colorGridParent = document.getElementById('colorGrid').parentElement;
+            colorGridParent.appendChild(toggleDiv);
+
+            // handle the checkbox
+            document.getElementById('neurotypical-free-toggle').addEventListener('change', function(e) {
+                if (e.target.checked) {
+                    console.log('✅ neurotypicality-free mode enabled for this order');
+                } else {
+                    console.log('❌ neurotypicality-free mode disabled');
+                }
+            });
+
+            // add autistic vibes addition
+            const additionsGrid = document.getElementById('additionsGrid');
+            const autisticVibesOption = document.createElement('div');
+            autisticVibesOption.className = 'addition-card autistic-vibes';
+            autisticVibesOption.setAttribute('data-value', 'autistic-vibes');
+            autisticVibesOption.innerHTML = `
+                <div class="addition-header">
+                    <span class="addition-name">Autistic Vibes</span>
+                </div>
+                <div class="option-description">because masking is exhausting</div>
+            `;
+            additionsGrid.appendChild(autisticVibesOption);
+
+            // add click handler
+            autisticVibesOption.addEventListener('click', function() {
+                this.classList.toggle('selected');
+                const value = this.getAttribute('data-value');
+                const index = orderData.additions.indexOf(value);
+                
+                if (index > -1) {
+                    orderData.additions.splice(index, 1);
+                    console.log('removed autistic vibes (why tho)');
+                } else {
+                    orderData.additions.push(value);
+                    console.log('added autistic vibes ♾️ (hell yeah)');
+                }
+            });
+
+            // modify the order submission to append neurotypicality-free
+            const originalConfirmOrder = document.getElementById('confirmOrder').onclick;
+            document.getElementById('confirmOrder').onclick = async function(e) {
+                const neurotypicalFreeCheckbox = document.getElementById('neurotypical-free-toggle');
+                if (neurotypicalFreeCheckbox && neurotypicalFreeCheckbox.checked && orderData.color) {
+                    // append to color
+                    orderData.color = `${orderData.color} (Neurotypicality-Free)`;
+                    console.log(`order color modified: ${orderData.color}`);
+                }
+                
+                // call original function if it exists
+                if (originalConfirmOrder) {
+                    return originalConfirmOrder.call(this, e);
+                }
+            };
+
+            console.log('✅ neurotypicality-free features added!');
+            console.log('- toggle: "Make this order Neurotypicality-Free"');
+            console.log('- new addition: "Autistic Vibes"');
+            console.log('- color will be appended with "(Neurotypicality-Free)" when checked');
+        };
+
+        // console hints
+        console.log('%c🌈 autism pride easter eggs available:', 'font-size: 16px; font-weight: bold; color: #9c27b0;');
+        console.log('%cwindow.IPrideInMyTism() - add autism-themed options', 'font-size: 14px; color: #ff69b4;');
+        console.log('%cwindow.ImNotANeurotypical() - full neurotypical-free mode', 'font-size: 14px; color: #00bcd4;');
     </script>
 </body>
 </html>
