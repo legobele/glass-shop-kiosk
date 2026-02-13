@@ -457,32 +457,53 @@
         }
 
         .confirmation-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(10px);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            overflow-y: auto;
-            padding: 20px;
-        }
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(10px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.confirmation-modal.show {
+    display: flex !important;
+}
 
         .confirmation-content {
-            background: white;
-            border-radius: 20px;
-            padding: clamp(20px, 3vw, 40px);
-            text-align: center;
-            max-width: min(900px, 90vw);
-            margin: auto;
-            animation: modalPop 0.5s ease;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
+    background: white;
+    border-radius: 20px;
+    padding: clamp(15px, 3vw, 30px);
+    text-align: center;
+    width: min(800px, 95vw);
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: modalPop 0.5s ease;
+    scroll-behavior: smooth;
+    
+    /* pretty scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: #667eea #e0e6ed;
+}
+
+.confirmation-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.confirmation-content::-webkit-scrollbar-track {
+    background: #e0e6ed;
+    border-radius: 10px;
+}
+
+.confirmation-content::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: 10px;
+}
 
         @keyframes modalPop {
             from {
@@ -496,19 +517,15 @@
         }
 
         .success-icon {
-            font-size: clamp(2.5rem, 6vw, 4rem);
-            color: #28a745;
-            margin-bottom: clamp(10px, 2vw, 20px);
+            font-size: clamp(2rem, 8vw, 3.5rem);
         }
 
         .confirmation-content h2 {
-            font-size: clamp(1.5rem, 4vw, 2rem);
-            margin-bottom: clamp(8px, 1.5vw, 15px);
+            font-size: clamp(1.3rem, 4vw, 1.8rem);
         }
 
-        .confirmation-content > p {
-            font-size: clamp(0.9rem, 2vw, 1.1rem);
-            margin-bottom: clamp(10px, 2vw, 20px);
+.confirmation-content p {
+            font-size: clamp(0.9rem, 2vw, 1rem);
         }
 
         .price-alert {
@@ -565,8 +582,9 @@
         }
 
         #qrcode canvas, #qrcode img {
-            max-width: min(256px, 40vw) !important;
-            height: auto !important;
+    max-width: min(200px, 50vw, 40vh) !important;
+    height: auto !important;
+    border-radius: 8px;
         }
 
         .qr-code-container p {
@@ -609,6 +627,30 @@
         .numpad-overlay.active {
             display: block;
         }
+
+        @media (max-height: 700px) {
+    .confirmation-content { padding: 15px; }
+    #qrcode canvas, #qrcode img {
+        max-width: min(180px, 45vw) !important;
+    }
+}
+
+@media (max-height: 600px) {
+    .success-icon { font-size: 2rem; margin-bottom: 8px; }
+    #qrcode canvas, #qrcode img {
+        max-width: min(150px, 40vw) !important;
+    }
+}
+
+@media (max-height: 500px) {
+    .confirmation-content {
+        padding: 10px;
+        max-height: 95vh;
+    }
+    #qrcode canvas, #qrcode img {
+        max-width: min(120px, 35vw) !important;
+    }
+}
     </style>
 </head>
 <body>
@@ -1323,7 +1365,7 @@
                     correctLevel: QRCode.CorrectLevel.H
                 });
                 
-                document.getElementById('confirmationModal').style.display = 'flex';
+                document.getElementById('confirmationModal').classList.add('show');
                 
                 setTimeout(() => {
                     document.getElementById('progressFill').style.width = '100%';
@@ -1351,7 +1393,7 @@
             
             currentStep = 1;
             
-            document.getElementById('confirmationModal').style.display = 'none';
+            document.getElementById('confirmationModal').classList.remove('show');
             
             document.querySelectorAll('.step').forEach((step, index) => {
                 if (index > 0) {
