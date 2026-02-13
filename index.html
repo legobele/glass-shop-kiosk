@@ -1593,12 +1593,13 @@
                     position: relative;
                 }
 
-                .special-interest-glass::before {
+                .special-interest-glass::after {
                     content: '✨';
                     position: absolute;
-                    top: 5px;
-                    right: 5px;
+                    top: 10px;
+                    right: 10px;
                     font-size: 1.2rem;
+                    pointer-events: none;
                 }
 
                 .autistic-vibes {
@@ -1606,17 +1607,24 @@
                     background: linear-gradient(135deg, rgba(0, 188, 212, 0.1), rgba(156, 39, 176, 0.1)) !important;
                 }
 
-                .autistic-vibes::before {
+                .autistic-vibes::after {
                     content: '♾️';
                     position: absolute;
-                    top: 5px;
-                    right: 5px;
+                    top: 10px;
+                    right: 10px;
                     font-size: 1.2rem;
+                    pointer-events: none;
+                }
+
+                .addition-card.selected.special-interest-glass,
+                .addition-card.selected.autistic-vibes {
+                    background: linear-gradient(135deg, #28a745, #20c997) !important;
+                    color: white !important;
                 }
             `;
             document.head.appendChild(autismColorStyles);
 
-            // add the undiagnosed autism color option
+            // add the undiagnosed autism color option to step3 (color selection)
             const colorGrid = document.getElementById('colorGrid');
             const autismColorOption = document.createElement('div');
             autismColorOption.className = 'option-card';
@@ -1627,14 +1635,7 @@
                 <div class="option-description">the color of neurodivergence ✨</div>
             `;
             colorGrid.appendChild(autismColorOption);
-
-            // add click handler
-            autismColorOption.addEventListener('click', function() {
-                document.querySelectorAll('#colorGrid .option-card').forEach(card => card.classList.remove('selected'));
-                this.classList.add('selected');
-                orderData.color = 'undiagnosed-autism';
-                console.log('selected: undiagnosed autism glass (very valid choice)');
-            });
+            // no manual event listener needed - the document delegation will handle it!
 
             // add the special interest in glass addition
             const additionsGrid = document.getElementById('additionsGrid');
@@ -1648,25 +1649,12 @@
                 <div class="option-description">for when glass is literally your hyperfixation</div>
             `;
             additionsGrid.appendChild(specialInterestOption);
-
-            // add click handler
-            specialInterestOption.addEventListener('click', function() {
-                this.classList.toggle('selected');
-                const value = this.getAttribute('data-value');
-                const index = orderData.additions.indexOf(value);
-                
-                if (index > -1) {
-                    orderData.additions.splice(index, 1);
-                    console.log('removed special interest (how dare you)');
-                } else {
-                    orderData.additions.push(value);
-                    console.log('added special interest ✨ (very valid)');
-                }
-            });
+            // no manual event listener needed - the document delegation will handle it!
 
             console.log('✅ autism pride options added!');
             console.log('- new color: "Undiagnosed Autism" (rainbow gradient)');
             console.log('- new addition: "Special Interest in Glass"');
+            console.log('these should now be clickable thanks to event delegation');
             console.log('run window.ImNotANeurotypical() for even more chaos');
         };
 
@@ -1686,8 +1674,9 @@
             neurotypicalFreeMode = true;
             console.log('%c✨ NEUROTYPICALITY-FREE MODE ACTIVATED', 'font-size: 16px; font-weight: bold; color: #00bcd4;');
 
-            // add neurotypicality-free toggle checkbox to color section
-            const colorSection = document.querySelector('.step').nextElementSibling;
+            // add neurotypicality-free toggle checkbox to color section (step3)
+            const step3 = document.getElementById('step3');
+            const colorGrid = document.getElementById('colorGrid');
             const toggleDiv = document.createElement('div');
             toggleDiv.style.cssText = `
                 margin: 20px 0;
@@ -1710,8 +1699,7 @@
             `;
 
             // insert after the color grid
-            const colorGridParent = document.getElementById('colorGrid').parentElement;
-            colorGridParent.appendChild(toggleDiv);
+            colorGrid.parentElement.insertBefore(toggleDiv, colorGrid.nextSibling);
 
             // handle the checkbox
             document.getElementById('neurotypical-free-toggle').addEventListener('change', function(e) {
@@ -1734,35 +1722,72 @@
                 <div class="option-description">because masking is exhausting</div>
             `;
             additionsGrid.appendChild(autisticVibesOption);
+            // no manual event listener needed - document delegation handles it!
 
-            // add click handler
-            autisticVibesOption.addEventListener('click', function() {
-                this.classList.toggle('selected');
-                const value = this.getAttribute('data-value');
-                const index = orderData.additions.indexOf(value);
-                
-                if (index > -1) {
-                    orderData.additions.splice(index, 1);
-                    console.log('removed autistic vibes (why tho)');
-                } else {
-                    orderData.additions.push(value);
-                    console.log('added autistic vibes ♾️ (hell yeah)');
-                }
-            });
-
-            // modify the order submission to append neurotypicality-free
-            const originalConfirmOrder = document.getElementById('confirmOrder').onclick;
-            document.getElementById('confirmOrder').onclick = async function(e) {
+            // intercept the confirm order button to append neurotypicality-free
+            const confirmBtn = document.getElementById('confirmOrder');
+            const originalOnClick = confirmBtn.onclick;
+            
+            confirmBtn.onclick = async function(e) {
                 const neurotypicalFreeCheckbox = document.getElementById('neurotypical-free-toggle');
                 if (neurotypicalFreeCheckbox && neurotypicalFreeCheckbox.checked && orderData.color) {
-                    // append to color
-                    orderData.color = `${orderData.color} (Neurotypicality-Free)`;
-                    console.log(`order color modified: ${orderData.color}`);
+                    // create a modified version of the color for display/submission
+                    const originalColor = orderData.color;
+                    orderData.color = `${originalColor} (Neurotypicality-Free)`;
+                    console.log(`🌈 order color modified: ${orderData.color}`);
                 }
                 
-                // call original function if it exists
-                if (originalConfirmOrder) {
-                    return originalConfirmOrder.call(this, e);
+                // continue with original logic - but we need to call it manually since we're replacing onclick
+                // the original function is inline in the HTML so we'll trigger the default behavior
+                this.disabled = true;
+                this.textContent = currentLang === 'en' ? 'Processing...' : 'Procesando...';
+                
+                const progressBar = document.getElementById('progressFill');
+                let progress = 0;
+                const progressInterval = setInterval(() => {
+                    progress += 2;
+                    progressBar.style.width = progress + '%';
+                    if (progress >= 90) clearInterval(progressInterval);
+                }, 100);
+
+                try {
+                    const response = await fetch('http://localhost:3000/api/orders', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'ngrok-skip-browser-warning': 'true'
+                        },
+                        body: JSON.stringify(orderData)
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        console.log('order saved successfully:', result);
+                        
+                        clearInterval(progressInterval);
+                        progressBar.style.width = '100%';
+                        
+                        setTimeout(() => {
+                            alert(currentLang === 'en' 
+                                ? `Order saved successfully!\\n\\nOrder ID: ${result.orderId}\\n\\nYou can check your order status at the customer portal using this ID.`
+                                : `¡Orden guardada exitosamente!\\n\\nID de Orden: ${result.orderId}\\n\\nPuede verificar el estado de su orden en el portal de clientes usando este ID.`
+                            );
+                            resetOrder();
+                            progressBar.style.width = '100%';
+                        }, 500);
+                        
+                    } else {
+                        throw new Error('server returned error status');
+                    }
+                } catch (error) {
+                    console.error('failed to save order:', error);
+                    clearInterval(progressInterval);
+                    alert((currentLang === 'en' 
+                        ? `Failed to save order to server.\\n\\nError: ${error.message}\\n\\nPlease try again or contact staff.` 
+                        : `Error al guardar orden en el servidor.\\n\\nError: ${error.message}\\n\\nPor favor intente de nuevo o contacte al personal.`));
+                } finally {
+                    this.disabled = false;
+                    this.textContent = currentLang === 'en' ? 'Confirm Order' : 'Confirmar Orden';
                 }
             };
 
