@@ -778,37 +778,81 @@
     <div class="confirmation-modal" id="confirmationModal">
         <div class="confirmation-content">
             <div class="success-icon">✅</div>
-            <h2 data-i18n="orderConfirmed">Order Confirmed!</h2>
-            <p data-i18n="orderPlaced">Your glass order has been successfully placed.</p>
+            <h2>Order Confirmed!</h2>
+            <p>Your glass order has been successfully placed.</p>
             
             <div class="qr-code-container">
-                <h3 data-i18n="yourOrderCode">Your Order Code</h3>
-                <div class="qr-code-instruction" data-i18n="scanQR">
+                <h3>Your Order Code</h3>
+                <div class="qr-code-instruction">
                     📱 Scan this QR code with your phone's camera to instantly track your order online
                 </div>
                 <div id="qrcode"></div>
-                <p style="margin-top: 15px; font-size: 1.5rem; font-weight: bold; color: #2c3e50;">
-                    <span data-i18n="orderId">Order ID:</span> <span id="orderId"></span>
+                <p class="order-id-display">
+                    Order ID: <span id="orderId">QG1HZLVYSG</span>
                 </p>
             </div>
             
             <div class="price-alert">
                 <div class="price-alert-icon">💰</div>
-                <h3 data-i18n="seeSalesperson">See Salesperson to Get Price</h3>
-                <p data-i18n="visitCounter">Please visit our sales counter for pricing and payment processing.</p>
+                <h3>See Salesperson to Get Price</h3>
+                <p>Please visit our sales counter for pricing and payment processing.</p>
             </div>
             
             <div class="progress-bar">
                 <div class="progress-fill" id="progressFill"></div>
             </div>
-            <p><strong data-i18n="estimatedCompletion">Estimated completion:</strong> <span id="estimatedTime"></span></p>
-            <button class="btn" onclick="resetOrder()">
-                <span data-i18n="placeNewOrder">Place New Order</span>
+            <p class="estimated-time">
+                <strong>Estimated completion:</strong> <span id="estimatedTime">96 hours</span>
+            </p>
+            <button class="btn" onclick="closeModal()">
+                Place New Order
             </button>
         </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        // update screen info
+        function updateScreenInfo() {
+            document.getElementById('screenSize').textContent = 
+                `${window.screen.width}x${window.screen.height}`;
+            document.getElementById('viewportSize').textContent = 
+                `${window.innerWidth}x${window.innerHeight}`;
+        }
+        
+        updateScreenInfo();
+        window.addEventListener('resize', updateScreenInfo);
+
+        function showModal() {
+            // generate QR code
+            const customerPortalUrl = `https://legobele.github.io/qgi-customer-portal/?order=QG1HZLVYSG`;
+            document.getElementById('qrcode').innerHTML = '';
+            new QRCode(document.getElementById('qrcode'), {
+                text: customerPortalUrl,
+                width: 256,
+                height: 256,
+                colorDark: '#000000',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+            
+            // show modal
+            const modal = document.getElementById('confirmationModal');
+            modal.classList.add('show');
+            
+            // animate progress bar
+            setTimeout(() => {
+                document.getElementById('progressFill').style.width = '100%';
+            }, 500);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('confirmationModal');
+            modal.classList.remove('show');
+            document.getElementById('progressFill').style.width = '0%';
+        }
+        });
+    </script>
 
     <script>
         const SERVER_CONFIG = {
