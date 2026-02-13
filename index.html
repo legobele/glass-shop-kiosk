@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QGI Kiosk, v0.5r2</title>
+    <title>QGI Kiosk, v0.7-access</title>
     <style>
         * {
             margin: 0;
@@ -651,14 +651,45 @@
         max-width: min(120px, 35vw) !important;
     }
 }
+
+        /* accessibility button styling */
+        .accessibility-fab {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            z-index: 9998;
+            border: none;
+            transition: all 0.3s ease;
+            font-size: 1.5rem;
+        }
+
+        .accessibility-fab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .accessibility-fab:focus {
+            outline: 3px solid #fbbf24;
+            outline-offset: 3px;
+        }
+
     </style>
 </head>
 <body>
     <div class="kiosk-container">
-        <div class="header">
+        <header class="header" role="banner">
             <button class="lang-toggle" onclick="toggleLanguage()" id="langToggle">🌐 ES</button>
-            <div class="logo">Quality Glass Industries</div>
-            <div class="tagline" data-i18n="tagline">Smart Glass Ordering System v0.4</div>
+            <h1 class="logo">Quality Glass Industries</h1>
+            <div class="tagline" data-i18n="tagline">Glass Ordering System v0.7</div>
         </div>
 
         <div class="order-content">
@@ -811,6 +842,11 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <!-- Accessibility Floating Action Button -->
+    <button class="accessibility-fab" onclick="window.MakeMeAccessible()" aria-label="Open accessibility settings" title="Accessibility Settings">
+        ♿
+    </button>
 
     <script>
         const SERVER_CONFIG = {
@@ -1441,6 +1477,9 @@
 
             const menu = document.createElement('div');
             menu.id = 'accessibility-menu';
+            menu.setAttribute('role', 'dialog');
+            menu.setAttribute('aria-modal', 'true');
+            menu.setAttribute('aria-labelledby', 'accessibility-title');
             menu.style.cssText = `
                 position: fixed;
                 top: 50%;
@@ -1459,13 +1498,13 @@
 
             menu.innerHTML = `
                 <div style="margin-bottom: 20px;">
-                    <h2 style="margin: 0 0 10px 0; color: #2c3e50;">accessibility settings</h2>
+                    <h2 id="accessibility-title" style="margin: 0 0 10px 0; color: #2c3e50;">accessibility settings</h2>
                     <p style="margin: 0; color: #7f8c8d; font-size: 0.9rem;">customize the interface</p>
                 </div>
 
                 <div style="margin-bottom: 20px;">
                     <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 10px; background: #f8f9fa; border-radius: 8px;">
-                        <input type="checkbox" id="high-contrast-toggle" style="width: 20px; height: 20px;">
+                        <input type="checkbox" id="high-contrast-toggle" style="width: 20px; height: 20px;" aria-label="Enable high contrast mode">
                         <div>
                             <strong style="display: block; color: #2c3e50;">high contrast mode</strong>
                             <span style="font-size: 0.85rem; color: #7f8c8d;">makes text easier to read</span>
@@ -1475,7 +1514,7 @@
 
                 <div style="margin-bottom: 20px;">
                     <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 10px; background: #f8f9fa; border-radius: 8px;">
-                        <input type="checkbox" id="reduced-motion-toggle" style="width: 20px; height: 20px;">
+                        <input type="checkbox" id="reduced-motion-toggle" style="width: 20px; height: 20px;" aria-label="Reduce motion and animations">
                         <div>
                             <strong style="display: block; color: #2c3e50;">reduce motion</strong>
                             <span style="font-size: 0.85rem; color: #7f8c8d;">removes animations</span>
@@ -1485,7 +1524,7 @@
 
                 <div style="margin-bottom: 20px;">
                     <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 10px; background: #f8f9fa; border-radius: 8px;">
-                        <input type="checkbox" id="focus-indicators-toggle" style="width: 20px; height: 20px;">
+                        <input type="checkbox" id="focus-indicators-toggle" style="width: 20px; height: 20px;" aria-label="Show enhanced focus indicators">
                         <div>
                             <strong style="display: block; color: #2c3e50;">enhanced focus indicators</strong>
                             <span style="font-size: 0.85rem; color: #7f8c8d;">shows where keyboard focus is</span>
@@ -1494,8 +1533,8 @@
                 </div>
 
                 <div style="margin-bottom: 20px;">
-                    <label style="display: block; margin-bottom: 8px; color: #2c3e50; font-weight: 600;">color tone</label>
-                    <select id="color-tone-select" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1rem;">
+                    <label for="color-tone-select" style="display: block; margin-bottom: 8px; color: #2c3e50; font-weight: 600;">color tone</label>
+                    <select id="color-tone-select" aria-label="Choose color scheme" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1rem;">
                         <option value="default">default (blue/purple)</option>
                         <option value="warm">warm (orange/brown)</option>
                         <option value="cool">cool (muted blue)</option>
@@ -1504,8 +1543,8 @@
                 </div>
 
                 <div style="margin-bottom: 20px;">
-                    <label style="display: block; margin-bottom: 8px; color: #2c3e50; font-weight: 600;">font size</label>
-                    <select id="font-size-select" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1rem;">
+                    <label for="font-size-select" style="display: block; margin-bottom: 8px; color: #2c3e50; font-weight: 600;">font size</label>
+                    <select id="font-size-select" aria-label="Choose font size" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1rem;">
                         <option value="default">default</option>
                         <option value="large">large (+20%)</option>
                         <option value="xlarge">extra large (+40%)</option>
@@ -1514,21 +1553,50 @@
 
                 <div style="display: flex; gap: 10px;">
                     <button id="apply-accessibility" style="flex: 1; padding: 12px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">apply</button>
-                    <button id="close-accessibility" style="flex: 1; padding: 12px; background: #ecf0f1; color: #2c3e50; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">close</button>
+                    <button id="close-accessibility" style="flex: 1; padding: 12px; background: #ecf0f1; color: #2c3e50; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;" aria-label="Close accessibility menu">close</button>
                 </div>
             `;
 
             document.body.appendChild(menu);
 
-            document.getElementById('apply-accessibility').onclick = function() {
+            // focus trap for accessibility
+            const focusableElements = menu.querySelectorAll('input, select, button');
+            const firstFocusable = focusableElements[0];
+            const lastFocusable = focusableElements[focusableElements.length - 1];
+            
+            firstFocusable.focus();
+
+            menu.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    menu.remove();
+                } else if (e.key === 'Tab') {
+                    if (e.shiftKey && document.activeElement === firstFocusable) {
+                        e.preventDefault();
+                        lastFocusable.focus();
+                    } else if (!e.shiftKey && document.activeElement === lastFocusable) {
+                        e.preventDefault();
+                        firstFocusable.focus();
+                    }
+                }
+            });
+
+            ('apply-accessibility').onclick = function() {
                 accessibilitySettings.highContrast = document.getElementById('high-contrast-toggle').checked;
                 accessibilitySettings.reducedMotion = document.getElementById('reduced-motion-toggle').checked;
                 accessibilitySettings.focusIndicators = document.getElementById('focus-indicators-toggle').checked;
                 accessibilitySettings.colorTone = document.getElementById('color-tone-select').value;
                 accessibilitySettings.fontSize = document.getElementById('font-size-select').value;
                 
-                applyAccessibilitySettings();
-                menu.remove();
+                applyAccessibilitySettings();menu.remove();
+                
+                // announce to screen readers
+                const announcement = document.createElement('div');
+                announcement.setAttribute('role', 'status');
+                announcement.setAttribute('aria-live', 'polite');
+                announcement.style.cssText = 'position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden;';
+                announcement.textContent = 'Accessibility settings applied successfully';
+                document.body.appendChild(announcement);
+                setTimeout(() => announcement.remove(), 1000);
             };
 
             document.getElementById('close-accessibility').onclick = function() {
