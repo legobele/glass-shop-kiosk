@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QGI Kiosk, v0.7-access</title>
+    <title>QGI Kiosk, v0.7</title>
     <style>
         * {
             margin: 0;
@@ -109,6 +109,10 @@
             margin-bottom: 20px;
             display: flex;
             align-items: center;
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
 
         .step-number {
@@ -283,6 +287,7 @@
             height: 100%;
             background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
             transition: left 0.5s;
+            z-index: 0;
         }
 
         .option-card:hover::before {
@@ -305,17 +310,23 @@
             font-size: 2.5rem;
             margin-bottom: 15px;
             display: block;
+            position: relative;
+            z-index: 1;
         }
 
         .option-title {
             font-size: 1.2rem;
             font-weight: bold;
             margin-bottom: 8px;
+            position: relative;
+            z-index: 1;
         }
 
         .option-description {
             font-size: 0.9rem;
             opacity: 0.8;
+            position: relative;
+            z-index: 1;
         }
 
         .color-option {
@@ -689,7 +700,7 @@
         <header class="header" role="banner">
             <button class="lang-toggle" onclick="toggleLanguage()" id="langToggle">🌐 ES</button>
             <h1 class="logo">Quality Glass Industries</h1>
-            <div class="tagline" data-i18n="tagline">Glass Order System v0.7</div>
+            <div class="tagline" data-i18n="tagline">Glass Ordering v0.7</div>
         </div>
 
         <div class="order-content">
