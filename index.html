@@ -1724,6 +1724,57 @@
             additionsGrid.appendChild(autisticVibesOption);
             // no manual event listener needed - document delegation handles it!
 
+            // add autism payment options
+            const paymentGrid = document.getElementById('paymentGrid');
+            
+            // add CSS for autism payment options
+            const paymentStyles = document.createElement('style');
+            paymentStyles.textContent = `
+                .autism-payment {
+                    background: linear-gradient(135deg, rgba(156, 39, 176, 0.1), rgba(255, 105, 180, 0.1)) !important;
+                    border: 2px solid #9c27b0 !important;
+                }
+
+                .autism-payment .option-icon {
+                    filter: hue-rotate(280deg) brightness(1.2);
+                }
+
+                .autism-payment.selected {
+                    background: linear-gradient(135deg, #9c27b0, #ff69b4) !important;
+                    border-color: #9c27b0 !important;
+                    color: white !important;
+                }
+            `;
+            document.head.appendChild(paymentStyles);
+
+            const autisticVibesPayment = document.createElement('div');
+            autisticVibesPayment.className = 'payment-option autism-payment';
+            autisticVibesPayment.setAttribute('data-value', 'autistic-vibes-payment');
+            autisticVibesPayment.innerHTML = `
+                <span class="option-icon">♾️</span>
+                <div class="option-title">Autistic Vibes</div>
+            `;
+            paymentGrid.appendChild(autisticVibesPayment);
+
+            const infodumpingPayment = document.createElement('div');
+            infodumpingPayment.className = 'payment-option autism-payment';
+            infodumpingPayment.setAttribute('data-value', 'infodumping-until-forgot-payment');
+            infodumpingPayment.innerHTML = `
+                <span class="option-icon">💬</span>
+                <div class="option-title" style="font-size: 0.85rem; line-height: 1.3;">Infodumping About Glass Until The Other Person Forgets You Haven't Been Charged</div>
+            `;
+            paymentGrid.appendChild(infodumpingPayment);
+
+            const specialInterestPayment = document.createElement('div');
+            specialInterestPayment.className = 'payment-option autism-payment';
+            specialInterestPayment.setAttribute('data-value', 'special-interest-energy-payment');
+            specialInterestPayment.innerHTML = `
+                <span class="option-icon">✨</span>
+                <div class="option-title">Special Interest Energy</div>
+            `;
+            paymentGrid.appendChild(specialInterestPayment);
+            // payment options also use document delegation - no manual listeners needed!
+
             // intercept the confirm order button to append neurotypicality-free
             const confirmBtn = document.getElementById('confirmOrder');
             const originalOnClick = confirmBtn.onclick;
@@ -1794,13 +1845,18 @@
             console.log('✅ neurotypicality-free features added!');
             console.log('- toggle: "Make this order Neurotypicality-Free"');
             console.log('- new addition: "Autistic Vibes"');
+            console.log('- new payment options: "Autistic Vibes", "Infodumping...", "Special Interest Energy"');
             console.log('- color will be appended with "(Neurotypicality-Free)" when checked');
+            console.log('');
+            console.log('these will actually be sent to the server btw');
+            console.log('your uncle is gonna be so confused lmao');
         };
 
         // console hints
         console.log('%c🌈 autism pride easter eggs available:', 'font-size: 16px; font-weight: bold; color: #9c27b0;');
         console.log('%cwindow.IPrideInMyTism() - add autism-themed options', 'font-size: 14px; color: #ff69b4;');
         console.log('%cwindow.ImNotANeurotypical() - full neurotypical-free mode', 'font-size: 14px; color: #00bcd4;');
+        console.log('%cyes these are going to prod. no one will find them. probably.', 'font-size: 12px; color: #7f8c8d; font-style: italic;');
     </script>
 </body>
 </html>
