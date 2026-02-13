@@ -1819,10 +1819,6 @@
                         progressBar.style.width = '100%';
                         
                         setTimeout(() => {
-                            alert(currentLang === 'en' 
-                                ? `Order saved successfully!\\n\\nOrder ID: ${result.orderId}\\n\\nYou can check your order status at the customer portal using this ID.`
-                                : `¡Orden guardada exitosamente!\\n\\nID de Orden: ${result.orderId}\\n\\nPuede verificar el estado de su orden en el portal de clientes usando este ID.`
-                            );
                             resetOrder();
                             progressBar.style.width = '100%';
                         }, 500);
