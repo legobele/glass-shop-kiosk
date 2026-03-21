@@ -14,12 +14,23 @@ uhhh. i can 100% defo explain the 2 rickroll links in this page. or the code. de
 
 # Changelog
 
+## 1.1.0
+**authored by** claude sonnet 4.6 x @legobele
+
+## UI
+- new slide for continuing on mobile
+- contact info entry
+
+## site
+- [NEW] url params
+- [NEW] pressuring the customer to use their device to finish order to free up kiosks
+
 ## 1.0.5
 **Authored by** claude sonnet 4.6
 
 ### ui
 - additions now have an animation for when u select them
-- also transitions now work faster than HRT can
+- also transitions now work better (*)
 
 ## v1.0.4
 **Authored by** Claude Sonnet 4.6 (Anthropic)
