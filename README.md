@@ -13,6 +13,20 @@ because i couldnt be bothered to just use [localhost](https://reddit.com/r/evila
 uhhh. i can 100% defo explain the 2 rickroll links in this page. or the code. definitely. totally. /j
 
 # Changelog
+
+## v1.0.1
+# QGI Kiosk — Change Log 1.0.0 → v1.0.1
+**Date:** 2026-03-21  
+**Authored by:** Claude Sonnet 4.6 (Anthropic)  
+**Previous file:** index.html (v1.0.0, ~1393 lines, slide-based)  
+**New file:** index.html (v1.0.0, ~1500 lines, slide-based)
+
+### bugfixes (oh god)
+- the thickness selection WORKS NOW!!!!!! YAY!!!!!!
+- the spanish version speaks puertorican spanish fully!!!
+- vibes
+- the autism autism'd back here lol
+
 ## v1.0.0
 # QGI Kiosk — Change Log v0.7 → v1.0.0
 **Date:** 2026-03-21  
