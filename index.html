@@ -170,7 +170,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 /* THICKNESS VISUAL */
 .th-visual{height:110px;background:linear-gradient(180deg,#d8eaf6 0%,#b8d4ee 100%);display:flex;align-items:center;justify-content:center}
 .th-bar{background:linear-gradient(90deg,rgba(255,255,255,.65) 0%,rgba(200,220,240,.9) 100%);border:1px solid rgba(0,91,170,.22);border-radius:2px;width:52px;display:flex;align-items:center;justify-content:center}
-.th-bar span{font-size:.72rem;font-weight:700;color:var(--blue);writing-mode:vertical-rl;transform:rotate(180deg)}
+.th-bar span{font-size:.62rem;font-weight:700;color:var(--blue);white-space:nowrap;line-height:1}
 .th-1-8 .th-bar{height:10px}.th-5-32 .th-bar{height:14px}.th-3-16 .th-bar{height:18px}
 .th-1-4 .th-bar{height:24px}.th-5-16 .th-bar{height:30px}.th-3-8 .th-bar{height:38px}
 .th-1-2 .th-bar{height:50px}.th-5-8 .th-bar{height:64px}.th-3-4 .th-bar{height:78px}
@@ -289,12 +289,12 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
     <h2 class="slide-title" data-i18n="custTitle">Who is this order for?</h2>
     <p class="slide-subtitle" data-i18n="custSub">This helps us identify your order at the sales counter.</p>
     <div class="form-field">
-      <label><span data-i18n="nameLabel">Customer Name</span></label>
-      <input class="form-input" id="inp-name" type="text" placeholder="Your full name" oninput="validateCust()" autocomplete="off">
+      <label for="inp-name"><span data-i18n="nameLabel">Customer Name</span></label>
+      <input class="form-input" id="inp-name" type="text" data-i18n-ph="namePh" placeholder="Your full name" oninput="validateCust()" autocomplete="off">
     </div>
     <div class="form-field">
-      <label><span data-i18n="projLabel">Project Name</span> <span class="opt" data-i18n="optional">(optional)</span></label>
-      <input class="form-input" id="inp-proj" type="text" placeholder="e.g. Bathroom window, kitchen table" autocomplete="off">
+      <label for="inp-proj"><span data-i18n="projLabel">Project Name</span> <span class="opt" data-i18n="optional">(optional)</span></label>
+      <input class="form-input" id="inp-proj" type="text" data-i18n-ph="projPh" placeholder="e.g. Bathroom window, kitchen table" autocomplete="off">
     </div>
   </div>
   <div class="slide-footer">
@@ -360,13 +360,13 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
     <p class="slide-subtitle" data-i18n="sizeSub">Tap a field to open the keypad. All measurements in inches.</p>
     <div class="size-grid">
       <div class="size-field">
-        <label data-i18n="wLabel">Width (W)</label>
-        <div class="size-display" id="disp-w" onclick="openNP('width')" tabindex="0">—</div>
+        <label for="disp-w" data-i18n="wLabel">Width (W)</label>
+        <div class="size-display" id="disp-w" role="button" tabindex="0" onclick="openNP('width')" onkeydown="if(event.key==='Enter'||event.key===' ')openNP('width')">—</div>
         <div class="size-unit" data-i18n="inchesUnit">inches</div>
       </div>
       <div class="size-field">
-        <label data-i18n="hLabel">Height (H)</label>
-        <div class="size-display" id="disp-h" onclick="openNP('height')" tabindex="0">—</div>
+        <label for="disp-h" data-i18n="hLabel">Height (H)</label>
+        <div class="size-display" id="disp-h" role="button" tabindex="0" onclick="openNP('height')" onkeydown="if(event.key==='Enter'||event.key===' ')openNP('height')">—</div>
         <div class="size-unit" data-i18n="inchesUnit">inches</div>
       </div>
     </div>
@@ -436,7 +436,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
         <p class="add-desc" data-i18n="addBevDesc">Angled edge cut for a decorative polished finish on glass edges.</p>
         <div class="add-detail" onclick="event.stopPropagation()">
           <div class="sl-row">
-            <label data-i18n="bevelAngle">Angle</label>
+            <label for="bevel-angle" data-i18n="bevelAngle">Angle</label>
             <input type="range" id="bevel-angle" min="5" max="45" value="15" step="1" oninput="updBevel()">
             <span class="sl-val" id="bevel-angle-val">15°</span>
           </div>
@@ -468,7 +468,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
         <p class="add-desc" data-i18n="addERDesc">Smooth rounded glass edges for safety and a clean, finished look.</p>
         <div class="add-detail" onclick="event.stopPropagation()">
           <div class="sl-row">
-            <label data-i18n="erRadius">Radius</label>
+            <label for="er-radius" data-i18n="erRadius">Radius</label>
             <input type="range" id="er-radius" min="1" max="25" value="6" step="1" oninput="updER()">
             <span class="sl-val" id="er-radius-val">6mm</span>
           </div>
@@ -639,6 +639,7 @@ const T = {
   en: {
     tagline:'Order Kiosk',custTitle:'Who is this order for?',custSub:'This helps us identify your order at the sales counter.',
     nameLabel:'Customer Name',projLabel:'Project Name',optional:'(optional)',
+    namePh:'Your full name',projPh:'e.g. Bathroom window, kitchen table',
     typeTitle:'Select Glass Type',typeSub:'Choose a base type, then apply modifiers if needed.',
     typeFloat:'Float Glass',typeFloatDesc:'Widest range of colors and thicknesses. Standard for most applications.',
     typeLam:'Laminated Glass',typeLamDesc:'Two layers bonded with PVB interlayer. Enhanced safety and sound reduction.',
@@ -683,48 +684,49 @@ const T = {
     cWhiteLac:'White (Lacquered)',cBlackLac:'Black (Lacquered)',cOpticWhite:'Optic White (Lacquered)',cLowE:'Low-E',
   },
   es: {
-    tagline:'Quiosco de Órdenes',custTitle:'¿Para quién es esta orden?',custSub:'Esto nos ayuda a identificar su orden en el mostrador de ventas.',
+    tagline:'Quiosco de Ordenes',custTitle:'\xbfPara quien es esta orden?',custSub:'Esto nos ayuda a identificar su orden en el mostrador de ventas.',
     nameLabel:'Nombre del Cliente',projLabel:'Nombre del Proyecto',optional:'(opcional)',
-    typeTitle:'Seleccione Tipo de Vidrio',typeSub:'Elija un tipo base y aplique modificadores si es necesario.',
-    typeFloat:'Vidrio Float',typeFloatDesc:'Mayor variedad de colores y grosores. Ideal para la mayoría de aplicaciones.',
-    typeLam:'Vidrio Laminado',typeLamDesc:'Dos capas unidas con interlámina PVB. Mayor seguridad y reducción de ruido.',
+    namePh:'Su nombre completo',projPh:'Ej. Ventana del bano, mesa de cristal',
+    typeTitle:'Seleccione Tipo de Cristal',typeSub:'Elija un tipo base y aplique modificadores si es necesario.',
+    typeFloat:'Cristal Regular',typeFloatDesc:'Mayor variedad de colores y grosores. Ideal para la mayoria de aplicaciones.',
+    typeLam:'Cristal Laminado',typeLamDesc:'Dos capas unidas con interlamina PVB. Mayor seguridad y reduccion de ruido.',
     swTemp:'Templado',swUC:'Ultra-Claro',selType:'Tipo seleccionado:',
     sizeTitle:'Ingrese Dimensiones',sizeSub:'Toque un campo para abrir el teclado. Todas las medidas en pulgadas.',
-    wLabel:'Ancho (W)',hLabel:'Alto (H)',inchesUnit:'pulgadas',maxCutHdr:'Dimensiones Máximas de Corte',
-    flTitle:'Se Requiere Pedido de Lite Completo',flDesc:'Estas dimensiones exceden los tamaños de corte estándar. El equipo de ventas confirmará disponibilidad y precio para un lite completo.',
-    thickTitle:'Seleccione Grosor',thickSub:'Grosores disponibles para el tipo de vidrio seleccionado.',
+    wLabel:'Ancho (W)',hLabel:'Alto (H)',inchesUnit:'pulgadas',maxCutHdr:'Dimensiones Maximas de Corte',
+    flTitle:'Se Requiere Plancha Completa',flDesc:'Estas dimensiones exceden los tamanos de corte estandar. El equipo de ventas confirmara disponibilidad y precio para una plancha completa.',
+    thickTitle:'Seleccione Grosor',thickSub:'Grosores disponibles para el tipo de cristal seleccionado.',
     colorTitle:'Seleccione Color / Acabado',colorSub:'Colores disponibles para el grosor elegido.',
-    addTitle:'Adiciones Opcionales',addSub:'Seleccione servicios de acabado. Todos son opcionales — toque para activar.',
+    addTitle:'Adiciones Opcionales',addSub:'Seleccione servicios de acabado. Todos son opcionales.',
     addBevName:'Biselado',addBevDesc:'Corte angulado del borde para un acabado decorativo y pulido.',
-    bevelAngle:'Ángulo',bevelSides:'Lados a biselar:',sideTop:'Arriba',sideBot:'Abajo',sideLft:'Izquierda',sideRgt:'Derecha',
-    bevelNote:'Las dimensiones finales dependen del grosor del vidrio. El equipo de ventas puede ajustar.',
-    addDFDesc:'Nano-recubrimiento que repele agua y manchas. Facilita significativamente la limpieza del vidrio.',
-    dfWarn:'El precio varía según el perímetro del vidrio. El costo final se calcula en el mostrador.',
-    dfWarranty:'Garantía de Por Vida',dfWarrantyDesc:' — la cobertura dura toda la vida del vidrio.',
+    bevelAngle:'Angulo',bevelSides:'Lados a biselar:',sideTop:'Arriba',sideBot:'Abajo',sideLft:'Izquierda',sideRgt:'Derecha',
+    bevelNote:'Las dimensiones finales dependen del grosor del cristal. El equipo de ventas puede ajustar.',
+    addDFDesc:'Nano-recubrimiento que repele agua y manchas. Facilita significativamente la limpieza del cristal.',
+    dfWarn:'El precio varia segun el perimetro del cristal. El costo final se calcula en el mostrador.',
+    dfWarranty:'Garantia de Por Vida',dfWarrantyDesc:' — la cobertura dura toda la vida del cristal.',
     addERName:'Redondeo de Bordes',addERDesc:'Bordes suavizados para seguridad y un acabado limpio y terminado.',
     erRadius:'Radio',addSBName:'Sandblasting',addSBDesc:'Acabado de privacidad esmerilado. Difunde la luz manteniendo la translucidez.',
-    sbNote:'El patrón y área de cobertura se confirman con el equipo de ventas en el mostrador.',
-    payTitle:'Método de Pago',paySub:'El pago se procesa en el mostrador de ventas. Seleccione su método preferido.',
-    payCash:'Efectivo',payCard:'Tarjeta de Crédito / Débito',payDigital:'Apple Pay / Google Pay / ATH Móvil',
-    payNoticeTitle:'Vaya al Mostrador de Ventas',payNoticeDesc:'Después de colocar su orden, lleve su ID de Orden al equipo de ventas para precio y pago.',
-    reviewTitle:'Revise Su Orden',reviewSub:'¿Todo se ve bien? Toque una sección para editar.',
-    revCustomer:'Cliente',revGlass:'Vidrio',revType:'Tipo',revDims:'Dimensiones',revAdditions:'Adiciones',revPayment:'Pago',revMethod:'Método',
-    flReviewNote:'Sus dimensiones exceden los tamaños de corte estándar. El equipo de ventas confirmará disponibilidad y precio.',
+    sbNote:'El patron y area de cobertura se confirman con el equipo de ventas en el mostrador.',
+    payTitle:'Metodo de Pago',paySub:'El pago se procesa en el mostrador de ventas. Seleccione su metodo preferido.',
+    payCash:'Efectivo',payCard:'Tarjeta de Credito / Debito',payDigital:'Apple Pay / Google Pay / ATH Movil',
+    payNoticeTitle:'Vaya al Mostrador de Ventas',payNoticeDesc:'Despues de colocar su orden, lleve su ID de Orden al equipo de ventas para precio y pago.',
+    reviewTitle:'Revise Su Orden',reviewSub:'Todo se ve bien? Toque una seccion para editar.',
+    revCustomer:'Cliente',revGlass:'Cristal',revType:'Tipo',revDims:'Dimensiones',revAdditions:'Adiciones',revPayment:'Pago',revMethod:'Metodo',
+    flReviewNote:'Sus dimensiones exceden los tamanos de corte estandar. El equipo de ventas confirmara disponibilidad y precio para una plancha completa.',
     confirmBtn:'Colocar Orden',cancel:'Cancelar',ok:'OK',continueBtn:'Continuar',
-    successTitle:'¡Orden Colocada!',successSub:'Su orden fue recibida. Lleve su ID de Orden al mostrador de ventas.',
-    orderIdLabel:'ID de Orden',qrScan:'Escanee este código QR o muéstreselo al equipo de ventas.',
-    copyID:'Copiar ID de Orden',mobileTipTitle:'Guarde su ID de Orden en su teléfono',
-    mobileTip1:'Toque "Copiar ID de Orden" arriba, luego péguelo en Notas o Mensajes.',
-    mobileTip2:'En iOS: mantenga presionado el código QR para guardarlo en Fotos.',
-    mobileTip3:'En Android: mantenga presionado el código QR y toque "Descargar imagen".',
-    successNextTitle:'Vaya al Mostrador de Ventas',successNextDesc:'Muestre su ID de Orden o código QR a un representante de ventas para el precio y pago.',
+    successTitle:'Orden Colocada!',successSub:'Su orden fue recibida. Lleve su ID de Orden al mostrador de ventas.',
+    orderIdLabel:'ID de Orden',qrScan:'Escanee este codigo QR o muestrelo al equipo de ventas.',
+    copyID:'Copiar ID de Orden',mobileTipTitle:'Guarde su ID de Orden en su telefono',
+    mobileTip1:'Toque "Copiar ID de Orden" arriba, luego peguelo en Notas o Mensajes.',
+    mobileTip2:'En iOS: mantenga presionado el codigo QR para guardarlo en Fotos.',
+    mobileTip3:'En Android: mantenga presionado el codigo QR y toque "Descargar imagen".',
+    successNextTitle:'Vaya al Mostrador de Ventas',successNextDesc:'Muestre su ID de Orden o codigo QR a un representante de ventas para el precio y pago.',
     newOrderBtn:'Colocar Otra Orden',
-    tFloat:'Float',tTempered:'Templado',tUltraClear:'Ultra-Claro',tUltraClearTempered:'Ultra-Claro Templado',tLaminated:'Laminado',
-    cClear:'Claro',cUltraClear:'Ultra-Claro',cGray:'Gris',cBronze:'Bronce',cBlueGreen:'Verde-Azul',cArcticBlue:'Azul Ártico',
-    cMirrorClear:'Espejo – Claro',cMirrorBack:'Espejo – Claro (con respaldo)',cMirrorBronze:'Espejo – Bronce',
-    cMirrorAntique:'Espejo – Antiguo',cCianiteClear:'Cianite – Claro',cCianiteBronze:'Cianite – Bronce',
-    cRain:'Vidrio Rain',cBarbWire:'Alambre de Púas',cAcidEtch:'Grabado al Ácido',
-    cWhiteLac:'Blanco (Lacado)',cBlackLac:'Negro (Lacado)',cOpticWhite:'Blanco Óptico (Lacado)',cLowE:'Low-E',
+    tFloat:'Regular',tTempered:'Templado',tUltraClear:'Ultra-Claro',tUltraClearTempered:'Ultra-Claro Templado',tLaminated:'Laminado',
+    cClear:'Claro',cUltraClear:'Ultra-Claro',cGray:'Gris',cBronze:'Bronce',cBlueGreen:'Verde-Azul',cArcticBlue:'Azul Artico',
+    cMirrorClear:'Espejo Claro',cMirrorBack:'Espejo Claro (con respaldo)',cMirrorBronze:'Espejo Bronce',
+    cMirrorAntique:'Espejo Antiguo',cCianiteClear:'Cianite Claro',cCianiteBronze:'Cianite Bronce',
+    cRain:'Cristal Rain',cBarbWire:'Cristal de Alambre',cAcidEtch:'Grabado al Acido',
+    cWhiteLac:'Blanco Lacado',cBlackLac:'Negro Lacado',cOpticWhite:'Blanco Optico Lacado',cLowE:'Low-E',
   }
 };
 
@@ -1078,7 +1080,8 @@ function buildThickGrid() {
     const cls = THICK_CLASS[th] || '';
     const mm  = THICK_MM[th]  || '';
     const sel = order.thickness === th ? ' sel' : '';
-    return `<div class="option-card${sel}" onclick="pickThick('${th}')">
+    const safeTh = th.replace(/"/g, '&quot;');
+    return `<div class="option-card${sel}" data-thick="${safeTh}" onclick="pickThick(this.dataset.thick)">
       <div class="th-visual ${cls}"><div class="th-bar"><span>${th}</span></div></div>
       <div class="card-info">
         <div class="card-name">${th}</div>
