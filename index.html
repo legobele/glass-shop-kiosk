@@ -467,11 +467,9 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
         <div class="add-hdr"><span class="add-icon">⭕</span><span class="add-name" data-i18n="addERName">Edge Rounding</span><div class="add-chkbox"></div></div>
         <p class="add-desc" data-i18n="addERDesc">Smooth rounded glass edges for safety and a clean, finished look.</p>
         <div class="add-detail" onclick="event.stopPropagation()">
-          <div class="sl-row">
-            <label for="er-radius" data-i18n="erRadius">Radius</label>
-            <input type="range" id="er-radius" min="1" max="25" value="6" step="1" oninput="updER()">
-            <span class="sl-val" id="er-radius-val">6mm</span>
-          </div>
+          <p style="font-size:.8rem;font-weight:600;color:var(--text-2);margin-bottom:8px" data-i18n="erRadius">Corner radius:</p>
+          <div id="er-frac-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px"></div>
+          <p style="font-size:.75rem;color:var(--text-3)" id="er-radius-val">—</p>
           <canvas class="diag-canvas" id="er-canvas" width="260" height="110"></canvas>
         </div>
       </div>
@@ -604,17 +602,25 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
   </div>
 </div>
 
-<!-- ═══ NUMPAD MODAL ═══ -->
+<!-- FRACTION PICKER MODAL -->
 <div class="modal-overlay" id="np-overlay">
-  <div class="numpad-modal">
+  <div class="numpad-modal" style="width:min(420px,97vw)">
     <p class="np-label" id="np-label">Width (inches)</p>
-    <div class="np-display" id="np-display">—</div>
-    <div class="np-grid">
+    <div class="np-display" id="np-display" style="font-size:1.5rem;text-align:center">—</div>
+
+    <!-- whole inches numpad -->
+    <p style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);margin-bottom:6px" data-i18n="npWhole">Whole inches</p>
+    <div class="np-grid" style="margin-bottom:6px">
       <button class="np-btn" onclick="npKey('7')">7</button><button class="np-btn" onclick="npKey('8')">8</button><button class="np-btn" onclick="npKey('9')">9</button>
       <button class="np-btn" onclick="npKey('4')">4</button><button class="np-btn" onclick="npKey('5')">5</button><button class="np-btn" onclick="npKey('6')">6</button>
       <button class="np-btn" onclick="npKey('1')">1</button><button class="np-btn" onclick="npKey('2')">2</button><button class="np-btn" onclick="npKey('3')">3</button>
-      <button class="np-btn" onclick="npKey('.')">.</button><button class="np-btn" onclick="npKey('0')">0</button><button class="np-btn np-btn" onclick="npKey('⌫')">⌫</button>
+      <button class="np-btn" onclick="npKey('0')">0</button><button class="np-btn" onclick="npKey('00')">00</button><button class="np-btn" onclick="npKey('⌫')" style="color:#e53e3e">⌫</button>
     </div>
+
+    <!-- fraction row -->
+    <p style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);margin-bottom:6px" data-i18n="npFrac">Fraction (inches)</p>
+    <div id="np-frac-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px"></div>
+
     <div class="np-actions">
       <button class="np-cancel" onclick="closeNP()" data-i18n="cancel">Cancel</button>
       <button class="np-ok" onclick="confirmNP()" data-i18n="ok">OK</button>
@@ -667,7 +673,7 @@ const T = {
     reviewTitle:'Review Your Order',reviewSub:'Everything look right? Tap a section to edit.',
     revCustomer:'Customer',revGlass:'Glass',revType:'Type',revDims:'Dimensions',revAdditions:'Additions',revPayment:'Payment',revMethod:'Method',
     flReviewNote:'Your dimensions exceed standard cut sizes. Sales team will confirm availability and pricing.',
-    confirmBtn:'Place Order',cancel:'Cancel',ok:'OK',continueBtn:'Continue',
+    cancel:'Cancel',ok:'OK',continueBtn:'Continue',npWhole:'Whole inches',npFrac:'Fraction (inches)',npNone:'None',
     successTitle:'Order Placed!',successSub:'Your order has been received. Take your Order ID to the sales counter.',
     orderIdLabel:'Order ID',qrScan:'Scan this QR code or show it to the sales team.',
     copyID:'Copy Order ID',mobileTipTitle:'Save your Order ID on your phone',
@@ -716,7 +722,7 @@ const T = {
     reviewTitle:'Revise Su Orden',reviewSub:'Todo se ve bien? Toque una seccion para editar.',
     revCustomer:'Cliente',revGlass:'Cristal',revType:'Tipo',revDims:'Dimensiones',revAdditions:'Adiciones',revPayment:'Pago',revMethod:'Metodo',
     flReviewNote:'Sus dimensiones exceden los tamanos de corte estandar. El equipo de ventas confirmara disponibilidad y precio para una plancha completa.',
-    confirmBtn:'Colocar Orden',cancel:'Cancelar',ok:'OK',continueBtn:'Continuar',
+    cancel:'Cancelar',ok:'OK',continueBtn:'Continuar',npWhole:'Pulgadas enteras',npFrac:'Fraccion (pulgadas)',npNone:'Ninguna',
     successTitle:'Orden Colocada!',successSub:'Su orden fue recibida. Lleve su ID de Orden al mostrador de ventas.',
     orderIdLabel:'ID de Orden',qrScan:'Escanee este codigo QR o muestrelo al equipo de ventas.',
     copyID:'Copiar ID de Orden',mobileTipTitle:'Guarde su ID de Orden en su telefono',
@@ -831,7 +837,7 @@ const order = {
   additions: {
     beveling:    { active:false, angle:15, sides:{e1:true,e2:true,e3:true,e4:true} },
     diamonfusion:{ active:false },
-    edgerounding:{ active:false, radius:6 },
+    edgerounding:{ active:false, radius:0 },
     sandblasting:{ active:false },
   },
   paymentMethod: null
@@ -1033,38 +1039,107 @@ function checkSizeValidity() {
 }
 
 // ════════════════════════════════════════════════════════
-// NUMPAD
+// FRACTION PICKER — used by both size input and ER radius
+// All 1/16" fractions. Stored as decimal internally.
 // ════════════════════════════════════════════════════════
-let npTarget = null, npVal = '';
+const FRACS = [
+  { label:'0',     val:0       },
+  { label:'1/16"', val:1/16   },
+  { label:'1/8"',  val:1/8    },
+  { label:'3/16"', val:3/16   },
+  { label:'1/4"',  val:1/4    },
+  { label:'5/16"', val:5/16   },
+  { label:'3/8"',  val:3/8    },
+  { label:'7/16"', val:7/16   },
+  { label:'1/2"',  val:1/2    },
+  { label:'9/16"', val:9/16   },
+  { label:'5/8"',  val:5/8    },
+  { label:'11/16"',val:11/16  },
+  { label:'3/4"',  val:3/4    },
+  { label:'13/16"',val:13/16  },
+  { label:'7/8"',  val:7/8    },
+  { label:'15/16"',val:15/16  },
+];
+
+// ER fractions only go up to 1/2" (reasonable corner rounding range)
+const ER_FRACS = FRACS.filter(f => f.val <= 0.5);
+
+// Display a measurement as whole + fraction string, e.g. 24.25 → '24 1/4"'
+function toFracStr(val) {
+  if (val == null) return '—';
+  const whole = Math.floor(val);
+  const frac = val - whole;
+  const fracLabel = FRACS.find(f => Math.abs(f.val - frac) < 0.001);
+  const fracStr = fracLabel && fracLabel.val > 0 ? ' ' + fracLabel.label : '"';
+  return whole + (fracLabel && fracLabel.val > 0 ? fracStr : '"');
+}
+
+function buildFracGrid(containerId, selectedVal, onPick) {
+  const grid = document.getElementById(containerId);
+  if (!grid) return;
+  const list = containerId === 'er-frac-grid' ? ER_FRACS : FRACS;
+  grid.innerHTML = list.map(f => {
+    const sel = Math.abs((selectedVal || 0) - f.val) < 0.001;
+    return `<button onclick="(${onPick.toString()})(${f.val})" style="
+      padding:8px 4px;font-size:.78rem;font-weight:${sel?700:500};
+      border:${sel?'2px solid var(--blue)':'1.5px solid var(--border)'};
+      border-radius:var(--r-sm);background:${sel?'var(--blue-light)':'white'};
+      color:${sel?'var(--blue)':'var(--text-2)'};cursor:pointer;
+      font-family:'DM Sans',sans-serif;transition:all .15s;
+    ">${f.label === '0' ? (containerId==='er-frac-grid'?'—':'0"') : f.label}</button>`;
+  }).join('');
+}
+
+// ════════════════════════════════════════════════════════
+// SIZE NUMPAD (whole inches + fraction grid)
+// ════════════════════════════════════════════════════════
+let npTarget = null, npWhole = '', npFrac = 0;
+
 function openNP(field) {
   npTarget = field;
-  npVal = '';
-  const overlay = document.getElementById('np-overlay');
-  const label = document.getElementById('np-label');
-  const disp = document.getElementById('np-display');
-  label.textContent = field === 'width' ? t('wLabel') + ' (' + t('inchesUnit') + ')' : t('hLabel') + ' (' + t('inchesUnit') + ')';
-  disp.textContent = '—';
-  overlay.classList.add('show');
+  npWhole = '';
+  npFrac = 0;
+  document.getElementById('np-label').textContent =
+    field === 'width' ? t('wLabel') + ' (' + t('inchesUnit') + ')' : t('hLabel') + ' (' + t('inchesUnit') + ')';
+  document.getElementById('np-display').textContent = '—';
+  buildFracGrid('np-frac-grid', 0, function(v){ npPickFrac(v); });
+  document.getElementById('np-overlay').classList.add('show');
 }
-function closeNP() { document.getElementById('np-overlay').classList.remove('show'); npTarget = null; npVal = ''; }
+function closeNP() {
+  document.getElementById('np-overlay').classList.remove('show');
+  npTarget = null; npWhole = ''; npFrac = 0;
+}
 function npKey(v) {
-  if (v === '⌫') { npVal = npVal.slice(0,-1); }
-  else if (v === '.' && npVal.includes('.')) { return; }
-  else if (npVal.length >= 6) { return; }
-  else { npVal += v; }
-  document.getElementById('np-display').textContent = npVal || '—';
+  if (v === '⌫') { npWhole = npWhole.slice(0, -1); }
+  else if (v === '00') { if (npWhole.length < 4) npWhole += '00'; }
+  else if (npWhole.length < 4) { npWhole += v; }
+  updateNPDisplay();
+}
+function npPickFrac(val) {
+  npFrac = val;
+  buildFracGrid('np-frac-grid', val, function(v){ npPickFrac(v); });
+  updateNPDisplay();
+}
+function updateNPDisplay() {
+  const w = parseInt(npWhole) || 0;
+  const total = w + npFrac;
+  const fracLabel = FRACS.find(f => Math.abs(f.val - npFrac) < 0.001);
+  const fracStr = fracLabel && fracLabel.val > 0 ? ' ' + fracLabel.label : '"';
+  document.getElementById('np-display').textContent =
+    total === 0 ? '—' : w + (fracLabel && fracLabel.val > 0 ? fracStr : '"');
 }
 function confirmNP() {
-  const num = parseFloat(npVal);
-  if (isNaN(num) || num <= 0) { closeNP(); return; }
+  const w = parseInt(npWhole) || 0;
+  const total = w + npFrac;
+  if (total <= 0) { closeNP(); return; }
   if (npTarget === 'width') {
-    order.width = num;
+    order.width = total;
     const d = document.getElementById('disp-w');
-    d.textContent = num + '"'; d.classList.add('has-val');
+    d.textContent = toFracStr(total); d.classList.add('has-val');
   } else {
-    order.height = num;
+    order.height = total;
     const d = document.getElementById('disp-h');
-    d.textContent = num + '"'; d.classList.add('has-val');
+    d.textContent = toFracStr(total); d.classList.add('has-val');
   }
   closeNP();
   checkSizeValidity();
@@ -1145,7 +1220,7 @@ function toggleAdd(which, e) {
   const card = document.getElementById('ac-' + {beveling:'bevel',diamonfusion:'df',edgerounding:'er',sandblasting:'sb'}[which]);
   card.classList.toggle('sel', st.active);
   if (which === 'beveling' && st.active) { setTimeout(()=>{ updBevel(); }, 50); }
-  if (which === 'edgerounding' && st.active) { setTimeout(()=>{ updER(); }, 50); }
+  if (which === 'edgerounding' && st.active) { setTimeout(()=>{ initERFracGrid(); }, 50); }
 }
 
 function updBevel() {
@@ -1161,8 +1236,8 @@ function updBevel() {
 
 // Cross-section (side view) of a glass edge with bevel.
 // Two horizontal lines = top and bottom face of glass.
-// Bevel = diagonal cut on the right edge at 'angle' degrees from the glass face.
-// Matches A+W Business Pro edge numbering (1=top,2=right,3=bottom,4=left).
+// Bevel = diagonal cut on the right edge at 'angle' degrees FROM the glass face (horizontal).
+// No "-1 off edge" line — removed per feedback.
 function drawBevelDiag(angle) {
   const canvas = document.getElementById('bevel-canvas');
   if (!canvas) return;
@@ -1170,69 +1245,76 @@ function drawBevelDiag(angle) {
   const W = canvas.width, H = canvas.height;
   ctx.clearRect(0, 0, W, H);
 
-  const lMargin = 46; // space for thickness bracket + label
-  const rMargin = 58; // space for right-side labels
-  const yTop = 18, yBot = H - 18;
-  const glassH = yBot - yTop;              // glass thickness in pixels
-  const xLeft = lMargin;                   // left edge of glass
-  const xBevelStart = W - rMargin - 34;   // where flat top face ends and bevel begins
+  const lMargin = 44;   // space for thickness bracket
+  const rMargin = 52;   // space for right labels
+  const yTop = 14, yBot = H - 14;
+  const glassH = yBot - yTop;
+
+  // How wide the bevel footprint is at this angle.
+  // angle is measured from the horizontal glass face.
+  // tan(angle) = opposite(glassH) / adjacent(bevelSpan)
+  // so bevelSpan = glassH / tan(angle)
   const angle_rad = angle * Math.PI / 180;
+  const maxBevel = W - lMargin - rMargin - 20; // don't let bevel fill the whole canvas
   const rawSpan = glassH / Math.tan(angle_rad);
-  const bevelSpan = Math.min(rawSpan, 34); // cap so it fits
-  const xRight = xBevelStart + bevelSpan;  // bottom-right of bevel
+  const bevelSpan = Math.min(rawSpan, maxBevel);
+
+  const xLeft = lMargin;
+  const xBevelEnd = W - rMargin;        // bottom-right corner of bevel
+  const xBevelStart = xBevelEnd - bevelSpan;  // where top face ends, bevel starts
 
   // Glass body fill
   ctx.fillStyle = 'rgba(180,220,245,0.32)';
   ctx.beginPath();
   ctx.moveTo(xLeft, yTop);
   ctx.lineTo(xBevelStart, yTop);
-  ctx.lineTo(xRight, yBot);
+  ctx.lineTo(xBevelEnd, yBot);
   ctx.lineTo(xLeft, yBot);
   ctx.closePath();
   ctx.fill();
 
-  // Top face (solid)
+  // Top face (solid, horizontal)
   ctx.strokeStyle = '#1a2744'; ctx.lineWidth = 2; ctx.setLineDash([]);
   ctx.beginPath(); ctx.moveTo(xLeft, yTop); ctx.lineTo(xBevelStart, yTop); ctx.stroke();
 
-  // Top face dashed extension ("-1 off edge" zone)
-  ctx.strokeStyle = '#9aa'; ctx.lineWidth = 1; ctx.setLineDash([4, 3]);
-  ctx.beginPath(); ctx.moveTo(xBevelStart, yTop); ctx.lineTo(xRight + 4, yTop); ctx.stroke();
-  ctx.setLineDash([]);
-
-  // Bottom face (full width including bevel footprint)
-  ctx.strokeStyle = '#1a2744'; ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.moveTo(xLeft, yBot); ctx.lineTo(xRight, yBot); ctx.stroke();
+  // Bottom face (full width)
+  ctx.beginPath(); ctx.moveTo(xLeft, yBot); ctx.lineTo(xBevelEnd, yBot); ctx.stroke();
 
   // Left edge (vertical)
   ctx.beginPath(); ctx.moveTo(xLeft, yTop); ctx.lineTo(xLeft, yBot); ctx.stroke();
 
   // Bevel diagonal
   ctx.strokeStyle = '#005BAA'; ctx.lineWidth = 2.5;
-  ctx.beginPath(); ctx.moveTo(xBevelStart, yTop); ctx.lineTo(xRight, yBot); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(xBevelStart, yTop); ctx.lineTo(xBevelEnd, yBot); ctx.stroke();
 
-  // Angle arc at bevel start point
-  const arcR = 16;
-  ctx.strokeStyle = '#005BAA'; ctx.lineWidth = 1;
+  // Angle arc — drawn at the TOP of the bevel (xBevelStart, yTop).
+  // The angle is between the horizontal top face (going LEFT from xBevelStart)
+  // and the bevel diagonal (going down-right).
+  // In canvas coords: the face goes in the -X direction (angle = Math.PI from bevel point)
+  // and the bevel goes at (PI - angle_rad) from positive-X because it slopes down-right.
+  // Arc from 0 (right/horizontal) sweeping DOWN by angle_rad:
+  const arcR = Math.min(18, bevelSpan * 0.55);
+  ctx.strokeStyle = '#005BAA'; ctx.lineWidth = 1.2;
   ctx.beginPath();
+  // start at 0 (pointing right along top face direction from bevel start point)
+  // end at angle_rad below horizontal (pointing toward bevel diagonal direction)
   ctx.arc(xBevelStart, yTop, arcR, 0, angle_rad, false);
   ctx.stroke();
 
-  // Angle text inside arc
+  // Angle label — placed just inside the arc, mid-sweep
   const midAng = angle_rad / 2;
   ctx.fillStyle = '#005BAA';
   ctx.font = 'bold 9px DM Sans,sans-serif';
   ctx.textAlign = 'left';
-  ctx.fillText(angle + '\u00b0', xBevelStart + arcR * 0.7 * Math.cos(midAng) + 2, yTop + arcR * Math.sin(midAng) + 10);
+  ctx.fillText(angle + '\u00b0', xBevelStart + (arcR + 3) * Math.cos(midAng), yTop + (arcR + 3) * Math.sin(midAng) + 4);
 
   // Thickness bracket on left
-  const bkX = xLeft - 7;
+  const bkX = xLeft - 6;
   ctx.strokeStyle = '#718096'; ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.moveTo(bkX + 4, yTop); ctx.lineTo(bkX, yTop);
   ctx.lineTo(bkX, yBot); ctx.lineTo(bkX + 4, yBot);
   ctx.stroke();
-  // Thickness value (rotated vertical)
   ctx.fillStyle = '#1a2744';
   ctx.font = 'bold 9px DM Sans,sans-serif';
   ctx.textAlign = 'center';
@@ -1243,26 +1325,33 @@ function drawBevelDiag(angle) {
   ctx.restore();
 
   // Right-side labels
-  const lblX = xRight + 6;
+  const lblX = xBevelEnd + 5;
   ctx.textAlign = 'left';
-  ctx.fillStyle = '#9aa'; ctx.font = '8px DM Sans,sans-serif';
-  ctx.fillText(t('diagOffEdge'), lblX, yTop + 4);
   ctx.fillStyle = '#005BAA'; ctx.font = 'bold 9px DM Sans,sans-serif';
-  ctx.fillText(t('diagBevel'), lblX, yTop + glassH * 0.44);
+  ctx.fillText(t('diagBevel'), lblX, yTop + glassH * 0.4);
   ctx.fillStyle = '#4a5568'; ctx.font = '9px DM Sans,sans-serif';
   ctx.fillText(t('diagEdge'), lblX, yBot + 9);
 }
 
-function updER() {
-  const r = parseInt(document.getElementById('er-radius').value);
-  document.getElementById('er-radius-val').textContent = r + 'mm';
-  order.additions.edgerounding.radius = r;
-  drawERDiag(r);
+function updER(val) {
+  order.additions.edgerounding.radius = val;
+  document.getElementById('er-radius-val').textContent = toFracStr(val);
+  buildFracGrid('er-frac-grid', val, function(v){ updER(v); });
+  drawERDiag(val);
+}
+
+// also call this on card open
+function initERFracGrid() {
+  const cur = order.additions.edgerounding.radius || 0;
+  buildFracGrid('er-frac-grid', cur, function(v){ updER(v); });
+  document.getElementById('er-radius-val').textContent = cur > 0 ? toFracStr(cur) : '—';
+  if (cur > 0) drawERDiag(cur);
 }
 
 // Corner view from above. Shows a single glass corner — two lines meeting at a right
 // angle (top face horizontal, left face vertical) with an arc replacing the sharp corner.
 // The arc radius is proportional to the selected radius value.
+// r is in fractional inches. Mapped visually: 1/16" → small arc, 1/2" → large arc.
 function drawERDiag(r) {
   const canvas = document.getElementById('er-canvas');
   if (!canvas) return;
@@ -1270,59 +1359,50 @@ function drawERDiag(r) {
   const W = canvas.width, H = canvas.height;
   ctx.clearRect(0, 0, W, H);
 
-  // Corner sits at top-left; glass extends right and down
   const cx = 46, cy = 18;
-  const lineH = H - cy - 10;   // vertical line length (going down)
-  const lineW = W - cx - 10;   // horizontal line length (going right)
-  const cr = Math.min(r * 3.8, Math.min(lineW, lineH) * 0.72, 68); // visual radius
+  const lineH = H - cy - 10;
+  const lineW = W - cx - 10;
+  // map 0..0.5 inches → 4..68 pixels
+  const crRaw = Math.round(4 + (r / 0.5) * 64);
+  const cr = Math.min(crRaw, Math.min(lineW, lineH) * 0.78);
 
-  // Glass body fill (from arc to extents)
   ctx.fillStyle = 'rgba(180,220,245,0.32)';
   ctx.beginPath();
-  ctx.moveTo(cx + cr, cy);          // arc start on top edge
-  ctx.lineTo(cx + lineW, cy);       // go right
-  ctx.lineTo(cx + lineW, cy + lineH); // go down
-  ctx.lineTo(cx, cy + lineH);       // go left
-  ctx.lineTo(cx, cy + cr);          // go up to arc start on left edge
-  // Arc from left edge to top edge (clockwise = curves toward corner)
+  ctx.moveTo(cx + cr, cy);
+  ctx.lineTo(cx + lineW, cy);
+  ctx.lineTo(cx + lineW, cy + lineH);
+  ctx.lineTo(cx, cy + lineH);
+  ctx.lineTo(cx, cy + cr);
   ctx.arc(cx + cr, cy + cr, cr, Math.PI, Math.PI * 1.5, false);
   ctx.closePath();
   ctx.fill();
 
-  // Top face (horizontal line)
   ctx.strokeStyle = '#1a2744'; ctx.lineWidth = 2; ctx.setLineDash([]);
   ctx.beginPath(); ctx.moveTo(cx + cr, cy); ctx.lineTo(cx + lineW, cy); ctx.stroke();
-
-  // Left face (vertical line)
   ctx.beginPath(); ctx.moveTo(cx, cy + cr); ctx.lineTo(cx, cy + lineH); ctx.stroke();
 
-  // Dashed ghost lines showing where the sharp corner WOULD have been
   ctx.strokeStyle = '#9aa'; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
-  ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + cr, cy); ctx.stroke(); // top ghost
-  ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx, cy + cr); ctx.stroke(); // left ghost
+  ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + cr, cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx, cy + cr); ctx.stroke();
   ctx.setLineDash([]);
 
-  // Rounded corner arc
   ctx.strokeStyle = '#005BAA'; ctx.lineWidth = 2.5;
   ctx.beginPath();
   ctx.arc(cx + cr, cy + cr, cr, Math.PI, Math.PI * 1.5, false);
   ctx.stroke();
 
-  // Radius dimension line (from arc center to arc, at 45°)
   const arcCx = cx + cr, arcCy = cy + cr;
-  const cos45 = Math.cos(Math.PI * 1.25), sin45 = Math.sin(Math.PI * 1.25); // 225° = toward upper-left
   ctx.strokeStyle = '#005BAA'; ctx.lineWidth = 1; ctx.setLineDash([2, 2]);
   ctx.beginPath();
   ctx.moveTo(arcCx, arcCy);
-  ctx.lineTo(arcCx + cr * cos45, arcCy + cr * sin45);
+  ctx.lineTo(arcCx - cr * Math.SQRT1_2, arcCy - cr * Math.SQRT1_2);
   ctx.stroke();
   ctx.setLineDash([]);
 
-  // Radius label
   ctx.fillStyle = '#005BAA';
   ctx.font = 'bold 10px DM Sans,sans-serif';
   ctx.textAlign = 'left';
-  ctx.fillText(t('diagRadius') + ' = ' + r + 'mm', arcCx + 4, arcCy + 14);
+  ctx.fillText('r = ' + toFracStr(r), arcCx - cr * 0.5 + 4, arcCy - cr * 0.5 - 4);
 }
 
 // ════════════════════════════════════════════════════════
@@ -1347,7 +1427,7 @@ function buildReview() {
   document.getElementById('rv-proj').textContent  = order.projectName  || ('(' + t('optional') + ')');
   const tkeys = { float:'tFloat', tempered:'tTempered', 'ultra-clear-float':'tUltraClear', 'ultra-clear-tempered':'tUltraClearTempered', laminated:'tLaminated' };
   document.getElementById('rv-type').textContent  = t(tkeys[order.glassType] || 'tFloat');
-  document.getElementById('rv-dims').textContent  = order.width + '" × ' + order.height + '"' + (order.isFullLite ? ' ⚠️' : '');
+  document.getElementById('rv-dims').textContent  = toFracStr(order.width) + ' x ' + toFracStr(order.height) + (order.isFullLite ? ' ⚠️' : '');
   document.getElementById('rv-thick').textContent = order.thickness || '—';
   const colorInfo = (GLASS_CATALOG[order.glassType] || {})[order.color];
   document.getElementById('rv-color').textContent = colorInfo ? t(colorInfo.key) : '—';
@@ -1381,7 +1461,7 @@ async function submitOrder() {
   const additionsList = Object.entries(order.additions).filter(([,v])=>v.active).map(([k,v])=>{
     let s = k;
     if (k==='beveling') s += ':angle=' + v.angle + ':edges=' + Object.entries(v.sides).filter(([,on])=>on).map(([n])=>n.replace('e','')).join(',');
-    if (k==='edgerounding') s += ':radius=' + v.radius + 'mm';
+    if (k==='edgerounding') s += ':radius=' + toFracStr(v.radius);
     return s;
   });
   const payload = {
