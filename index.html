@@ -91,6 +91,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .cards-grid-2{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;align-items:start}
 .add-grid-cols{column-count:2;column-gap:14px}
 .add-grid-cols .add-card{break-inside:avoid;margin-bottom:14px;display:block}
+#sl-add .slide-body{overflow:hidden;position:relative}
+#sl-add .slide-body::after{content:'';position:absolute;bottom:0;left:0;right:0;height:72px;background:linear-gradient(to bottom,transparent,var(--bg));pointer-events:none;z-index:2}
 .add-detail{display:block;max-height:0;overflow:hidden;opacity:0;margin-top:0;padding-top:0;border-top:none;transition:max-height .35s cubic-bezier(.4,0,.2,1),opacity .28s ease,margin-top .28s ease,padding-top .28s ease}
 .add-card.sel .add-detail{max-height:600px;opacity:1;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
 @media(max-width:540px){.add-grid-cols{column-count:1}}
@@ -880,6 +882,7 @@ function onSlideEnter(id) {
   if (id === 'sl-size') updateSizeLimitsCard();
   if (id === 'sl-thick') buildThickGrid();
   if (id === 'sl-color') buildColorGrid();
+  if (id === 'sl-add') syncAddCards();
   if (id === 'sl-review') buildReview();
 }
 
@@ -1216,6 +1219,14 @@ function pickColor(key) {
 // ════════════════════════════════════════════════════════
 // ADDITIONS
 // ════════════════════════════════════════════════════════
+function syncAddCards() {
+  const idMap = {beveling:'bevel',diamonfusion:'df',edgerounding:'er',sandblasting:'sb'};
+  Object.entries(idMap).forEach(([key, cardId]) => {
+    const card = document.getElementById('ac-' + cardId);
+    if (card) card.classList.toggle('sel', !!order.additions[key]?.active);
+  });
+}
+
 function toggleAdd(which, e) {
   if (e) { /* stopPropagation handled in detail click */ }
   const st = order.additions[which];
@@ -1533,6 +1544,8 @@ function resetOrder() {
   order.glassType = null; order.width = null; order.height = null; order.isFullLite = false;
   order.thickness = null; order.color = null; order.paymentMethod = null;
   Object.keys(order.additions).forEach(k => { order.additions[k].active = false; });
+  // sync DOM — strip .sel from all add-cards so CSS state matches data
+  document.querySelectorAll('.add-card').forEach(c => c.classList.remove('sel'));
   document.getElementById('inp-name').value = '';
   document.getElementById('inp-proj').value = '';
   document.getElementById('btn-cust').disabled = true;
