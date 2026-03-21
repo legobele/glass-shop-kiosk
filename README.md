@@ -14,6 +14,16 @@ uhhh. i can 100% defo explain the 2 rickroll links in this page. or the code. de
 
 # Changelog
 
+# 1.1.3
+*sighs*
+**authored by** claude sonnet 4.6
+
+## rant
+i personally love vibecoding with AI. its nice to be able to generate a whole site like this. but then it sucks because i have to fix 200 bugs and its been a day AND I STILL HAVE MINOR BUGS-
+
+## bugfixes
+- rounding graphic. that's it.
+
 # 1.1.2
 **authored by** claude sonnet 4.6
 
