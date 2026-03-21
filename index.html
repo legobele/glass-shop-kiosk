@@ -1722,17 +1722,11 @@ function drawERDiag(r) {
   roundedRect(cr);
   ctx.stroke();
 
-  // Highlight all four corners in blue
+  // Highlight single top-right corner in blue
   ctx.strokeStyle = '#005BAA'; ctx.lineWidth = 2.5;
-  const corners = [
-    [gRight - cr, gTop + cr, -Math.PI/2, 0],
-    [gRight - cr, gBot - cr, 0, Math.PI/2],
-    [gLeft + cr,  gBot - cr, Math.PI/2, Math.PI],
-    [gLeft + cr,  gTop + cr, Math.PI, 3*Math.PI/2],
-  ];
-  corners.forEach(([cx, cy, s, e]) => {
-    ctx.beginPath(); ctx.arc(cx, cy, cr, s, e); ctx.stroke();
-  });
+  ctx.beginPath();
+  ctx.arc(gRight - cr, gTop + cr, cr, -Math.PI/2, 0);
+  ctx.stroke();
 
   // Radius dimension line on top-right corner
   if (r > 0) {
