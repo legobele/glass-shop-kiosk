@@ -89,6 +89,11 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 /* OPTION CARDS */
 .cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px}
 .cards-grid-2{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;align-items:start}
+.add-grid-cols{column-count:2;column-gap:14px}
+.add-grid-cols .add-card{break-inside:avoid;margin-bottom:14px;display:block}
+.add-detail{display:block;max-height:0;overflow:hidden;opacity:0;margin-top:0;padding-top:0;border-top:none;transition:max-height .35s cubic-bezier(.4,0,.2,1),opacity .28s ease,margin-top .28s ease,padding-top .28s ease}
+.add-card.sel .add-detail{max-height:600px;opacity:1;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
+@media(max-width:540px){.add-grid-cols{column-count:1}}
 .option-card{background:white;border:2px solid var(--border);border-radius:var(--r-md);cursor:pointer;overflow:hidden;position:relative;transition:border-color .2s,box-shadow .2s,transform .2s}
 .option-card:hover{border-color:var(--blue-mid);box-shadow:var(--sh-md);transform:translateY(-2px)}
 .option-card.sel{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,91,170,.15),var(--sh-md)}
@@ -186,8 +191,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .add-card.sel .add-chkbox{background:var(--success);border-color:var(--success)}
 .add-card.sel .add-chkbox::after{content:'✓';color:white;font-size:.68rem;font-weight:700}
 .add-desc{font-size:.8rem;color:var(--text-3);line-height:1.5}
-.add-detail{display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
-.add-card.sel .add-detail{display:block}
 .sl-row{display:flex;align-items:center;gap:10px;margin:8px 0}
 .sl-row label{font-size:.8rem;font-weight:600;color:var(--text-2);min-width:90px}
 .sl-row input{flex:1;accent-color:var(--blue)}
@@ -428,7 +431,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
   <div class="slide-body">
     <h2 class="slide-title" data-i18n="addTitle">Optional Additions</h2>
     <p class="slide-subtitle" data-i18n="addSub">Select any finishing services. All are optional — tap to toggle.</p>
-    <div class="cards-grid-2" id="add-grid">
+    <div class="add-grid-cols" id="add-grid">
 
       <!-- BEVELING -->
       <div class="add-card" id="ac-bevel" onclick="toggleAdd('beveling',event)">
