@@ -14,6 +14,13 @@ uhhh. i can 100% defo explain the 2 rickroll links in this page. or the code. de
 
 # Changelog
 
+## 1.0.5
+**Authored by** claude sonnet 4.6
+
+### ui
+- additions now have an animation for when u select them
+- also transitions now work faster than HRT can
+
 ## v1.0.4
 **Authored by** Claude Sonnet 4.6 (Anthropic)
 
