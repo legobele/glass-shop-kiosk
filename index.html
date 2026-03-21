@@ -606,15 +606,21 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
         </div>
       </div>
 
-      <!-- EDGE ROUNDING -->
       <div class="add-card" id="ac-er" onclick="toggleAdd('edgerounding',event)">
         <div class="add-hdr"><span class="add-icon">⭕</span><span class="add-name" data-i18n="addERName">Edge Rounding</span><div class="add-chkbox"></div></div>
         <p class="add-desc" data-i18n="addERDesc">Smooth rounded glass edges for safety and a clean, finished look.</p>
         <div class="add-detail" onclick="event.stopPropagation()">
-          <p style="font-size:.8rem;font-weight:600;color:var(--text-2);margin-bottom:8px" data-i18n="erRadius">Corner radius:</p>
-          <div id="er-frac-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px"></div>
-          <p style="font-size:.75rem;color:var(--text-3)" id="er-radius-val">—</p>
-          <canvas class="diag-canvas" id="er-canvas" width="260" height="110"></canvas>
+          <div style="display:flex;gap:14px;align-items:stretch">
+            <div style="flex:1;min-width:0">
+              <p style="font-size:.8rem;font-weight:600;color:var(--text-2);margin-bottom:8px" data-i18n="erRadius">Corner radius:</p>
+              <div id="er-frac-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px"></div>
+              <p style="font-size:.72rem;color:var(--text-3);margin-top:6px" data-i18n="erRadiusNote">* may not show on graphic at very small values</p>
+            </div>
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;align-items:stretch">
+              <p style="font-size:.75rem;color:var(--text-3);margin-bottom:4px;text-align:center" id="er-radius-val">—</p>
+              <canvas class="diag-canvas" id="er-canvas" width="200" height="160" style="width:100%;flex:1"></canvas>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -837,7 +843,7 @@ const T = {
     dfWarn:'Price varies by glass perimeter. Final cost calculated at the counter.',
     dfWarranty:'Lifetime Treatment Warranty',dfWarrantyDesc:' — coverage lasts for the life of the glass.',
     addERName:'Edge Rounding',addERDesc:'Smooth rounded edges for safety and a clean finished look.',
-    erRadius:'Radius',addSBName:'Sandblasting',addSBDesc:'Frosted privacy finish. Diffuses light while maintaining translucency.',
+    erRadius:'Radius',erRadiusNote:'* may not show on graphic at very small values',addSBName:'Sandblasting',addSBDesc:'Frosted privacy finish. Diffuses light while maintaining translucency.',
     sbNote:'Pattern and coverage area confirmed with the sales team at the counter.',
     payTitle:'Payment Method',paySub:'Payment is processed at the sales counter. Select your preferred method.',
     payCash:'Cash',payCard:'Credit / Debit Card',payDigital:'Apple Pay / Google Pay / ATH Móvil',
@@ -913,7 +919,7 @@ const T = {
     dfWarn:'El precio varia segun el perimetro del cristal. El costo final se calcula en el mostrador.',
     dfWarranty:'Garantia de Por Vida',dfWarrantyDesc:' — la cobertura dura toda la vida del cristal.',
     addERName:'Redondeo de Bordes',addERDesc:'Bordes suavizados para seguridad y un acabado limpio y terminado.',
-    erRadius:'Radio',addSBName:'Sandblasting',addSBDesc:'Acabado de privacidad esmerilado. Difunde la luz manteniendo la translucidez.',
+    erRadius:'Radio',erRadiusNote:'* puede no mostrarse en el grafico para valores muy pequenos',addSBName:'Sandblasting',addSBDesc:'Acabado de privacidad esmerilado. Difunde la luz manteniendo la translucidez.',
     sbNote:'El patron y area de cobertura se confirman con el equipo de ventas en el mostrador.',
     payTitle:'Metodo de Pago',paySub:'El pago se procesa en el mostrador de ventas. Seleccione su metodo preferido.',
     payCash:'Efectivo',payCard:'Tarjeta de Credito / Debito',payDigital:'Apple Pay / Google Pay / ATH Movil',
@@ -1230,13 +1236,12 @@ function openKioskQR() {
 
   document.getElementById('kiosk-qr-overlay').classList.add('open');
   // auto-reset after 30s so the kiosk frees itself up
-  _kioskResetTimer = setTimeout(() => { closeKioskQR(); resetOrder(); }, 30000);
+  _kioskResetTimer = setTimeout(() => { window.location.reload(); }, 30000);
 }
 function closeKioskQR() {
   clearTimeout(_kioskResetTimer);
   _kioskResetTimer = null;
-  document.getElementById('kiosk-qr-overlay').classList.remove('open');
-  resetOrder();
+  window.location.reload();
 }
 
 // ════════════════════════════════════════════════════════
@@ -1568,10 +1573,9 @@ function updBevel() {
   drawBevelDiag(angle);
 }
 
-// Cross-section (side view) of a glass edge with bevel.
-// Two horizontal lines = top and bottom face of glass.
-// Bevel = diagonal cut on the right edge at 'angle' degrees FROM the glass face (horizontal).
-// No "-1 off edge" line — removed per feedback.
+// Cross-section side view. Glass is a fixed square. The bevel cuts only
+// the top-right corner. At 5° the cut is very shallow (long narrow slice),
+// at 45° it's a deep triangular cut. The angle label floats outside.
 function drawBevelDiag(angle) {
   const canvas = document.getElementById('bevel-canvas');
   if (!canvas) return;
@@ -1579,95 +1583,88 @@ function drawBevelDiag(angle) {
   const W = canvas.width, H = canvas.height;
   ctx.clearRect(0, 0, W, H);
 
-  const lMargin = 44;   // space for thickness bracket
-  const rMargin = 52;   // space for right labels
-  const yTop = 14, yBot = H - 14;
+  const lMargin = 38;
+  const rSpace  = 44;
+  const tMargin = 12;
+  const bMargin = 16;
 
-  // Proportional approach: fix the bevel span first, then derive glass height from angle.
-  // This means at 5° the glass is very thin (small opposite side), at 45° it's tall.
-  // We fix bevel span to ~55% of usable width and let glassH scale with tan(angle).
-  const usableW = W - lMargin - rMargin - 16;
-  const bevelSpan = usableW * 0.55;
+  const gLeft  = lMargin;
+  const gRight = W - rSpace;
+  const gTop   = tMargin;
+  const gBot   = H - bMargin;
+  const gW     = gRight - gLeft;
+  const gH     = gBot - gTop;
+
   const angle_rad = angle * Math.PI / 180;
-  // glassH = bevelSpan * tan(angle), clamped so it fits the canvas
-  const maxH = yBot - yTop;
-  const rawH = bevelSpan * Math.tan(angle_rad);
-  const glassH = Math.min(rawH, maxH);
-  // recompute yBot to match glassH (keep yTop fixed, shift bottom)
-  const yBotAdj = yTop + glassH;
+  // Fix the right-edge depth as a proportion of glass height — at 45° it's 40%,
+  // scaling linearly. This keeps the glass body clearly visible at all angles.
+  const depthFrac = Math.min(0.92, Math.tan(angle_rad) * 0.85);
+  const bevelDepth = gH * depthFrac;                // depth down the right face
+  const bevelSpan  = bevelDepth / Math.tan(angle_rad); // width along top face
 
-  const xLeft = lMargin;
-  const xBevelEnd = W - rMargin;
-  const xBevelStart = xBevelEnd - bevelSpan;
+  const bTopStart = gRight - Math.min(bevelSpan, gW * 0.88);
+  const bRightEnd = gTop + bevelDepth;
 
-  // Glass body fill
-  ctx.fillStyle = 'rgba(180,220,245,0.32)';
+  // Glass fill with beveled top-right corner
+  ctx.fillStyle = 'rgba(180,220,245,0.28)';
   ctx.beginPath();
-  ctx.moveTo(xLeft, yTop);
-  ctx.lineTo(xBevelStart, yTop);
-  ctx.lineTo(xBevelEnd, yBotAdj);
-  ctx.lineTo(xLeft, yBotAdj);
+  ctx.moveTo(gLeft,     gTop);
+  ctx.lineTo(bTopStart, gTop);
+  ctx.lineTo(gRight,    bRightEnd);
+  ctx.lineTo(gRight,    gBot);
+  ctx.lineTo(gLeft,     gBot);
   ctx.closePath();
   ctx.fill();
 
-  // Top face (solid, horizontal)
+  // Outline
   ctx.strokeStyle = '#1a2744'; ctx.lineWidth = 2; ctx.setLineDash([]);
-  ctx.beginPath(); ctx.moveTo(xLeft, yTop); ctx.lineTo(xBevelStart, yTop); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(gLeft, gTop); ctx.lineTo(bTopStart, gTop); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(gRight, bRightEnd); ctx.lineTo(gRight, gBot); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(gLeft, gBot); ctx.lineTo(gRight, gBot); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(gLeft, gTop); ctx.lineTo(gLeft, gBot); ctx.stroke();
 
-  // Bottom face (full width)
-  ctx.beginPath(); ctx.moveTo(xLeft, yBotAdj); ctx.lineTo(xBevelEnd, yBotAdj); ctx.stroke();
-
-  // Left edge (vertical)
-  ctx.beginPath(); ctx.moveTo(xLeft, yTop); ctx.lineTo(xLeft, yBotAdj); ctx.stroke();
-
-  // Bevel diagonal
+  // Bevel cut (blue)
   ctx.strokeStyle = '#005BAA'; ctx.lineWidth = 2.5;
-  ctx.beginPath(); ctx.moveTo(xBevelStart, yTop); ctx.lineTo(xBevelEnd, yBotAdj); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(bTopStart, gTop); ctx.lineTo(gRight, bRightEnd); ctx.stroke();
 
-  // Angle arc — drawn at the TOP of the bevel (xBevelStart, yTop).
-  // The angle is between the horizontal top face (going LEFT from xBevelStart)
-  // and the bevel diagonal (going down-right).
-  // In canvas coords: the face goes in the -X direction (angle = Math.PI from bevel point)
-  // and the bevel goes at (PI - angle_rad) from positive-X because it slopes down-right.
-  // Arc from 0 (right/horizontal) sweeping DOWN by angle_rad:
-  const arcR = Math.min(18, bevelSpan * 0.55);
+  // Angle arc at bottom of bevel (gRight, bRightEnd) between right-face and bevel diagonal
+  const diagAngle = Math.atan2(gTop - bRightEnd, bTopStart - gRight);
+  const arcR = Math.min(13, bevelDepth * 0.3);
   ctx.strokeStyle = '#005BAA'; ctx.lineWidth = 1.2;
   ctx.beginPath();
-  // start at 0 (pointing right along top face direction from bevel start point)
-  // end at angle_rad below horizontal (pointing toward bevel diagonal direction)
-  ctx.arc(xBevelStart, yTop, arcR, 0, angle_rad, false);
+  ctx.arc(gRight, bRightEnd, arcR, diagAngle, Math.PI / 2, false);
   ctx.stroke();
 
-  // Angle label — placed just inside the arc, mid-sweep
-  const midAng = angle_rad / 2;
+  // Angle label — to the right of glass, at bevel end point level
   ctx.fillStyle = '#005BAA';
   ctx.font = 'bold 9px DM Sans,sans-serif';
   ctx.textAlign = 'left';
-  ctx.fillText(angle + '\u00b0', xBevelStart + (arcR + 3) * Math.cos(midAng), yTop + (arcR + 3) * Math.sin(midAng) + 4);
+  ctx.fillText(angle + '\u00b0', gRight + 5, bRightEnd - 1);
+
+  // "Bevel" label — to the right, midway up the cut
+  const bMidY = (gTop + bRightEnd) / 2;
+  ctx.fillStyle = '#005BAA'; ctx.font = 'bold 9px DM Sans,sans-serif';
+  ctx.fillText(t('diagBevel'), gRight + 5, bMidY + 3);
+
+  // "Edge" label below bottom-right
+  ctx.fillStyle = '#4a5568'; ctx.font = '9px DM Sans,sans-serif';
+  ctx.fillText(t('diagEdge'), gRight + 5, gBot + 12);
 
   // Thickness bracket on left
-  const bkX = xLeft - 6;
+  const bkX = gLeft - 7;
   ctx.strokeStyle = '#718096'; ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(bkX + 4, yTop); ctx.lineTo(bkX, yTop);
-  ctx.lineTo(bkX, yBotAdj); ctx.lineTo(bkX + 4, yBotAdj);
+  ctx.moveTo(bkX + 4, gTop); ctx.lineTo(bkX, gTop);
+  ctx.lineTo(bkX, gBot); ctx.lineTo(bkX + 4, gBot);
   ctx.stroke();
   ctx.fillStyle = '#1a2744';
   ctx.font = 'bold 9px DM Sans,sans-serif';
   ctx.textAlign = 'center';
   ctx.save();
-  ctx.translate(bkX - 9, yTop + glassH / 2);
+  ctx.translate(bkX - 8, gTop + gH / 2);
   ctx.rotate(-Math.PI / 2);
   ctx.fillText(order.thickness || '', 0, 0);
   ctx.restore();
-
-  // Right-side labels
-  const lblX = xBevelEnd + 5;
-  ctx.textAlign = 'left';
-  ctx.fillStyle = '#005BAA'; ctx.font = 'bold 9px DM Sans,sans-serif';
-  ctx.fillText(t('diagBevel'), lblX, yTop + glassH * 0.4);
-  ctx.fillStyle = '#4a5568'; ctx.font = '9px DM Sans,sans-serif';
-  ctx.fillText(t('diagEdge'), lblX, yBotAdj + 9);
 }
 
 function updER(val) {
@@ -1685,10 +1682,8 @@ function initERFracGrid() {
   if (cur > 0) drawERDiag(cur);
 }
 
-// Corner view from above. Shows a single glass corner — two lines meeting at a right
-// angle (top face horizontal, left face vertical) with an arc replacing the sharp corner.
-// The arc radius is proportional to the selected radius value.
-// r is in fractional inches. Mapped visually: 1/16" → small arc, 1/2" → large arc.
+// Full pane top-down view showing rounded-rectangle glass with all four corners rounded.
+// Blue highlight on top-right corner with radius dimension line.
 function drawERDiag(r) {
   const canvas = document.getElementById('er-canvas');
   if (!canvas) return;
@@ -1696,51 +1691,67 @@ function drawERDiag(r) {
   const W = canvas.width, H = canvas.height;
   ctx.clearRect(0, 0, W, H);
 
-  const cx = 46, cy = 18;
-  const lineH = H - cy - 10;
-  const lineW = W - cx - 10;
-  // map 0..0.5 inches → 4..68 pixels
-  const crRaw = Math.round(4 + (r / 0.5) * 64);
-  const cr = Math.min(crRaw, Math.min(lineW, lineH) * 0.78);
+  const pad = 14;
+  const gLeft = pad, gTop = pad, gRight = W - pad, gBot = H - pad;
+  const gW = gRight - gLeft, gH = gBot - gTop;
 
-  ctx.fillStyle = 'rgba(180,220,245,0.32)';
-  ctx.beginPath();
-  ctx.moveTo(cx + cr, cy);
-  ctx.lineTo(cx + lineW, cy);
-  ctx.lineTo(cx + lineW, cy + lineH);
-  ctx.lineTo(cx, cy + lineH);
-  ctx.lineTo(cx, cy + cr);
-  ctx.arc(cx + cr, cy + cr, cr, Math.PI, Math.PI * 1.5, false);
-  ctx.closePath();
+  const maxCR = Math.min(gW, gH) * 0.44;
+  const cr = r <= 0 ? 2 : Math.max(4, Math.round(4 + (r / 0.5) * (maxCR - 4)));
+
+  function roundedRect(cx) {
+    ctx.beginPath();
+    ctx.moveTo(gLeft + cx, gTop);
+    ctx.lineTo(gRight - cx, gTop);
+    ctx.arc(gRight - cx, gTop + cx, cx, -Math.PI/2, 0);
+    ctx.lineTo(gRight, gBot - cx);
+    ctx.arc(gRight - cx, gBot - cx, cx, 0, Math.PI/2);
+    ctx.lineTo(gLeft + cx, gBot);
+    ctx.arc(gLeft + cx, gBot - cx, cx, Math.PI/2, Math.PI);
+    ctx.lineTo(gLeft, gTop + cx);
+    ctx.arc(gLeft + cx, gTop + cx, cx, Math.PI, -Math.PI/2);
+    ctx.closePath();
+  }
+
+  // Fill
+  ctx.fillStyle = 'rgba(180,220,245,0.28)';
+  roundedRect(cr);
   ctx.fill();
 
-  ctx.strokeStyle = '#1a2744'; ctx.lineWidth = 2; ctx.setLineDash([]);
-  ctx.beginPath(); ctx.moveTo(cx + cr, cy); ctx.lineTo(cx + lineW, cy); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(cx, cy + cr); ctx.lineTo(cx, cy + lineH); ctx.stroke();
+  // Full outline
+  ctx.strokeStyle = '#1a2744'; ctx.lineWidth = 1.8; ctx.setLineDash([]);
+  roundedRect(cr);
+  ctx.stroke();
 
-  ctx.strokeStyle = '#9aa'; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
-  ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + cr, cy); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx, cy + cr); ctx.stroke();
-  ctx.setLineDash([]);
-
+  // Highlight all four corners in blue
   ctx.strokeStyle = '#005BAA'; ctx.lineWidth = 2.5;
-  ctx.beginPath();
-  ctx.arc(cx + cr, cy + cr, cr, Math.PI, Math.PI * 1.5, false);
-  ctx.stroke();
+  const corners = [
+    [gRight - cr, gTop + cr, -Math.PI/2, 0],
+    [gRight - cr, gBot - cr, 0, Math.PI/2],
+    [gLeft + cr,  gBot - cr, Math.PI/2, Math.PI],
+    [gLeft + cr,  gTop + cr, Math.PI, 3*Math.PI/2],
+  ];
+  corners.forEach(([cx, cy, s, e]) => {
+    ctx.beginPath(); ctx.arc(cx, cy, cr, s, e); ctx.stroke();
+  });
 
-  const arcCx = cx + cr, arcCy = cy + cr;
-  ctx.strokeStyle = '#005BAA'; ctx.lineWidth = 1; ctx.setLineDash([2, 2]);
-  ctx.beginPath();
-  ctx.moveTo(arcCx, arcCy);
-  ctx.lineTo(arcCx - cr * Math.SQRT1_2, arcCy - cr * Math.SQRT1_2);
-  ctx.stroke();
-  ctx.setLineDash([]);
-
-  ctx.fillStyle = '#005BAA';
-  ctx.font = 'bold 10px DM Sans,sans-serif';
-  ctx.textAlign = 'left';
-  ctx.fillText('r = ' + toFracStr(r), arcCx - cr * 0.5 + 4, arcCy - cr * 0.5 - 4);
+  // Radius dimension line on top-right corner
+  if (r > 0) {
+    const cx = gRight - cr, cy = gTop + cr;
+    const midAng = -Math.PI / 4;
+    ctx.strokeStyle = '#005BAA'; ctx.lineWidth = 1; ctx.setLineDash([2, 2]);
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + cr * Math.cos(midAng), cy + cr * Math.sin(midAng));
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#005BAA';
+    ctx.font = 'bold 8px DM Sans,sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('r = ' + toFracStr(r), cx - 2, cy - 3);
+  }
 }
+
+
 
 // ════════════════════════════════════════════════════════
 // PAYMENT
