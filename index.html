@@ -265,6 +265,69 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 @keyframes spin{to{transform:rotate(360deg)}}
 
 @media(max-width:480px){.slide-body{padding:16px}.cards-grid{grid-template-columns:repeat(2,1fr)}}
+
+/* CONTACT TABS */
+.contact-block{margin-top:18px;border:1.5px solid var(--border);border-radius:var(--r-md);overflow:hidden;background:white}
+.ctab-bar{display:flex;border-bottom:1.5px solid var(--border)}
+.ctab{flex:1;padding:10px 6px;font-size:.8rem;font-weight:600;color:var(--text-3);background:none;border:none;cursor:pointer;transition:color .2s,background .2s;text-align:center}
+.ctab.active{color:var(--blue);background:var(--blue-xlight)}
+.ctab-panel{display:none;padding:14px}
+.ctab-panel.active{display:block}
+.contact-row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+.contact-row .form-field{flex:1;min-width:140px;margin-bottom:0}
+.ctype-select{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:.9rem;font-family:inherit;color:var(--text);background:white;cursor:pointer;outline:none;transition:border-color .2s}
+.ctype-select:focus{border-color:var(--blue)}
+.ext-field{display:none;animation:fadeIn .2s}
+.ext-field.show{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+
+/* DEVICE CHOICE SLIDE */
+.device-choice-grid{display:flex;flex-direction:column;gap:16px;max-width:520px;margin:0 auto}
+.device-card{background:white;border:2px solid var(--border);border-radius:var(--r-lg);padding:22px 24px;cursor:pointer;display:flex;align-items:center;gap:18px;transition:border-color .2s,box-shadow .2s,transform .15s}
+.device-card:hover{border-color:var(--blue);box-shadow:var(--sh-md);transform:translateY(-2px)}
+.device-card-icon{font-size:2.2rem;flex-shrink:0}
+.device-card-text h3{font-size:1rem;font-weight:700;color:var(--text);margin-bottom:4px}
+.device-card-text p{font-size:.82rem;color:var(--text-3);line-height:1.45}
+.device-card.recommended{border-color:var(--blue);background:var(--blue-xlight)}
+.device-card.recommended .device-card-text h3{color:var(--blue)}
+.rec-badge{font-size:.68rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:white;background:var(--blue);border-radius:20px;padding:2px 8px;margin-left:8px}
+
+/* KIOSK QR MODAL */
+.kiosk-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .28s}
+.kiosk-modal-overlay.open{opacity:1;pointer-events:all}
+.kiosk-modal{background:white;border-radius:var(--r-lg);padding:clamp(5px,4vw,28px);width:min(440px,97vw);box-shadow:var(--sh-lg);text-align:center;max-height:97vh;overflow-y:auto}
+.kiosk-modal h3{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:var(--text);margin-bottom:6px}
+.kiosk-modal p{font-size:.83rem;color:var(--text-3);margin-bottom:16px;line-height:1.5}
+.kiosk-modal-qr{display:inline-block;padding:8px;background:white;border-radius:8px;margin-bottom:12px}
+.kiosk-modal-url{font-size:.72rem;color:var(--text-3);word-break:break-all;background:var(--bg);border-radius:6px;padding:8px 10px;margin-bottom:14px}
+.km-close{padding:10px 28px;border-radius:var(--r-sm);border:1.5px solid var(--border);background:none;font-size:.9rem;font-weight:600;cursor:pointer;color:var(--text-2);transition:background .2s}
+.km-close:hover{background:var(--bg)}
+
+/* SUCCESS HORIZONTAL LAYOUT */
+.success-inner{max-width:900px;margin:0 auto}
+.success-cards{display:flex;flex-direction:column;gap:16px}
+.success-card{background:white;border-radius:var(--r-lg);padding:clamp(5px,3vw,22px);box-shadow:var(--sh-sm);border:1.5px solid var(--border)}
+.success-card.primary{border-color:var(--blue);flex:1.4}
+@media(min-height:640px){
+  .success-cards{flex-direction:column}
+}
+@media(max-height:639px){
+  .success-inner{display:flex;flex-direction:column}
+  .success-cards{flex-direction:row;align-items:flex-start}
+  .success-card.primary{min-width:240px}
+}
+
+/* SAVE TABS */
+.save-tabs-bar{display:flex;border-bottom:1.5px solid var(--border);margin-bottom:12px}
+.save-tab{flex:1;padding:8px 4px;font-size:.78rem;font-weight:600;color:var(--text-3);background:none;border:none;cursor:pointer;transition:color .2s,border-bottom .2s;border-bottom:2.5px solid transparent;text-align:center}
+.save-tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+.save-tab-panel{display:none;font-size:.82rem;color:var(--text-2);line-height:1.55}
+.save-tab-panel.active{display:block}
+.save-step{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px}
+.save-step .mn{flex-shrink:0}
+.portal-link{display:block;word-break:break-all;font-size:.75rem;background:var(--bg);border-radius:6px;padding:7px 9px;color:var(--blue);margin:8px 0;font-family:monospace}
+.dl-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--r-sm);background:var(--blue);color:white;font-size:.82rem;font-weight:600;border:none;cursor:pointer;transition:background .2s;text-decoration:none}
+.dl-btn:hover{background:var(--blue-dark)}
 @media(min-width:640px){.cards-grid{grid-template-columns:repeat(3,1fr)}.cards-grid-2{grid-template-columns:repeat(2,1fr)}}
 @media(min-width:900px){.cards-grid{grid-template-columns:repeat(4,1fr)}}
 </style>
@@ -301,9 +364,83 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
       <label for="inp-proj"><span data-i18n="projLabel">Project Name</span> <span class="opt" data-i18n="optional">(optional)</span></label>
       <input class="form-input" id="inp-proj" type="text" data-i18n-ph="projPh" placeholder="e.g. Bathroom window, kitchen table" autocomplete="off">
     </div>
+    <!-- CONTACT INFO TABS -->
+    <div class="contact-block" id="contact-block">
+      <div class="ctab-bar">
+        <button class="ctab active" onclick="switchCtab('phone')" id="ctab-phone" data-i18n="ctabPhone">📞 Phone</button>
+        <button class="ctab" onclick="switchCtab('email')" id="ctab-email" data-i18n="ctabEmail">✉️ Email</button>
+        <button class="ctab" onclick="switchCtab('both')" id="ctab-both" data-i18n="ctabBoth">Both</button>
+        <button class="ctab" onclick="switchCtab('none')" id="ctab-none" data-i18n="ctabNone">—</button>
+      </div>
+      <div class="ctab-panel active" id="cpanel-phone">
+        <div class="contact-row">
+          <div class="form-field"><label for="inp-phone" data-i18n="phoneLabel">Phone Number</label><input class="form-input" id="inp-phone" type="tel" data-i18n-ph="phonePh" placeholder="(787) 000-0000" oninput="validateCust()" autocomplete="off"></div>
+          <div class="form-field" style="max-width:160px"><label for="ctype-phone" data-i18n="ctypeLabel">Type</label><select class="ctype-select" id="ctype-phone" onchange="onCtypeChange('phone')"><option value="personal" data-i18n-opt="ctypePersonal">Personal</option><option value="office" data-i18n-opt="ctypeOffice">Office</option><option value="company" data-i18n-opt="ctypeCompany">Company</option><option value="other" data-i18n-opt="ctypeOther">Other</option></select></div>
+        </div>
+        <div class="form-field ext-field" id="ext-phone"><label for="inp-ext-phone" data-i18n="extLabel">Extension <span class="opt" data-i18n="optional">(optional)</span></label><input class="form-input" id="inp-ext-phone" type="text" data-i18n-ph="extPh" placeholder="e.g. 102" autocomplete="off"></div>
+      </div>
+      <div class="ctab-panel" id="cpanel-email">
+        <div class="contact-row">
+          <div class="form-field"><label for="inp-email" data-i18n="emailLabel">Email Address</label><input class="form-input" id="inp-email" type="email" data-i18n-ph="emailPh" placeholder="you@example.com" oninput="validateCust()" autocomplete="off"></div>
+          <div class="form-field" style="max-width:160px"><label for="ctype-email" data-i18n="ctypeLabel">Type</label><select class="ctype-select" id="ctype-email"><option value="personal" data-i18n-opt="ctypePersonal">Personal</option><option value="office" data-i18n-opt="ctypeOffice">Office</option><option value="company" data-i18n-opt="ctypeCompany">Company</option><option value="other" data-i18n-opt="ctypeOther">Other</option></select></div>
+        </div>
+      </div>
+      <div class="ctab-panel" id="cpanel-both">
+        <div class="form-field"><label for="inp-phone-b" data-i18n="phoneLabel">Phone Number</label><input class="form-input" id="inp-phone-b" type="tel" data-i18n-ph="phonePh" placeholder="(787) 000-0000" oninput="validateCust()" autocomplete="off"></div>
+        <div class="form-field"><label for="inp-email-b" data-i18n="emailLabel">Email Address</label><input class="form-input" id="inp-email-b" type="email" data-i18n-ph="emailPh" placeholder="you@example.com" oninput="validateCust()" autocomplete="off"></div>
+        <div class="contact-row">
+          <div class="form-field" style="max-width:160px"><label for="ctype-both" data-i18n="ctypeLabel">Type</label><select class="ctype-select" id="ctype-both" onchange="onCtypeChange('both')"><option value="personal" data-i18n-opt="ctypePersonal">Personal</option><option value="office" data-i18n-opt="ctypeOffice">Office</option><option value="company" data-i18n-opt="ctypeCompany">Company</option><option value="other" data-i18n-opt="ctypeOther">Other</option></select></div>
+          <div class="form-field ext-field" id="ext-both"><label for="inp-ext-both" data-i18n="extLabel">Extension <span class="opt">(opt)</span></label><input class="form-input" id="inp-ext-both" type="text" data-i18n-ph="extPh" placeholder="e.g. 102" autocomplete="off"></div>
+        </div>
+      </div>
+      <div class="ctab-panel" id="cpanel-none">
+        <p style="font-size:.83rem;color:var(--text-3);padding:4px 0" data-i18n="ctabNoneDesc">No contact info — you'll be identified by name at the counter.</p>
+      </div>
+    </div>
   </div>
   <div class="slide-footer">
-    <button class="btn-primary" id="btn-cust" onclick="nav('sl-type')" disabled data-i18n="continueBtn">Continue</button>
+    <button class="btn-primary" id="btn-cust" onclick="afterCustomer()" disabled data-i18n="continueBtn">Continue</button>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 1b: DEVICE CHOICE (kiosk-only) ═══ -->
+<div class="slide" id="sl-device">
+  <div class="chrome-header">
+    <button class="back-btn" onclick="goBack()">←</button>
+    <div class="brand-block"><span class="brand-name">Quality Glass Industries</span><span class="brand-sub" data-i18n="tagline">Order Kiosk</span></div>
+    <div class="header-dots" id="hd-device"></div>
+    <button class="lang-badge" onclick="toggleLang()" id="lb-device">EN</button>
+  </div>
+  <div class="slide-body">
+    <h2 class="slide-title" data-i18n="deviceTitle">How would you like to continue?</h2>
+    <p class="slide-subtitle" data-i18n="deviceSub">You can complete this order right here at the kiosk, or scan to continue on your own device.</p>
+    <div class="device-choice-grid">
+      <div class="device-card recommended" onclick="nav('sl-type')">
+        <div class="device-card-icon">🖥️</div>
+        <div class="device-card-text">
+          <h3 data-i18n="deviceKioskTitle">Continue here <span class="rec-badge" data-i18n="recommended">Recommended</span></h3>
+          <p data-i18n="deviceKioskDesc">Finish your order on this kiosk. Fast and easy — takes about 2 minutes.</p>
+        </div>
+      </div>
+      <div class="device-card" onclick="openKioskQR()">
+        <div class="device-card-icon">📱</div>
+        <div class="device-card-text">
+          <h3 data-i18n="devicePhoneTitle">Continue on my device</h3>
+          <p data-i18n="devicePhoneDesc">Scan the QR code to open the order form on your phone or tablet and free up the kiosk.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- KIOSK HANDOFF MODAL -->
+<div class="kiosk-modal-overlay" id="kiosk-qr-overlay">
+  <div class="kiosk-modal">
+    <h3 data-i18n="kioskQRTitle">Scan to Continue on Your Device</h3>
+    <p data-i18n="kioskQRDesc">Open the camera app and point it at this code. Your name and project will be pre-filled.</p>
+    <div class="kiosk-modal-qr" id="kiosk-handoff-qr"></div>
+    <div class="kiosk-modal-url" id="kiosk-handoff-url"></div>
+    <button class="km-close" onclick="closeKioskQR()" data-i18n="kioskQRClose">Close</button>
   </div>
 </div>
 
@@ -576,29 +713,57 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
     <button class="back-btn" disabled>←</button>
     <div class="brand-block"><span class="brand-name">Quality Glass Industries</span><span class="brand-sub" data-i18n="tagline">Order System</span></div>
   </div>
-  <div class="slide-body" style="text-align:center">
-    <div style="max-width:500px;margin:0 auto">
-      <div class="success-check"></div>
-      <h2 class="slide-title" style="text-align:center;margin-bottom:6px" data-i18n="successTitle">Order Placed!</h2>
-      <p class="slide-subtitle" style="text-align:center" data-i18n="successSub">Your order has been received. Take this ID to the sales counter.</p>
-      <div class="order-id-box">
-        <div class="oid-label" data-i18n="orderIdLabel">Order ID</div>
-        <div class="oid-value" id="success-oid">—</div>
+  <div class="slide-body">
+    <div class="success-inner">
+      <div style="text-align:center;margin-bottom:16px">
+        <div class="success-check"></div>
+        <h2 class="slide-title" style="text-align:center;margin-bottom:4px" data-i18n="successTitle">Order Placed!</h2>
+        <p class="slide-subtitle" style="text-align:center;margin-bottom:0" data-i18n="successSub">Your order has been received. Take this ID to the sales counter.</p>
       </div>
-      <div class="qr-container">
-        <p style="font-size:.82rem;color:var(--text-3);margin-bottom:8px" data-i18n="qrScan">Scan this QR code or show it to the sales team</p>
-        <div id="qrcode"></div>
-        <button class="copy-btn" id="copy-oid-btn" onclick="copyOID()">📋 <span data-i18n="copyID">Copy Order ID</span></button>
-      </div>
-      <div class="mobile-tip">
-        <h4 data-i18n="mobileTipTitle">Save your Order ID on your phone</h4>
-        <div class="mobile-step"><span class="mn">1</span><span data-i18n="mobileTip1">Tap "Copy Order ID" above, then paste it into Notes or Messages.</span></div>
-        <div class="mobile-step"><span class="mn">2</span><span data-i18n="mobileTip2">On iOS: long-press the QR code image to save it to your Photos app.</span></div>
-        <div class="mobile-step"><span class="mn">3</span><span data-i18n="mobileTip3">On Android: long-press the QR code image, then tap "Download image".</span></div>
-      </div>
-      <div class="payment-notice" style="text-align:left">
-        <span class="notice-icon">👋</span>
-        <div><h3 data-i18n="successNextTitle">Go to the Sales Counter</h3><p data-i18n="successNextDesc">Show your Order ID or QR code to a sales representative for pricing and payment.</p></div>
+      <div class="success-cards">
+        <!-- ID + QR card (primary) -->
+        <div class="success-card primary">
+          <div class="order-id-box">
+            <div class="oid-label" data-i18n="orderIdLabel">Order ID</div>
+            <div class="oid-value" id="success-oid">—</div>
+          </div>
+          <div style="text-align:center;margin-top:12px">
+            <p style="font-size:.82rem;color:var(--text-3);margin-bottom:8px" data-i18n="qrScan">Scan this QR code or show it to the sales team</p>
+            <div id="qrcode"></div>
+            <button class="copy-btn" id="copy-oid-btn" onclick="copyOID()" style="margin-top:10px">📋 <span data-i18n="copyID">Copy Order ID</span></button>
+          </div>
+        </div>
+        <!-- Save options card -->
+        <div class="success-card">
+          <h4 style="font-size:.88rem;font-weight:700;color:var(--text);margin-bottom:10px" data-i18n="mobileTipTitle">Save your Order ID</h4>
+          <div class="save-tabs-bar">
+            <button class="save-tab active" onclick="switchSaveTab('link')" id="stab-link" data-i18n="saveTabLink">🔗 Copy Link</button>
+            <button class="save-tab" onclick="switchSaveTab('qr')" id="stab-qr" data-i18n="saveTabQR">📥 Download QR</button>
+            <button class="save-tab" onclick="switchSaveTab('bk')" id="stab-bk" data-i18n="saveTabBk">🔖 Bookmark</button>
+          </div>
+          <div class="save-tab-panel active" id="spanel-link">
+            <div class="save-step"><span class="mn">1</span><span data-i18n="saveLinkStep1">Copy the link below and send it to yourself in Messages or Notes.</span></div>
+            <a class="portal-link" id="portal-link-url" href="#" target="_blank">&mdash;</a>
+            <button class="dl-btn" onclick="copyPortalLink()" style="width:100%;justify-content:center" data-i18n="saveLinkBtn">📋 Copy Portal Link</button>
+          </div>
+          <div class="save-tab-panel" id="spanel-qr">
+            <div class="save-step"><span class="mn">1</span><span data-i18n="saveQRStep1">Tap the button below to download the QR code as an image.</span></div>
+            <div class="save-step"><span class="mn">2</span><span data-i18n="saveQRStep2">On iOS: tap &amp; hold the QR code above, then tap "Save to Photos."</span></div>
+            <button class="dl-btn" id="dl-qr-btn" onclick="downloadQR()" style="width:100%;justify-content:center;margin-top:6px" data-i18n="saveQRBtn">📥 Download QR Image</button>
+          </div>
+          <div class="save-tab-panel" id="spanel-bk">
+            <div class="save-step"><span class="mn">1</span><span data-i18n="saveBkStep1">Open the order link in your browser, then bookmark it.</span></div>
+            <div class="save-step"><span class="mn">2</span><span data-i18n="saveBkStep2">iOS: tap Share → Add to Bookmarks. Android: tap ⋮ → Bookmark.</span></div>
+            <a class="dl-btn" id="portal-open-btn" href="#" target="_blank" style="display:flex;width:100%;justify-content:center;margin-top:6px;box-sizing:border-box" data-i18n="saveBkBtn">🌐 Open Order Page</a>
+          </div>
+        </div>
+        <!-- Go to counter card -->
+        <div class="success-card">
+          <div class="payment-notice" style="margin:0;box-shadow:none;border:none;padding:0">
+            <span class="notice-icon">👋</span>
+            <div><h3 data-i18n="successNextTitle">Go to the Sales Counter</h3><p data-i18n="successNextDesc">Show your Order ID or QR code to a sales representative for pricing and payment.</p></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -687,6 +852,33 @@ const T = {
     mobileTip3:'On Android: long-press the QR code image, then tap "Download image".',
     successNextTitle:'Go to the Sales Counter',successNextDesc:'Show your Order ID or QR code to a sales representative for pricing and payment.',
     newOrderBtn:'Place Another Order',
+    // contact tabs
+    ctabPhone:'📞 Phone',ctabEmail:'✉️ Email',ctabBoth:'Both',ctabNone:'—',
+    ctabNoneDesc:'No contact info — you\'ll be identified by name at the counter.',
+    phoneLabel:'Phone Number',emailLabel:'Email Address',extLabel:'Extension',
+    phonePh:'(787) 000-0000',emailPh:'you@example.com',extPh:'e.g. 102',
+    ctypeLabel:'Type',ctypePersonal:'Personal',ctypeOffice:'Office',ctypeCompany:'Company',ctypeOther:'Other',
+    // device choice
+    deviceTitle:'How would you like to continue?',
+    deviceSub:'Complete your order here at the kiosk, or scan to continue on your own device.',
+    deviceKioskTitle:'Continue here',recommended:'Recommended',
+    deviceKioskDesc:'Finish your order on this kiosk. Fast and easy — takes about 2 minutes.',
+    devicePhoneTitle:'Continue on my device',
+    devicePhoneDesc:'Scan the QR code to open the order form on your phone and free up the kiosk.',
+    // kiosk QR modal
+    kioskQRTitle:'Scan to Continue on Your Device',
+    kioskQRDesc:'Open your camera and point it at this code. Your name and project will be pre-filled.',
+    kioskQRClose:'Got it — close',
+    // save tabs
+    saveTabLink:'🔗 Copy Link',saveTabQR:'📥 Download QR',saveTabBk:'🔖 Bookmark',
+    saveLinkStep1:'Copy the link below and send it to yourself in Messages or Notes.',
+    saveLinkBtn:'📋 Copy Portal Link',
+    saveQRStep1:'Tap the button below to download the QR code image.',
+    saveQRStep2:'On iOS: tap & hold the QR code, then tap "Save to Photos."',
+    saveQRBtn:'📥 Download QR Image',
+    saveBkStep1:'Open the order link in your browser, then bookmark it.',
+    saveBkStep2:'iOS: tap Share → Add to Bookmarks.  Android: tap ⋮ → Bookmark.',
+    saveBkBtn:'🌐 Open Order Page',
     // glass type display names
     tFloat:'Float',tTempered:'Tempered',tUltraClear:'Ultra-Clear',tUltraClearTempered:'Ultra-Clear Tempered',tLaminated:'Laminated',
     // color names
@@ -736,6 +928,29 @@ const T = {
     mobileTip3:'En Android: mantenga presionado el codigo QR y toque "Descargar imagen".',
     successNextTitle:'Vaya al Mostrador de Ventas',successNextDesc:'Muestre su ID de Orden o codigo QR a un representante de ventas para el precio y pago.',
     newOrderBtn:'Colocar Otra Orden',
+    ctabPhone:'📞 Telefono',ctabEmail:'✉️ Correo',ctabBoth:'Ambos',ctabNone:'—',
+    ctabNoneDesc:'Sin informacion de contacto — sera identificado por nombre en el mostrador.',
+    phoneLabel:'Numero de Telefono',emailLabel:'Correo Electronico',extLabel:'Extension',
+    phonePh:'(787) 000-0000',emailPh:'usted@ejemplo.com',extPh:'Ej. 102',
+    ctypeLabel:'Tipo',ctypePersonal:'Personal',ctypeOffice:'Oficina',ctypeCompany:'Empresa',ctypeOther:'Otro',
+    deviceTitle:'\xbfComo desea continuar?',
+    deviceSub:'Complete su orden aqui en el quiosco, o escanee para continuar en su propio dispositivo.',
+    deviceKioskTitle:'Continuar aqui',recommended:'Recomendado',
+    deviceKioskDesc:'Termine su orden en este quiosco. Rapido y facil — toma unos 2 minutos.',
+    devicePhoneTitle:'Continuar en mi dispositivo',
+    devicePhoneDesc:'Escanee el codigo QR para abrir el formulario en su telefono y liberar el quiosco.',
+    kioskQRTitle:'Escanee para Continuar en Su Dispositivo',
+    kioskQRDesc:'Abra la camara y apuntela a este codigo. Su nombre y proyecto seran pre-llenados.',
+    kioskQRClose:'Entendido — cerrar',
+    saveTabLink:'🔗 Copiar Enlace',saveTabQR:'📥 Descargar QR',saveTabBk:'🔖 Marcar',
+    saveLinkStep1:'Copie el enlace de abajo y envielo por Mensajes o Notas.',
+    saveLinkBtn:'📋 Copiar Enlace del Portal',
+    saveQRStep1:'Toque el boton de abajo para descargar la imagen del codigo QR.',
+    saveQRStep2:'En iOS: mantenga presionado el QR y toque "Guardar en Fotos."',
+    saveQRBtn:'📥 Descargar Imagen QR',
+    saveBkStep1:'Abra el enlace de su orden en el navegador y marcalo como favorito.',
+    saveBkStep2:'iOS: Compartir → Agregar a Favoritos.  Android: ⋮ → Favorito.',
+    saveBkBtn:'🌐 Abrir Pagina de Orden',
     tFloat:'Regular',tTempered:'Templado',tUltraClear:'Ultra-Claro',tUltraClearTempered:'Ultra-Claro Templado',tLaminated:'Laminado',
     cClear:'Claro',cUltraClear:'Ultra-Claro',cGray:'Gris',cBronze:'Bronce',cBlueGreen:'Verde-Azul',cArcticBlue:'Azul Artico',
     cMirrorClear:'Espejo Claro',cMirrorBack:'Espejo Claro (con respaldo)',cMirrorBronze:'Espejo Bronce',
@@ -828,12 +1043,21 @@ const THICK_MM = {
 // APP STATE
 // ════════════════════════════════════════════════════════
 let lang = 'en';
+
+// ════════════════════════════════════════════════════════
+// URL PARAMS
+// ════════════════════════════════════════════════════════
+const _urlP = new URLSearchParams(window.location.search);
+const IS_KIOSK = _urlP.get('IsKioskInShop') === 'true' || _urlP.get('IsKioskInShop') === '1';
+const URL_NAME    = _urlP.get('customerName') || '';
+const URL_PROJECT = _urlP.get('projectName')  || '';
 let history = [];   // slide id stack for back navigation
 const SLIDES = ['sl-lang','sl-customer','sl-type','sl-size','sl-thick','sl-color','sl-add','sl-pay','sl-review','sl-success'];
 const STEP_SLIDES = SLIDES.slice(1); // without lang
 
 const order = {
   customerName: '', projectName: '',
+  contact: { tab:'phone', phone:'', email:'', type:'personal', extension:'' },
   baseType: null,   // 'float' | 'laminated'
   isTempered: false, isUltraClear: false,
   glassType: null,  // resolved key into GLASS_CATALOG
@@ -918,6 +1142,10 @@ function setLang(l) {
   lang = l;
   applyI18n();
   nav('sl-customer');
+  // pre-fill from URL params after language is set
+  if (URL_NAME)    { document.getElementById('inp-name').value = URL_NAME;    }
+  if (URL_PROJECT) { document.getElementById('inp-proj').value = URL_PROJECT; }
+  if (URL_NAME || URL_PROJECT) validateCust();
 }
 function toggleLang() {
   lang = lang === 'en' ? 'es' : 'en';
@@ -943,11 +1171,91 @@ function applyI18n() {
 function validateCust() {
   const name = document.getElementById('inp-name').value.trim();
   order.customerName = name;
+  // contact tab validation — none tab always passes, others need at least name
   document.getElementById('btn-cust').disabled = name.length < 1;
 }
 
 // ════════════════════════════════════════════════════════
-// GLASS TYPE SLIDE
+// AFTER CUSTOMER — routes to device slide if kiosk
+// ════════════════════════════════════════════════════════
+function afterCustomer() {
+  order.customerName = document.getElementById('inp-name').value.trim();
+  order.projectName  = document.getElementById('inp-proj').value.trim();
+  nav(IS_KIOSK ? 'sl-device' : 'sl-type');
+}
+
+// ════════════════════════════════════════════════════════
+// CONTACT TABS
+// ════════════════════════════════════════════════════════
+function switchCtab(tab) {
+  order.contact.tab = tab;
+  ['phone','email','both','none'].forEach(id => {
+    document.getElementById('ctab-' + id).classList.toggle('active', id === tab);
+    document.getElementById('cpanel-' + id).classList.toggle('active', id === tab);
+  });
+}
+function onCtypeChange(which) {
+  const sel = document.getElementById('ctype-' + which);
+  const extEl = document.getElementById('ext-' + which);
+  if (!sel || !extEl) return;
+  const needsExt = ['office','company'].includes(sel.value);
+  extEl.classList.toggle('show', needsExt);
+}
+
+// ════════════════════════════════════════════════════════
+// KIOSK HANDOFF QR MODAL
+// ════════════════════════════════════════════════════════
+function openKioskQR() {
+  const name    = encodeURIComponent(document.getElementById('inp-name').value.trim());
+  const project = encodeURIComponent(document.getElementById('inp-proj').value.trim());
+  const base    = 'https://legobele.github.io/glass-shop-kiosk/';
+  const params  = new URLSearchParams({ IsKioskInShop:'false' });
+  if (name)    params.set('customerName', decodeURIComponent(name));
+  if (project) params.set('projectName',  decodeURIComponent(project));
+  const url = base + '?' + params.toString();
+
+  const urlEl = document.getElementById('kiosk-handoff-url');
+  urlEl.textContent = url;
+
+  const qrEl = document.getElementById('kiosk-handoff-qr');
+  qrEl.textContent = '';
+  new QRCode(qrEl, { text: url, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.M });
+
+  document.getElementById('kiosk-qr-overlay').classList.add('open');
+}
+function closeKioskQR() {
+  document.getElementById('kiosk-qr-overlay').classList.remove('open');
+}
+
+// ════════════════════════════════════════════════════════
+// SAVE TABS (success slide)
+// ════════════════════════════════════════════════════════
+function switchSaveTab(tab) {
+  ['link','qr','bk'].forEach(id => {
+    document.getElementById('stab-' + id).classList.toggle('active', id === tab);
+    document.getElementById('spanel-' + id).classList.toggle('active', id === tab);
+  });
+}
+function copyPortalLink() {
+  const url = document.getElementById('portal-link-url').href;
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = document.querySelector('[onclick="copyPortalLink()"]');
+    if (!btn) return;
+    const orig = btn.textContent;
+    btn.textContent = lang === 'en' ? '✓ Copied!' : '✓ ¡Copiado!';
+    setTimeout(() => { btn.textContent = orig; }, 2000);
+  }).catch(() => {});
+}
+function downloadQR() {
+  const canvas = document.querySelector('#qrcode canvas');
+  if (!canvas) return;
+  const a = document.createElement('a');
+  a.download = 'QGI-Order-' + (document.getElementById('success-oid').textContent || 'QR') + '.png';
+  a.href = canvas.toDataURL('image/png');
+  a.click();
+}
+
+
 // ════════════════════════════════════════════════════════
 function pickBaseType(type) {
   order.baseType = type;
@@ -1262,28 +1570,31 @@ function drawBevelDiag(angle) {
   const lMargin = 44;   // space for thickness bracket
   const rMargin = 52;   // space for right labels
   const yTop = 14, yBot = H - 14;
-  const glassH = yBot - yTop;
 
-  // How wide the bevel footprint is at this angle.
-  // angle is measured from the horizontal glass face.
-  // tan(angle) = opposite(glassH) / adjacent(bevelSpan)
-  // so bevelSpan = glassH / tan(angle)
+  // Proportional approach: fix the bevel span first, then derive glass height from angle.
+  // This means at 5° the glass is very thin (small opposite side), at 45° it's tall.
+  // We fix bevel span to ~55% of usable width and let glassH scale with tan(angle).
+  const usableW = W - lMargin - rMargin - 16;
+  const bevelSpan = usableW * 0.55;
   const angle_rad = angle * Math.PI / 180;
-  const maxBevel = W - lMargin - rMargin - 20; // don't let bevel fill the whole canvas
-  const rawSpan = glassH / Math.tan(angle_rad);
-  const bevelSpan = Math.min(rawSpan, maxBevel);
+  // glassH = bevelSpan * tan(angle), clamped so it fits the canvas
+  const maxH = yBot - yTop;
+  const rawH = bevelSpan * Math.tan(angle_rad);
+  const glassH = Math.min(rawH, maxH);
+  // recompute yBot to match glassH (keep yTop fixed, shift bottom)
+  const yBotAdj = yTop + glassH;
 
   const xLeft = lMargin;
-  const xBevelEnd = W - rMargin;        // bottom-right corner of bevel
-  const xBevelStart = xBevelEnd - bevelSpan;  // where top face ends, bevel starts
+  const xBevelEnd = W - rMargin;
+  const xBevelStart = xBevelEnd - bevelSpan;
 
   // Glass body fill
   ctx.fillStyle = 'rgba(180,220,245,0.32)';
   ctx.beginPath();
   ctx.moveTo(xLeft, yTop);
   ctx.lineTo(xBevelStart, yTop);
-  ctx.lineTo(xBevelEnd, yBot);
-  ctx.lineTo(xLeft, yBot);
+  ctx.lineTo(xBevelEnd, yBotAdj);
+  ctx.lineTo(xLeft, yBotAdj);
   ctx.closePath();
   ctx.fill();
 
@@ -1292,14 +1603,14 @@ function drawBevelDiag(angle) {
   ctx.beginPath(); ctx.moveTo(xLeft, yTop); ctx.lineTo(xBevelStart, yTop); ctx.stroke();
 
   // Bottom face (full width)
-  ctx.beginPath(); ctx.moveTo(xLeft, yBot); ctx.lineTo(xBevelEnd, yBot); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(xLeft, yBotAdj); ctx.lineTo(xBevelEnd, yBotAdj); ctx.stroke();
 
   // Left edge (vertical)
-  ctx.beginPath(); ctx.moveTo(xLeft, yTop); ctx.lineTo(xLeft, yBot); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(xLeft, yTop); ctx.lineTo(xLeft, yBotAdj); ctx.stroke();
 
   // Bevel diagonal
   ctx.strokeStyle = '#005BAA'; ctx.lineWidth = 2.5;
-  ctx.beginPath(); ctx.moveTo(xBevelStart, yTop); ctx.lineTo(xBevelEnd, yBot); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(xBevelStart, yTop); ctx.lineTo(xBevelEnd, yBotAdj); ctx.stroke();
 
   // Angle arc — drawn at the TOP of the bevel (xBevelStart, yTop).
   // The angle is between the horizontal top face (going LEFT from xBevelStart)
@@ -1327,7 +1638,7 @@ function drawBevelDiag(angle) {
   ctx.strokeStyle = '#718096'; ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.moveTo(bkX + 4, yTop); ctx.lineTo(bkX, yTop);
-  ctx.lineTo(bkX, yBot); ctx.lineTo(bkX + 4, yBot);
+  ctx.lineTo(bkX, yBotAdj); ctx.lineTo(bkX + 4, yBotAdj);
   ctx.stroke();
   ctx.fillStyle = '#1a2744';
   ctx.font = 'bold 9px DM Sans,sans-serif';
@@ -1344,7 +1655,7 @@ function drawBevelDiag(angle) {
   ctx.fillStyle = '#005BAA'; ctx.font = 'bold 9px DM Sans,sans-serif';
   ctx.fillText(t('diagBevel'), lblX, yTop + glassH * 0.4);
   ctx.fillStyle = '#4a5568'; ctx.font = '9px DM Sans,sans-serif';
-  ctx.fillText(t('diagEdge'), lblX, yBot + 9);
+  ctx.fillText(t('diagEdge'), lblX, yBotAdj + 9);
 }
 
 function updER(val) {
@@ -1447,16 +1758,23 @@ function buildReview() {
   document.getElementById('rv-color').textContent = colorInfo ? t(colorInfo.key) : '—';
   const payLabels = { cash: t('payCash'), 'credit-debit': t('payCard'), 'apple-google-ath': t('payDigital') };
   document.getElementById('rv-pay').textContent = payLabels[order.paymentMethod] || '—';
-  // additions
+  // additions — DOM-safe, no innerHTML with user data
   const activeAdds = Object.entries(order.additions).filter(([,v]) => v.active);
   const addsEl = document.getElementById('rv-adds');
+  addsEl.textContent = '';
   if (activeAdds.length) {
-    addsEl.innerHTML = activeAdds.map(([k]) => {
-      const n = { beveling: t('addBevName'), diamonfusion:'Diamon-Fusion®', edgerounding: t('addERName'), sandblasting: t('addSBName') }[k];
-      return `<div class="review-row"><span class="rv">✓ ${n}</span></div>`;
-    }).join('');
+    activeAdds.forEach(([k]) => {
+      const nameMap = { beveling: t('addBevName'), diamonfusion:'Diamon-Fusion®', edgerounding: t('addERName'), sandblasting: t('addSBName') };
+      const row = document.createElement('div'); row.className = 'review-row';
+      const sp  = document.createElement('span'); sp.className = 'rv';
+      sp.textContent = '✓ ' + (nameMap[k] || k);
+      row.appendChild(sp); addsEl.appendChild(row);
+    });
   } else {
-    addsEl.innerHTML = `<div class="review-row"><span class="rl" style="font-style:italic">${lang==='en'?'None selected':'Ninguna seleccionada'}</span></div>`;
+    const row = document.createElement('div'); row.className = 'review-row';
+    const sp  = document.createElement('span'); sp.className = 'rl'; sp.style.fontStyle = 'italic';
+    sp.textContent = lang === 'en' ? 'None selected' : 'Ninguna seleccionada';
+    row.appendChild(sp); addsEl.appendChild(row);
   }
   document.getElementById('review-fl-alert').style.display = order.isFullLite ? 'flex' : 'none';
 }
@@ -1467,7 +1785,10 @@ function buildReview() {
 async function submitOrder() {
   const btn = document.getElementById('btn-confirm');
   btn.disabled = true;
-  btn.innerHTML = `<span class="spinner"></span>${lang === 'en' ? 'Placing order…' : 'Colocando orden…'}`;
+  btn.textContent = '';
+  const spinner = document.createElement('span'); spinner.className = 'spinner';
+  btn.appendChild(spinner);
+  btn.appendChild(document.createTextNode(lang === 'en' ? ' Placing order…' : ' Colocando orden…'));
   order.customerName = document.getElementById('inp-name').value.trim();
   order.projectName  = document.getElementById('inp-proj').value.trim();
   const colorInfo = (GLASS_CATALOG[order.glassType] || {})[order.color] || {};
@@ -1515,11 +1836,19 @@ async function submitOrder() {
 
 function showSuccess(orderId) {
   document.getElementById('success-oid').textContent = orderId;
-  // generate QR code
+  const portalUrl = 'https://legobele.github.io/qgi-customer-portal/?order=' + encodeURIComponent(orderId);
+  // update portal link elements
+  const linkEl = document.getElementById('portal-link-url');
+  linkEl.textContent = portalUrl;
+  linkEl.href = portalUrl;
+  const openEl = document.getElementById('portal-open-btn');
+  if (openEl) openEl.href = portalUrl;
+  // generate QR pointing to portal
   const qrEl = document.getElementById('qrcode');
-  qrEl.innerHTML = '';
-  const qrContent = `QGI Order: ${orderId}\nCustomer: ${order.customerName}\nProject: ${order.projectName || 'N/A'}`;
-  new QRCode(qrEl, { text: qrContent, width: 180, height: 180, correctLevel: QRCode.CorrectLevel.M });
+  qrEl.textContent = '';
+  new QRCode(qrEl, { text: portalUrl, width: 180, height: 180, correctLevel: QRCode.CorrectLevel.M });
+  // reset save tabs to first tab
+  switchSaveTab('link');
   nav('sl-success');
 }
 
@@ -1540,30 +1869,42 @@ function copyOID() {
 // ════════════════════════════════════════════════════════
 function resetOrder() {
   order.customerName = ''; order.projectName = '';
+  order.contact = { tab:'phone', phone:'', email:'', type:'personal', extension:'' };
   order.baseType = null; order.isTempered = false; order.isUltraClear = false;
   order.glassType = null; order.width = null; order.height = null; order.isFullLite = false;
   order.thickness = null; order.color = null; order.paymentMethod = null;
   Object.keys(order.additions).forEach(k => { order.additions[k].active = false; });
-  // sync DOM — strip .sel from all add-cards so CSS state matches data
   document.querySelectorAll('.add-card').forEach(c => c.classList.remove('sel'));
+  // form fields
   document.getElementById('inp-name').value = '';
   document.getElementById('inp-proj').value = '';
+  // contact reset
+  ['inp-phone','inp-email','inp-phone-b','inp-email-b','inp-ext-phone','inp-ext-both'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  switchCtab('phone');
+  // buttons
   document.getElementById('btn-cust').disabled = true;
   document.getElementById('btn-type').disabled = true;
   document.getElementById('btn-size').disabled = true;
   document.getElementById('btn-thick').disabled = true;
   document.getElementById('btn-color').disabled = true;
   document.getElementById('btn-pay').disabled = true;
+  // size displays
   document.getElementById('disp-w').textContent = '—'; document.getElementById('disp-w').classList.remove('has-val');
   document.getElementById('disp-h').textContent = '—'; document.getElementById('disp-h').classList.remove('has-val');
+  // type UI
   document.getElementById('tc-float').classList.remove('sel'); document.getElementById('tc-lam').classList.remove('sel');
   document.getElementById('sw-temp').classList.remove('on','off'); document.getElementById('sw-temp').classList.add('off');
   document.getElementById('sw-uc').classList.remove('on','off'); document.getElementById('sw-uc').classList.add('off');
   document.getElementById('type-ind').classList.remove('show');
   document.getElementById('fl-banner').classList.remove('show');
-  document.getElementById('qrcode').innerHTML = '';
+  // QR canvases
+  document.getElementById('qrcode').textContent = '';
+  const khQR = document.getElementById('kiosk-handoff-qr');
+  if (khQR) khQR.textContent = '';
+  closeKioskQR();
   history.length = 0;
-  // slide back to lang
   document.querySelector('.slide.active').classList.remove('active');
   document.getElementById('sl-lang').classList.add('active');
   applyI18n();
