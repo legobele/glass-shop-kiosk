@@ -53,6 +53,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .slide-body::-webkit-scrollbar{width:5px}
 .slide-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 .slide-footer{flex-shrink:0;padding:14px 20px;background:white;border-top:1px solid var(--border)}
+#sl-add .slide-footer{padding:10px 20px}
 
 /* TYPOGRAPHY */
 .slide-title{font-family:'Syne',sans-serif;font-size:clamp(1.25rem,2.5vw,1.75rem);font-weight:800;color:var(--text);margin-bottom:4px}
@@ -92,7 +93,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .add-grid-cols{column-count:2;column-gap:14px}
 .add-grid-cols .add-card{break-inside:avoid;margin-bottom:14px;display:block}
 #sl-add .slide-body{overflow:hidden;position:relative}
-#sl-add .slide-body::after{content:'';position:absolute;bottom:0;left:0;right:0;height:72px;background:linear-gradient(to bottom,transparent,var(--bg));pointer-events:none;z-index:2}
+#sl-add .slide-body::after{content:'';position:absolute;bottom:0;left:0;right:0;height:40px;background:linear-gradient(to bottom,transparent,var(--bg));pointer-events:none;z-index:2}
+.add-card{padding:clamp(10px,2vw,16px)}
 .add-detail{display:block;max-height:0;overflow:hidden;opacity:0;margin-top:0;padding-top:0;border-top:none;transition:max-height .35s cubic-bezier(.4,0,.2,1),opacity .28s ease,margin-top .28s ease,padding-top .28s ease}
 .add-card.sel .add-detail{max-height:600px;opacity:1;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
 @media(max-width:540px){.add-grid-cols{column-count:1}}
@@ -1162,6 +1164,10 @@ function applyI18n() {
     const key = el.getAttribute('data-i18n-ph');
     el.placeholder = t(key);
   });
+  document.querySelectorAll('[data-i18n-opt]').forEach(el => {
+    const key = el.getAttribute('data-i18n-opt');
+    el.textContent = t(key);
+  });
   document.querySelectorAll('.lang-badge').forEach(b => b.textContent = lang.toUpperCase());
 }
 
@@ -1205,6 +1211,7 @@ function onCtypeChange(which) {
 // ════════════════════════════════════════════════════════
 // KIOSK HANDOFF QR MODAL
 // ════════════════════════════════════════════════════════
+let _kioskResetTimer = null;
 function openKioskQR() {
   const name    = encodeURIComponent(document.getElementById('inp-name').value.trim());
   const project = encodeURIComponent(document.getElementById('inp-proj').value.trim());
@@ -1222,9 +1229,14 @@ function openKioskQR() {
   new QRCode(qrEl, { text: url, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.M });
 
   document.getElementById('kiosk-qr-overlay').classList.add('open');
+  // auto-reset after 30s so the kiosk frees itself up
+  _kioskResetTimer = setTimeout(() => { closeKioskQR(); resetOrder(); }, 30000);
 }
 function closeKioskQR() {
+  clearTimeout(_kioskResetTimer);
+  _kioskResetTimer = null;
   document.getElementById('kiosk-qr-overlay').classList.remove('open');
+  resetOrder();
 }
 
 // ════════════════════════════════════════════════════════
