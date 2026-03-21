@@ -442,10 +442,10 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
           </div>
           <p style="font-size:.8rem;font-weight:600;color:var(--text-2);margin-bottom:4px" data-i18n="bevelSides">Sides to bevel:</p>
           <div class="sides-grid">
-            <label class="sc-label"><input type="checkbox" id="side-top" checked onchange="updBevel()"> <span data-i18n="sideTop">Top</span></label>
-            <label class="sc-label"><input type="checkbox" id="side-bot" checked onchange="updBevel()"> <span data-i18n="sideBot">Bottom</span></label>
-            <label class="sc-label"><input type="checkbox" id="side-lft" checked onchange="updBevel()"> <span data-i18n="sideLft">Left</span></label>
-            <label class="sc-label"><input type="checkbox" id="side-rgt" checked onchange="updBevel()"> <span data-i18n="sideRgt">Right</span></label>
+            <label class="sc-label" for="side-1"><input type="checkbox" id="side-1" checked onchange="updBevel()"> <span data-i18n="side1">Edge 1 (Top)</span></label>
+            <label class="sc-label" for="side-2"><input type="checkbox" id="side-2" checked onchange="updBevel()"> <span data-i18n="side2">Edge 2 (Right)</span></label>
+            <label class="sc-label" for="side-3"><input type="checkbox" id="side-3" checked onchange="updBevel()"> <span data-i18n="side3">Edge 3 (Bottom)</span></label>
+            <label class="sc-label" for="side-4"><input type="checkbox" id="side-4" checked onchange="updBevel()"> <span data-i18n="side4">Edge 4 (Left)</span></label>
           </div>
           <canvas class="diag-canvas" id="bevel-canvas" width="260" height="110"></canvas>
           <p class="info-neutral" data-i18n="bevelNote">Final bevel dimensions are subject to glass thickness. Sales team may adjust.</p>
@@ -651,7 +651,9 @@ const T = {
     colorTitle:'Select Color / Finish',colorSub:'Showing colors available in the chosen thickness.',
     addTitle:'Optional Additions',addSub:'Select any finishing services. All are optional — tap to toggle.',
     addBevName:'Beveling',addBevDesc:'Angled edge cut for a decorative polished finish.',
-    bevelAngle:'Angle',bevelSides:'Sides to bevel:',sideTop:'Top',sideBot:'Bottom',sideLft:'Left',sideRgt:'Right',
+    bevelAngle:'Angle',bevelSides:'Sides to bevel:',
+    side1:'Edge 1 (Top)',side2:'Edge 2 (Right)',side3:'Edge 3 (Bottom)',side4:'Edge 4 (Left)',
+    diagBevel:'Bevel',diagEdge:'Edge',diagOffEdge:'-1" off edge',diagThick:'Thickness',diagRadius:'r',
     bevelNote:'Final dimensions subject to glass thickness. Sales team may adjust.',
     addDFDesc:'Nano-coating that repels water and stains. Makes glass significantly easier to clean.',
     dfWarn:'Price varies by glass perimeter. Final cost calculated at the counter.',
@@ -698,7 +700,9 @@ const T = {
     colorTitle:'Seleccione Color / Acabado',colorSub:'Colores disponibles para el grosor elegido.',
     addTitle:'Adiciones Opcionales',addSub:'Seleccione servicios de acabado. Todos son opcionales.',
     addBevName:'Biselado',addBevDesc:'Corte angulado del borde para un acabado decorativo y pulido.',
-    bevelAngle:'Angulo',bevelSides:'Lados a biselar:',sideTop:'Arriba',sideBot:'Abajo',sideLft:'Izquierda',sideRgt:'Derecha',
+    bevelAngle:'Angulo',bevelSides:'Lados a biselar:',
+    side1:'Lado 1 (Arriba)',side2:'Lado 2 (Derecha)',side3:'Lado 3 (Abajo)',side4:'Lado 4 (Izquierda)',
+    diagBevel:'Bisel',diagEdge:'Borde',diagOffEdge:'-1" del borde',diagThick:'Grosor',diagRadius:'r',
     bevelNote:'Las dimensiones finales dependen del grosor del cristal. El equipo de ventas puede ajustar.',
     addDFDesc:'Nano-recubrimiento que repele agua y manchas. Facilita significativamente la limpieza del cristal.',
     dfWarn:'El precio varia segun el perimetro del cristal. El costo final se calcula en el mostrador.',
@@ -825,7 +829,7 @@ const order = {
   width: null, height: null, isFullLite: false,
   thickness: null, color: null,
   additions: {
-    beveling:    { active:false, angle:15, sides:{top:true,bot:true,lft:true,rgt:true} },
+    beveling:    { active:false, angle:15, sides:{e1:true,e2:true,e3:true,e4:true} },
     diamonfusion:{ active:false },
     edgerounding:{ active:false, radius:6 },
     sandblasting:{ active:false },
@@ -1146,55 +1150,107 @@ function toggleAdd(which, e) {
 
 function updBevel() {
   const angle = parseInt(document.getElementById('bevel-angle').value);
-  document.getElementById('bevel-angle-val').textContent = angle + '°';
+  document.getElementById('bevel-angle-val').textContent = angle + '\u00b0';
   order.additions.beveling.angle = angle;
-  order.additions.beveling.sides.top = document.getElementById('side-top').checked;
-  order.additions.beveling.sides.bot = document.getElementById('side-bot').checked;
-  order.additions.beveling.sides.lft = document.getElementById('side-lft').checked;
-  order.additions.beveling.sides.rgt = document.getElementById('side-rgt').checked;
+  order.additions.beveling.sides.e1 = document.getElementById('side-1').checked;
+  order.additions.beveling.sides.e2 = document.getElementById('side-2').checked;
+  order.additions.beveling.sides.e3 = document.getElementById('side-3').checked;
+  order.additions.beveling.sides.e4 = document.getElementById('side-4').checked;
   drawBevelDiag(angle);
 }
 
+// Cross-section (side view) of a glass edge with bevel.
+// Two horizontal lines = top and bottom face of glass.
+// Bevel = diagonal cut on the right edge at 'angle' degrees from the glass face.
+// Matches A+W Business Pro edge numbering (1=top,2=right,3=bottom,4=left).
 function drawBevelDiag(angle) {
   const canvas = document.getElementById('bevel-canvas');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
   const W = canvas.width, H = canvas.height;
-  ctx.clearRect(0,0,W,H);
-  const bx = 60, by = 15, bw = W - 120, bh = H - 30;
-  const bev = Math.min(bh * 0.3, 24);
-  const rad = angle * Math.PI / 180;
-  const bevX = bev / Math.tan(rad);
-  // glass body
-  ctx.fillStyle = 'rgba(180,220,245,0.5)';
-  ctx.strokeStyle = 'rgba(0,91,170,0.4)';
-  ctx.lineWidth = 1.5;
+  ctx.clearRect(0, 0, W, H);
+
+  const lMargin = 46; // space for thickness bracket + label
+  const rMargin = 58; // space for right-side labels
+  const yTop = 18, yBot = H - 18;
+  const glassH = yBot - yTop;              // glass thickness in pixels
+  const xLeft = lMargin;                   // left edge of glass
+  const xBevelStart = W - rMargin - 34;   // where flat top face ends and bevel begins
+  const angle_rad = angle * Math.PI / 180;
+  const rawSpan = glassH / Math.tan(angle_rad);
+  const bevelSpan = Math.min(rawSpan, 34); // cap so it fits
+  const xRight = xBevelStart + bevelSpan;  // bottom-right of bevel
+
+  // Glass body fill
+  ctx.fillStyle = 'rgba(180,220,245,0.32)';
   ctx.beginPath();
-  ctx.moveTo(bx + bevX, by);
-  ctx.lineTo(bx + bw - bevX, by);
-  ctx.lineTo(bx + bw, by + bev);
-  ctx.lineTo(bx + bw, by + bh - bev);
-  ctx.lineTo(bx + bw - bevX, by + bh);
-  ctx.lineTo(bx + bevX, by + bh);
-  ctx.lineTo(bx, by + bh - bev);
-  ctx.lineTo(bx, by + bev);
+  ctx.moveTo(xLeft, yTop);
+  ctx.lineTo(xBevelStart, yTop);
+  ctx.lineTo(xRight, yBot);
+  ctx.lineTo(xLeft, yBot);
   ctx.closePath();
-  ctx.fill(); ctx.stroke();
-  // angle label
-  ctx.fillStyle = 'rgba(0,91,170,0.7)';
-  ctx.font = 'bold 11px DM Sans, sans-serif';
-  ctx.fillText(angle + '°', bx + 4, by + bev + 14);
-  // sides
-  const sides = order.additions.beveling.sides;
-  ctx.strokeStyle = sides.top ? '#005BAA' : '#cbd5e0';
-  ctx.lineWidth = 2.5;
-  ctx.beginPath(); ctx.moveTo(bx + bevX, by); ctx.lineTo(bx + bw - bevX, by); ctx.stroke();
-  ctx.strokeStyle = sides.bot ? '#005BAA' : '#cbd5e0';
-  ctx.beginPath(); ctx.moveTo(bx + bevX, by + bh); ctx.lineTo(bx + bw - bevX, by + bh); ctx.stroke();
-  ctx.strokeStyle = sides.lft ? '#005BAA' : '#cbd5e0';
-  ctx.beginPath(); ctx.moveTo(bx, by + bev); ctx.lineTo(bx, by + bh - bev); ctx.stroke();
-  ctx.strokeStyle = sides.rgt ? '#005BAA' : '#cbd5e0';
-  ctx.beginPath(); ctx.moveTo(bx + bw, by + bev); ctx.lineTo(bx + bw, by + bh - bev); ctx.stroke();
+  ctx.fill();
+
+  // Top face (solid)
+  ctx.strokeStyle = '#1a2744'; ctx.lineWidth = 2; ctx.setLineDash([]);
+  ctx.beginPath(); ctx.moveTo(xLeft, yTop); ctx.lineTo(xBevelStart, yTop); ctx.stroke();
+
+  // Top face dashed extension ("-1 off edge" zone)
+  ctx.strokeStyle = '#9aa'; ctx.lineWidth = 1; ctx.setLineDash([4, 3]);
+  ctx.beginPath(); ctx.moveTo(xBevelStart, yTop); ctx.lineTo(xRight + 4, yTop); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Bottom face (full width including bevel footprint)
+  ctx.strokeStyle = '#1a2744'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(xLeft, yBot); ctx.lineTo(xRight, yBot); ctx.stroke();
+
+  // Left edge (vertical)
+  ctx.beginPath(); ctx.moveTo(xLeft, yTop); ctx.lineTo(xLeft, yBot); ctx.stroke();
+
+  // Bevel diagonal
+  ctx.strokeStyle = '#005BAA'; ctx.lineWidth = 2.5;
+  ctx.beginPath(); ctx.moveTo(xBevelStart, yTop); ctx.lineTo(xRight, yBot); ctx.stroke();
+
+  // Angle arc at bevel start point
+  const arcR = 16;
+  ctx.strokeStyle = '#005BAA'; ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.arc(xBevelStart, yTop, arcR, 0, angle_rad, false);
+  ctx.stroke();
+
+  // Angle text inside arc
+  const midAng = angle_rad / 2;
+  ctx.fillStyle = '#005BAA';
+  ctx.font = 'bold 9px DM Sans,sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText(angle + '\u00b0', xBevelStart + arcR * 0.7 * Math.cos(midAng) + 2, yTop + arcR * Math.sin(midAng) + 10);
+
+  // Thickness bracket on left
+  const bkX = xLeft - 7;
+  ctx.strokeStyle = '#718096'; ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(bkX + 4, yTop); ctx.lineTo(bkX, yTop);
+  ctx.lineTo(bkX, yBot); ctx.lineTo(bkX + 4, yBot);
+  ctx.stroke();
+  // Thickness value (rotated vertical)
+  ctx.fillStyle = '#1a2744';
+  ctx.font = 'bold 9px DM Sans,sans-serif';
+  ctx.textAlign = 'center';
+  ctx.save();
+  ctx.translate(bkX - 9, yTop + glassH / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.fillText(order.thickness || '', 0, 0);
+  ctx.restore();
+
+  // Right-side labels
+  const lblX = xRight + 6;
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#9aa'; ctx.font = '8px DM Sans,sans-serif';
+  ctx.fillText(t('diagOffEdge'), lblX, yTop + 4);
+  ctx.fillStyle = '#005BAA'; ctx.font = 'bold 9px DM Sans,sans-serif';
+  ctx.fillText(t('diagBevel'), lblX, yTop + glassH * 0.44);
+  ctx.fillStyle = '#4a5568'; ctx.font = '9px DM Sans,sans-serif';
+  ctx.fillText(t('diagEdge'), lblX, yBot + 9);
 }
 
 function updER() {
@@ -1204,35 +1260,69 @@ function updER() {
   drawERDiag(r);
 }
 
+// Corner view from above. Shows a single glass corner — two lines meeting at a right
+// angle (top face horizontal, left face vertical) with an arc replacing the sharp corner.
+// The arc radius is proportional to the selected radius value.
 function drawERDiag(r) {
   const canvas = document.getElementById('er-canvas');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
   const W = canvas.width, H = canvas.height;
-  ctx.clearRect(0,0,W,H);
-  const px = 50, py = 15, pw = W - 100, ph = H - 30;
-  const cr = Math.min(r * 2.5, Math.min(pw, ph) * 0.35);
-  ctx.fillStyle = 'rgba(180,220,245,0.5)';
-  ctx.strokeStyle = 'rgba(0,91,170,0.4)';
-  ctx.lineWidth = 1.5;
+  ctx.clearRect(0, 0, W, H);
+
+  // Corner sits at top-left; glass extends right and down
+  const cx = 46, cy = 18;
+  const lineH = H - cy - 10;   // vertical line length (going down)
+  const lineW = W - cx - 10;   // horizontal line length (going right)
+  const cr = Math.min(r * 3.8, Math.min(lineW, lineH) * 0.72, 68); // visual radius
+
+  // Glass body fill (from arc to extents)
+  ctx.fillStyle = 'rgba(180,220,245,0.32)';
   ctx.beginPath();
-  ctx.moveTo(px + cr, py);
-  ctx.lineTo(px + pw - cr, py);
-  ctx.arcTo(px + pw, py, px + pw, py + cr, cr);
-  ctx.lineTo(px + pw, py + ph - cr);
-  ctx.arcTo(px + pw, py + ph, px + pw - cr, py + ph, cr);
-  ctx.lineTo(px + cr, py + ph);
-  ctx.arcTo(px, py + ph, px, py + ph - cr, cr);
-  ctx.lineTo(px, py + cr);
-  ctx.arcTo(px, py, px + cr, py, cr);
+  ctx.moveTo(cx + cr, cy);          // arc start on top edge
+  ctx.lineTo(cx + lineW, cy);       // go right
+  ctx.lineTo(cx + lineW, cy + lineH); // go down
+  ctx.lineTo(cx, cy + lineH);       // go left
+  ctx.lineTo(cx, cy + cr);          // go up to arc start on left edge
+  // Arc from left edge to top edge (clockwise = curves toward corner)
+  ctx.arc(cx + cr, cy + cr, cr, Math.PI, Math.PI * 1.5, false);
   ctx.closePath();
-  ctx.fill(); ctx.stroke();
-  // radius label
-  ctx.strokeStyle = '#005BAA'; ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(px, py + cr); ctx.lineTo(px + cr, py); ctx.stroke();
-  ctx.fillStyle = 'rgba(0,91,170,0.7)';
-  ctx.font = 'bold 10px DM Sans, sans-serif';
-  ctx.fillText('r=' + r + 'mm', px + 4, py + cr - 4);
+  ctx.fill();
+
+  // Top face (horizontal line)
+  ctx.strokeStyle = '#1a2744'; ctx.lineWidth = 2; ctx.setLineDash([]);
+  ctx.beginPath(); ctx.moveTo(cx + cr, cy); ctx.lineTo(cx + lineW, cy); ctx.stroke();
+
+  // Left face (vertical line)
+  ctx.beginPath(); ctx.moveTo(cx, cy + cr); ctx.lineTo(cx, cy + lineH); ctx.stroke();
+
+  // Dashed ghost lines showing where the sharp corner WOULD have been
+  ctx.strokeStyle = '#9aa'; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
+  ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + cr, cy); ctx.stroke(); // top ghost
+  ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx, cy + cr); ctx.stroke(); // left ghost
+  ctx.setLineDash([]);
+
+  // Rounded corner arc
+  ctx.strokeStyle = '#005BAA'; ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.arc(cx + cr, cy + cr, cr, Math.PI, Math.PI * 1.5, false);
+  ctx.stroke();
+
+  // Radius dimension line (from arc center to arc, at 45°)
+  const arcCx = cx + cr, arcCy = cy + cr;
+  const cos45 = Math.cos(Math.PI * 1.25), sin45 = Math.sin(Math.PI * 1.25); // 225° = toward upper-left
+  ctx.strokeStyle = '#005BAA'; ctx.lineWidth = 1; ctx.setLineDash([2, 2]);
+  ctx.beginPath();
+  ctx.moveTo(arcCx, arcCy);
+  ctx.lineTo(arcCx + cr * cos45, arcCy + cr * sin45);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Radius label
+  ctx.fillStyle = '#005BAA';
+  ctx.font = 'bold 10px DM Sans,sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText(t('diagRadius') + ' = ' + r + 'mm', arcCx + 4, arcCy + 14);
 }
 
 // ════════════════════════════════════════════════════════
@@ -1290,7 +1380,7 @@ async function submitOrder() {
   const tkeys = { float:'tFloat', tempered:'tTempered', 'ultra-clear-float':'tUltraClear', 'ultra-clear-tempered':'tUltraClearTempered', laminated:'tLaminated' };
   const additionsList = Object.entries(order.additions).filter(([,v])=>v.active).map(([k,v])=>{
     let s = k;
-    if (k==='beveling') s += ':angle=' + v.angle + ':sides=' + Object.entries(v.sides).filter(([,on])=>on).map(([n])=>n).join(',');
+    if (k==='beveling') s += ':angle=' + v.angle + ':edges=' + Object.entries(v.sides).filter(([,on])=>on).map(([n])=>n.replace('e','')).join(',');
     if (k==='edgerounding') s += ':radius=' + v.radius + 'mm';
     return s;
   });
