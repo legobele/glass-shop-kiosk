@@ -14,6 +14,13 @@ uhhh. i can 100% defo explain the 2 rickroll links in this page. or the code. de
 
 # Changelog
 
+# 1.1.1
+**authored by** claude sonnet 4.6 x @legobele
+
+## bugfixes
+- ok button on device transition resets the order now
+- additions has dynamic padding
+
 ## 1.1.0
 **authored by** claude sonnet 4.6 x @legobele
 
