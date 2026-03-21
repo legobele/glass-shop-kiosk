@@ -859,7 +859,7 @@ const T = {
     mobileTip2:'On iOS: long-press the QR code image to save it to your Photos app.',
     mobileTip3:'On Android: long-press the QR code image, then tap "Download image".',
     successNextTitle:'Go to the Sales Counter',successNextDesc:'Show your Order ID or QR code to a sales representative for pricing and payment.',
-    newOrderBtn:'Place Another Order',
+    newOrderBtn:'Place Another Order',confirmBtn:'Place Order',
     // contact tabs
     ctabPhone:'📞 Phone',ctabEmail:'✉️ Email',ctabBoth:'Both',ctabNone:'—',
     ctabNoneDesc:'No contact info — you\'ll be identified by name at the counter.',
@@ -935,7 +935,7 @@ const T = {
     mobileTip2:'En iOS: mantenga presionado el codigo QR para guardarlo en Fotos.',
     mobileTip3:'En Android: mantenga presionado el codigo QR y toque "Descargar imagen".',
     successNextTitle:'Vaya al Mostrador de Ventas',successNextDesc:'Muestre su ID de Orden o codigo QR a un representante de ventas para el precio y pago.',
-    newOrderBtn:'Colocar Otra Orden',
+    newOrderBtn:'Colocar Otra Orden',confirmBtn:'Colocar Orden',
     ctabPhone:'📞 Telefono',ctabEmail:'✉️ Correo',ctabBoth:'Ambos',ctabNone:'—',
     ctabNoneDesc:'Sin informacion de contacto — sera identificado por nombre en el mostrador.',
     phoneLabel:'Numero de Telefono',emailLabel:'Correo Electronico',extLabel:'Extension',
@@ -1926,7 +1926,9 @@ function resetOrder() {
   document.getElementById('qrcode').textContent = '';
   const khQR = document.getElementById('kiosk-handoff-qr');
   if (khQR) khQR.textContent = '';
-  closeKioskQR();
+  // close kiosk overlay without triggering page reload
+  clearTimeout(_kioskResetTimer); _kioskResetTimer = null;
+  document.getElementById('kiosk-qr-overlay')?.classList.remove('open');
   history.length = 0;
   document.querySelector('.slide.active').classList.remove('active');
   document.getElementById('sl-lang').classList.add('active');
