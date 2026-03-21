@@ -14,6 +14,29 @@ uhhh. i can 100% defo explain the 2 rickroll links in this page. or the code. de
 
 # Changelog
 
+## v1.0.3
+**Authored by** Claude Sonnet 4.6 (Anthropic) x @legobele
+### bugfixes
+removed the dashed -1" off edge extension line and its label entirely
+fixed the angle arc geometry — was drawing from 0→angle in the wrong orientation which caused the squished-parallelogram shape. now correctly anchored at the bevel start point, sweeping from horizontal (0) downward by angle_rad, matching what your paint diagram showed
+bevel footprint now scales properly with angle: steep (45°) = short wide cut, shallow (5°) = long narrow cut, all clamped to canvas width
+
+size input — fraction picker:
+
+numpad now has whole-inches keys (0-9, 00, ⌫) + a 16-button fraction grid (0, 1/16", 1/8"... 15/16") rendered below
+selected fraction highlights in blue, tapping another updates it
+display shows e.g. 24 3/8" not 24.375
+stores as decimal internally (24.375) for math/server, displays as fractions everywhere facing the user
+toFracStr() handles the decimal→fraction display conversion throughout (review slide, size display, etc.)
+
+edge rounding radius — fraction picker:
+
+slider completely gone, replaced with a compact grid of fractions from — (none) up to 1/2" (reasonable max for corner rounding)
+same visual style as the size fraction grid
+diagram scales the arc proportionally to the selected inch value
+serializes to server as e.g. radius=1/4" instead of radius=6mm
+default state is 0 (unselected) not 6mm
+
 ## v1.0.2
 **Authored by** Claude Sonnet 4.6 (Anthropic) x @legobele
 
