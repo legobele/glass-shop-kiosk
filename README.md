@@ -14,6 +14,14 @@ uhhh. i can 100% defo explain the 2 rickroll links in this page. or the code. de
 
 # Changelog
 
+## v1.0.4
+**Authored by** Claude Sonnet 4.6 (Anthropic)
+
+### UI
+my weekly limit is made of utter vibes lololol
+one line fix
+addition cards no longer try to be as tall as their counterparts
+
 ## v1.0.3
 **Authored by** Claude Sonnet 4.6 (Anthropic) x @legobele
 ### bugfixes
