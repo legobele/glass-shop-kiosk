@@ -14,6 +14,16 @@ uhhh. i can 100% defo explain the 2 rickroll links in this page. or the code. de
 
 # Changelog
 
+# 1.1.2
+**authored by** claude sonnet 4.6
+
+## bugfixes
+- beveling graphic again
+- aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+- why do i keep having to fix minor bugssssssssssssssssssssss
+- aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+- apply button n shi r having bugs
+
 # 1.1.1
 **authored by** claude sonnet 4.6 x @legobele
 
