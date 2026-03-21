@@ -14,6 +14,12 @@ uhhh. i can 100% defo explain the 2 rickroll links in this page. or the code. de
 
 # Changelog
 
+## v1.0.2
+**Authored by** Claude Sonnet 4.6 (Anthropic) x @legobele
+
+### bugfixes
+the DIAGRAMS. OH GOD. MAY GOD HELP US ALL
+
 ## v1.0.1
 # QGI Kiosk — Change Log 1.0.0 → v1.0.1
 **Date:** 2026-03-21  
