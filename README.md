@@ -16,6 +16,8 @@ uhhh. i can 100% defo explain the 2 rickroll links in this page. or the code. de
 
 # 1.1.6
 
+the bug is now me i guess?
+
 ## rant
 
 i hate this
