@@ -1425,19 +1425,21 @@ function toFracStr(val) {
   return whole + (fracLabel && fracLabel.val > 0 ? fracStr : '"');
 }
 
+// Registry for frac grid callbacks — avoids toString() which breaks browsers
+const _fracCbs = {};
+let _fracCbId = 0;
+function _regFracCb(fn) { const id = 'fc' + (_fracCbId++); _fracCbs[id] = fn; return id; }
+function _callFracCb(id, val) { if (_fracCbs[id]) _fracCbs[id](val); }
+
 function buildFracGrid(containerId, selectedVal, onPick) {
   const grid = document.getElementById(containerId);
   if (!grid) return;
   const list = containerId === 'er-frac-grid' ? ER_FRACS : FRACS;
+  const cbId = _regFracCb(onPick);
   grid.innerHTML = list.map(f => {
     const sel = Math.abs((selectedVal || 0) - f.val) < 0.001;
-    return `<button onclick="(${onPick.toString()})(${f.val})" style="
-      padding:8px 4px;font-size:.78rem;font-weight:${sel?700:500};
-      border:${sel?'2px solid var(--blue)':'1.5px solid var(--border)'};
-      border-radius:var(--r-sm);background:${sel?'var(--blue-light)':'white'};
-      color:${sel?'var(--blue)':'var(--text-2)'};cursor:pointer;
-      font-family:'DM Sans',sans-serif;transition:all .15s;
-    ">${f.label === '0' ? (containerId==='er-frac-grid'?'—':'0"') : f.label}</button>`;
+    const lbl = f.label === '0' ? (containerId==='er-frac-grid'?'—':'0"') : f.label;
+    return `<button onclick="_callFracCb('${cbId}',${f.val})" style="padding:8px 4px;font-size:.78rem;font-weight:${sel?700:500};border:${sel?'2px solid var(--blue)':'1.5px solid var(--border)'};border-radius:var(--r-sm);background:${sel?'var(--blue-light)':'white'};color:${sel?'var(--blue)':'var(--text-2)'};cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;">${lbl}</button>`;
   }).join('');
 }
 
