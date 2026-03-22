@@ -1807,39 +1807,6 @@ function drawERDiag(r, edges, corners) {
     }
   }
 }
-  const canvas = document.getElementById('er-canvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const W = canvas.width, H = canvas.height;
-  ctx.clearRect(0, 0, W, H);
-
-  const pad = 14;
-  const gLeft = pad, gTop = pad, gRight = W - pad, gBot = H - pad;
-  const gW = gRight - gLeft, gH = gBot - gTop;
-
-  const maxCR = Math.min(gW, gH) * 0.44;
-  const cr = r <= 0 ? 2 : Math.max(4, Math.round(4 + (r / 0.5) * (maxCR - 4)));
-
-  function roundedRect(cx) {
-    ctx.beginPath();
-    ctx.moveTo(gLeft + cx, gTop);
-    ctx.lineTo(gRight - cx, gTop);
-    ctx.arc(gRight - cx, gTop + cx, cx, -Math.PI/2, 0);
-    ctx.lineTo(gRight, gBot - cx);
-    ctx.arc(gRight - cx, gBot - cx, cx, 0, Math.PI/2);
-    ctx.lineTo(gLeft + cx, gBot);
-    ctx.arc(gLeft + cx, gBot - cx, cx, Math.PI/2, Math.PI);
-    ctx.lineTo(gLeft, gTop + cx);
-    ctx.arc(gLeft + cx, gTop + cx, cx, Math.PI, -Math.PI/2);
-    ctx.closePath();
-  }
-
-  // Fill
-  ctx.fillStyle = 'rgba(180,220,245,0.28)';
-  roundedRect(cr);
-  ctx.fill();
-
-
 // ════════════════════════════════════════════════════════
 // PAYMENT
 // ════════════════════════════════════════════════════════
