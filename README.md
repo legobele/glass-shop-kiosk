@@ -14,6 +14,15 @@ uhhh. i can 100% defo explain the 2 rickroll links in this page. or the code. de
 
 # Changelog
 
+# 1.1.5
+
+just fry me this sucks
+
+**author** claude sonnet 4.6
+
+## bugfix
+- idk
+
 # 1.1.4
 
 *flaps hands*
