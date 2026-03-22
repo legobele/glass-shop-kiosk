@@ -14,6 +14,21 @@ uhhh. i can 100% defo explain the 2 rickroll links in this page. or the code. de
 
 # Changelog
 
+# 1.1.4
+
+*flaps hands*
+
+did you not realize.
+ight fuck it reference given. idgaf. this is gon be kept in the changelog.
+
+**authored** claude sonnet 4.6
+
+## bug
+- more rounding graphic shit
+
+## new
+- select corners to round
+
 # 1.1.3
 *sighs*
 **authored by** claude sonnet 4.6
