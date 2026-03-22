@@ -613,12 +613,26 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
           <div style="display:flex;gap:14px;align-items:stretch">
             <div style="flex:1;min-width:0">
               <p style="font-size:.8rem;font-weight:600;color:var(--text-2);margin-bottom:8px" data-i18n="erRadius">Corner radius:</p>
-              <div id="er-frac-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px"></div>
-              <p style="font-size:.72rem;color:var(--text-3);margin-top:6px" data-i18n="erRadiusNote">* may not show on graphic at very small values</p>
+              <div id="er-frac-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px"></div>
+              <p style="font-size:.8rem;font-weight:600;color:var(--text-2);margin-bottom:6px" data-i18n="erEdges">Edges to round:</p>
+              <div class="sides-grid" style="margin-bottom:6px">
+                <label class="sc-label" for="er-e1"><input type="checkbox" id="er-e1" checked onchange="updER()"> <span style="color:#c0392b" data-i18n="erEdge1">Edge 1 (Top)</span></label>
+                <label class="sc-label" for="er-e2"><input type="checkbox" id="er-e2" checked onchange="updER()"> <span style="color:#c0392b" data-i18n="erEdge2">Edge 2 (Right)</span></label>
+                <label class="sc-label" for="er-e3"><input type="checkbox" id="er-e3" checked onchange="updER()"> <span style="color:#c0392b" data-i18n="erEdge3">Edge 3 (Bottom)</span></label>
+                <label class="sc-label" for="er-e4"><input type="checkbox" id="er-e4" checked onchange="updER()"> <span style="color:#c0392b" data-i18n="erEdge4">Edge 4 (Left)</span></label>
+              </div>
+              <p style="font-size:.8rem;font-weight:600;color:var(--text-2);margin-bottom:6px" data-i18n="erCorners">Corners to round:</p>
+              <div class="sides-grid">
+                <label class="sc-label" for="er-c1"><input type="checkbox" id="er-c1" checked onchange="updER()"> <span style="color:#27ae60" data-i18n="erCorner1">Corner 1 (TR)</span></label>
+                <label class="sc-label" for="er-c2"><input type="checkbox" id="er-c2" checked onchange="updER()"> <span style="color:#27ae60" data-i18n="erCorner2">Corner 2 (BR)</span></label>
+                <label class="sc-label" for="er-c3"><input type="checkbox" id="er-c3" checked onchange="updER()"> <span style="color:#27ae60" data-i18n="erCorner3">Corner 3 (BL)</span></label>
+                <label class="sc-label" for="er-c4"><input type="checkbox" id="er-c4" checked onchange="updER()"> <span style="color:#27ae60" data-i18n="erCorner4">Corner 4 (TL)</span></label>
+              </div>
+              <p style="font-size:.72rem;color:var(--text-3);margin-top:8px" data-i18n="erRadiusNote">* may not show on graphic at very small values</p>
             </div>
             <div style="flex:1;min-width:0;display:flex;flex-direction:column;align-items:stretch">
               <p style="font-size:.75rem;color:var(--text-3);margin-bottom:4px;text-align:center" id="er-radius-val">—</p>
-              <canvas class="diag-canvas" id="er-canvas" width="200" height="160" style="width:100%;flex:1"></canvas>
+              <canvas class="diag-canvas" id="er-canvas" width="200" height="200" style="width:100%;flex:1"></canvas>
             </div>
           </div>
         </div>
@@ -843,7 +857,10 @@ const T = {
     dfWarn:'Price varies by glass perimeter. Final cost calculated at the counter.',
     dfWarranty:'Lifetime Treatment Warranty',dfWarrantyDesc:' — coverage lasts for the life of the glass.',
     addERName:'Edge Rounding',addERDesc:'Smooth rounded edges for safety and a clean finished look.',
-    erRadius:'Radius',erRadiusNote:'* may not show on graphic at very small values',addSBName:'Sandblasting',addSBDesc:'Frosted privacy finish. Diffuses light while maintaining translucency.',
+    erRadius:'Radius',erRadiusNote:'* may not show on graphic at very small values',
+    erEdges:'Edges to round:',erCorners:'Corners to round:',
+    erEdge1:'Edge 1 (Top)',erEdge2:'Edge 2 (Right)',erEdge3:'Edge 3 (Bottom)',erEdge4:'Edge 4 (Left)',
+    erCorner1:'Corner 1 (TR)',erCorner2:'Corner 2 (BR)',erCorner3:'Corner 3 (BL)',erCorner4:'Corner 4 (TL)',addSBName:'Sandblasting',addSBDesc:'Frosted privacy finish. Diffuses light while maintaining translucency.',
     sbNote:'Pattern and coverage area confirmed with the sales team at the counter.',
     payTitle:'Payment Method',paySub:'Payment is processed at the sales counter. Select your preferred method.',
     payCash:'Cash',payCard:'Credit / Debit Card',payDigital:'Apple Pay / Google Pay / ATH Móvil',
@@ -919,7 +936,10 @@ const T = {
     dfWarn:'El precio varia segun el perimetro del cristal. El costo final se calcula en el mostrador.',
     dfWarranty:'Garantia de Por Vida',dfWarrantyDesc:' — la cobertura dura toda la vida del cristal.',
     addERName:'Redondeo de Bordes',addERDesc:'Bordes suavizados para seguridad y un acabado limpio y terminado.',
-    erRadius:'Radio',erRadiusNote:'* puede no mostrarse en el grafico para valores muy pequenos',addSBName:'Sandblasting',addSBDesc:'Acabado de privacidad esmerilado. Difunde la luz manteniendo la translucidez.',
+    erRadius:'Radio',erRadiusNote:'* puede no mostrarse en el grafico para valores muy pequenos',
+    erEdges:'Lados a redondear:',erCorners:'Esquinas a redondear:',
+    erEdge1:'Lado 1 (Arriba)',erEdge2:'Lado 2 (Derecha)',erEdge3:'Lado 3 (Abajo)',erEdge4:'Lado 4 (Izquierda)',
+    erCorner1:'Esquina 1 (SD)',erCorner2:'Esquina 2 (ID)',erCorner3:'Esquina 3 (II)',erCorner4:'Esquina 4 (SI)',addSBName:'Sandblasting',addSBDesc:'Acabado de privacidad esmerilado. Difunde la luz manteniendo la translucidez.',
     sbNote:'El patron y area de cobertura se confirman con el equipo de ventas en el mostrador.',
     payTitle:'Metodo de Pago',paySub:'El pago se procesa en el mostrador de ventas. Seleccione su metodo preferido.',
     payCash:'Efectivo',payCard:'Tarjeta de Credito / Debito',payDigital:'Apple Pay / Google Pay / ATH Movil',
@@ -1074,7 +1094,7 @@ const order = {
   additions: {
     beveling:    { active:false, angle:15, sides:{e1:true,e2:true,e3:true,e4:true} },
     diamonfusion:{ active:false },
-    edgerounding:{ active:false, radius:0 },
+    edgerounding:{ active:false, radius:0, edges:{e1:true,e2:true,e3:true,e4:true}, corners:{c1:true,c2:true,c3:true,c4:true} },
     sandblasting:{ active:false },
   },
   paymentMethod: null
@@ -1668,23 +1688,123 @@ function drawBevelDiag(angle) {
 }
 
 function updER(val) {
+  // val is passed from frac grid clicks; if called from checkbox onchange, read current radius
+  if (val === undefined) val = order.additions.edgerounding.radius || 0;
   order.additions.edgerounding.radius = val;
-  document.getElementById('er-radius-val').textContent = toFracStr(val);
+  document.getElementById('er-radius-val').textContent = val > 0 ? toFracStr(val) : '—';
   buildFracGrid('er-frac-grid', val, function(v){ updER(v); });
-  drawERDiag(val);
+  // read edge/corner checkboxes
+  const er = order.additions.edgerounding;
+  ['e1','e2','e3','e4'].forEach(k => { const el = document.getElementById('er-'+k); if(el) er.edges[k] = el.checked; });
+  ['c1','c2','c3','c4'].forEach(k => { const el = document.getElementById('er-'+k); if(el) er.corners[k] = el.checked; });
+  drawERDiag(val, er.edges, er.corners);
 }
 
 // also call this on card open
 function initERFracGrid() {
-  const cur = order.additions.edgerounding.radius || 0;
+  const er = order.additions.edgerounding;
+  const cur = er.radius || 0;
   buildFracGrid('er-frac-grid', cur, function(v){ updER(v); });
   document.getElementById('er-radius-val').textContent = cur > 0 ? toFracStr(cur) : '—';
-  if (cur > 0) drawERDiag(cur);
+  if (cur > 0) drawERDiag(cur, er.edges, er.corners);
 }
 
 // Full pane top-down view showing rounded-rectangle glass with all four corners rounded.
-// Blue highlight on top-right corner with radius dimension line.
-function drawERDiag(r) {
+// Blue highlight on selected corners, red highlight on selected edges.
+// edges: {e1,e2,e3,e4} = top,right,bottom,left. corners: {c1,c2,c3,c4} = TR,BR,BL,TL
+function drawERDiag(r, edges, corners) {
+  edges   = edges   || {e1:true,e2:true,e3:true,e4:true};
+  corners = corners || {c1:true,c2:true,c3:true,c4:true};
+  const canvas = document.getElementById('er-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  const pad = 14;
+  const gLeft = pad, gTop = pad, gRight = W - pad, gBot = H - pad;
+  const gW = gRight - gLeft, gH = gBot - gTop;
+
+  const maxCR = Math.min(gW, gH) * 0.44;
+  const cr = r <= 0 ? 3 : Math.max(4, Math.round(4 + (r / 0.5) * (maxCR - 4)));
+
+  // Helper: rounded rect path where each corner can be square or rounded
+  function cornerPath(tl, tr, br, bl) {
+    const rTL = tl ? cr : 0, rTR = tr ? cr : 0;
+    const rBR = br ? cr : 0, rBL = bl ? cr : 0;
+    ctx.beginPath();
+    ctx.moveTo(gLeft + rTL, gTop);
+    ctx.lineTo(gRight - rTR, gTop);
+    if (rTR) ctx.arc(gRight - rTR, gTop + rTR, rTR, -Math.PI/2, 0); else ctx.lineTo(gRight, gTop);
+    ctx.lineTo(gRight, gBot - rBR);
+    if (rBR) ctx.arc(gRight - rBR, gBot - rBR, rBR, 0, Math.PI/2); else ctx.lineTo(gRight, gBot);
+    ctx.lineTo(gLeft + rBL, gBot);
+    if (rBL) ctx.arc(gLeft + rBL, gBot - rBL, rBL, Math.PI/2, Math.PI); else ctx.lineTo(gLeft, gBot);
+    ctx.lineTo(gLeft, gTop + rTL);
+    if (rTL) ctx.arc(gLeft + rTL, gTop + rTL, rTL, Math.PI, -Math.PI/2); else ctx.lineTo(gLeft, gTop);
+    ctx.closePath();
+  }
+
+  // c1=TR, c2=BR, c3=BL, c4=TL
+  const tr = corners.c1, br = corners.c2, bl = corners.c3, tl = corners.c4;
+
+  // Fill
+  ctx.fillStyle = 'rgba(180,220,245,0.28)';
+  cornerPath(tl, tr, br, bl);
+  ctx.fill();
+
+  // Base outline (gray)
+  ctx.strokeStyle = '#1a2744'; ctx.lineWidth = 1.5; ctx.setLineDash([]);
+  cornerPath(tl, tr, br, bl);
+  ctx.stroke();
+
+  // Highlight selected EDGES in red
+  ctx.strokeStyle = '#c0392b'; ctx.lineWidth = 2.5;
+  const rTR = tr ? cr : 0, rBR = br ? cr : 0, rBL = bl ? cr : 0, rTL = tl ? cr : 0;
+  if (edges.e1) { // top
+    ctx.beginPath(); ctx.moveTo(gLeft + rTL, gTop); ctx.lineTo(gRight - rTR, gTop); ctx.stroke();
+  }
+  if (edges.e2) { // right
+    ctx.beginPath(); ctx.moveTo(gRight, gTop + rTR); ctx.lineTo(gRight, gBot - rBR); ctx.stroke();
+  }
+  if (edges.e3) { // bottom
+    ctx.beginPath(); ctx.moveTo(gRight - rBR, gBot); ctx.lineTo(gLeft + rBL, gBot); ctx.stroke();
+  }
+  if (edges.e4) { // left
+    ctx.beginPath(); ctx.moveTo(gLeft, gBot - rBL); ctx.lineTo(gLeft, gTop + rTL); ctx.stroke();
+  }
+
+  // Highlight selected CORNERS in green
+  ctx.strokeStyle = '#27ae60'; ctx.lineWidth = 2.5;
+  const cornerDefs = [
+    { key:'c1', cx: gRight - rTR, cy: gTop + rTR,  s: -Math.PI/2, e: 0,          r: rTR }, // TR
+    { key:'c2', cx: gRight - rBR, cy: gBot - rBR,  s: 0,          e: Math.PI/2,  r: rBR }, // BR
+    { key:'c3', cx: gLeft + rBL,  cy: gBot - rBL,  s: Math.PI/2,  e: Math.PI,    r: rBL }, // BL
+    { key:'c4', cx: gLeft + rTL,  cy: gTop + rTL,  s: Math.PI,    e: 3*Math.PI/2,r: rTL }, // TL
+  ];
+  cornerDefs.forEach(({ key, cx, cy, s, e, r: cr2 }) => {
+    if (!corners[key] || cr2 < 1) return;
+    ctx.beginPath(); ctx.arc(cx, cy, cr2, s, e); ctx.stroke();
+  });
+
+  // Radius label on first active corner
+  if (r > 0) {
+    const active = cornerDefs.find(d => corners[d.key] && d.r > 0);
+    if (active) {
+      const midAng = (active.s + active.e) / 2;
+      ctx.strokeStyle = '#27ae60'; ctx.lineWidth = 1; ctx.setLineDash([2,2]);
+      ctx.beginPath();
+      ctx.moveTo(active.cx, active.cy);
+      ctx.lineTo(active.cx + active.r * Math.cos(midAng), active.cy + active.r * Math.sin(midAng));
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#27ae60';
+      ctx.font = 'bold 8px DM Sans,sans-serif';
+      ctx.textAlign = midAng < 0 ? 'right' : 'left';
+      ctx.fillText('r='+toFracStr(r), active.cx + (active.r+3)*Math.cos(midAng), active.cy + (active.r+3)*Math.sin(midAng));
+    }
+  }
+}
   const canvas = document.getElementById('er-canvas');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
@@ -1716,35 +1836,6 @@ function drawERDiag(r) {
   ctx.fillStyle = 'rgba(180,220,245,0.28)';
   roundedRect(cr);
   ctx.fill();
-
-  // Full outline
-  ctx.strokeStyle = '#1a2744'; ctx.lineWidth = 1.8; ctx.setLineDash([]);
-  roundedRect(cr);
-  ctx.stroke();
-
-  // Highlight single top-right corner in blue
-  ctx.strokeStyle = '#005BAA'; ctx.lineWidth = 2.5;
-  ctx.beginPath();
-  ctx.arc(gRight - cr, gTop + cr, cr, -Math.PI/2, 0);
-  ctx.stroke();
-
-  // Radius dimension line on top-right corner
-  if (r > 0) {
-    const cx = gRight - cr, cy = gTop + cr;
-    const midAng = -Math.PI / 4;
-    ctx.strokeStyle = '#005BAA'; ctx.lineWidth = 1; ctx.setLineDash([2, 2]);
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.lineTo(cx + cr * Math.cos(midAng), cy + cr * Math.sin(midAng));
-    ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillStyle = '#005BAA';
-    ctx.font = 'bold 8px DM Sans,sans-serif';
-    ctx.textAlign = 'right';
-    ctx.fillText('r = ' + toFracStr(r), cx - 2, cy - 3);
-  }
-}
-
 
 
 // ════════════════════════════════════════════════════════
@@ -1813,7 +1904,13 @@ async function submitOrder() {
   const additionsList = Object.entries(order.additions).filter(([,v])=>v.active).map(([k,v])=>{
     let s = k;
     if (k==='beveling') s += ':angle=' + v.angle + ':edges=' + Object.entries(v.sides).filter(([,on])=>on).map(([n])=>n.replace('e','')).join(',');
-    if (k==='edgerounding') s += ':radius=' + toFracStr(v.radius);
+    if (k==='edgerounding') {
+      s += ':radius=' + toFracStr(v.radius);
+      const activeEdges = Object.entries(v.edges).filter(([,on])=>on).map(([n])=>n.replace('e','')).join(',');
+      const activeCorners = Object.entries(v.corners).filter(([,on])=>on).map(([n])=>n.replace('c','')).join(',');
+      if (activeEdges) s += ':edges=' + activeEdges;
+      if (activeCorners) s += ':corners=' + activeCorners;
+    }
     return s;
   });
   const payload = {
