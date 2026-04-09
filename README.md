@@ -14,7 +14,19 @@ uhhh. i can 100% defo explain the 2 rickroll links in this page. or the code. de
 
 # Changelog
 
-# 1.1.6
+# 1.2.0 (Apr 9 2026)
+
+Came back to this project.
+
+## Removed Features
+- All graphs were removed.
+
+## Bugfixes
+- Everything.
+
+---
+
+# 1.1.6 (Mar 21 2026)
 
 the bug is now me i guess?
 
