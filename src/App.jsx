@@ -2,7 +2,6 @@ import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './hooks/useAuth';
 import { ToastProvider } from './components/Toast';
 import RequireRole from './components/RequireRole';
-import StatusBar from './components/StatusBar';
 import Kiosk from './views/kiosk/Kiosk';
 import Track from './views/portal/Track';
 import CustomerAccount from './views/portal/CustomerAccount';
@@ -19,7 +18,6 @@ export default function App() {
     <AuthProvider>
       <ToastProvider>
         <HashRouter>
-          <StatusBar />
           <Routes>
             <Route path="/" element={<Navigate to="/kiosk" replace />} />
             <Route path="/kiosk" element={<Kiosk />} />
