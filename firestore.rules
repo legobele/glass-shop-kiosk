@@ -1,0 +1,58 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── helpers ────────────────────────────────────────────
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function isAdmin() {
+      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    function isStaff() {
+      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'staff'];
+    }
+
+    // ── users ──────────────────────────────────────────────
+    // self read/write; admin can manage roles
+    match /users/{uid} {
+      allow read: if isSignedIn() && (request.auth.uid == uid || isAdmin());
+      allow create: if isSignedIn() && request.auth.uid == uid && request.resource.data.role == 'customer';
+      allow update: if isSignedIn() && (
+        (request.auth.uid == uid && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName'])) ||
+        isAdmin()
+      );
+      allow delete: if isAdmin();
+    }
+
+    // ── orders ─────────────────────────────────────────────
+    // anyone can create (kiosk); read/update/delete only by
+    //   the order's owner (changePIN) or staff/admin.
+    match /orders/{orderId} {
+      allow create: if true;
+      allow read: if isStaff() || (isSignedIn() && resource.data.customerId == request.auth.uid);
+      allow update: if isStaff() ||
+        (isSignedIn() && resource.data.customerId == request.auth.uid) ||
+        (isSignedIn() && resource.data.changePIN != null && resource.data.changePIN == request.resource.data.changePIN);
+      allow delete: if isStaff();
+    }
+
+    // ── catalog ────────────────────────────────────────────
+    match /catalog/{type} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ── settings ───────────────────────────────────────────
+    match /settings/{key} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ── jobs (install coordinator) ─────────────────────────
+    match /jobs/{jobId} {
+      allow read: if isStaff() || isSignedIn();
+      allow write: if isStaff();
+    }
+  }
+}
