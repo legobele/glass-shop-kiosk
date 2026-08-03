@@ -4,6 +4,7 @@ import { ToastProvider } from './components/Toast';
 import RequireRole from './components/RequireRole';
 import Kiosk from './views/kiosk/Kiosk';
 import Track from './views/portal/Track';
+import CustomerAccount from './views/portal/CustomerAccount';
 import Login from './views/login/Login';
 import AdminLayout from './views/admin/AdminLayout';
 import OrdersView from './views/admin/OrdersView';
@@ -21,6 +22,7 @@ export default function App() {
             <Route path="/" element={<Navigate to="/kiosk" replace />} />
             <Route path="/kiosk" element={<Kiosk />} />
             <Route path="/track" element={<Track />} />
+            <Route path="/account" element={<CustomerAccount />} />
             <Route path="/login" element={<Login />} />
             <Route
               path="/admin"

@@ -51,6 +51,16 @@ export default function UsersView() {
     }
   };
 
+  const setTrustedOf = async (uid, trusted) => {
+    try {
+      const fn = httpsCallable(functions, 'setTrusted');
+      await fn({ uid, trusted });
+      toast.success(trusted ? 'Customer marked trusted' : 'Trusted removed');
+    } catch (err) {
+      toast.error(err?.message || 'Failed to update trusted');
+    }
+  };
+
   return (
     <div>
       <h2 className="page-title">{t('en', 'adminUsers')}</h2>
@@ -95,6 +105,7 @@ export default function UsersView() {
                 <th>{t('en', 'displayName')}</th>
                 <th>{t('en', 'emailLabel')}</th>
                 <th>{t('en', 'roleLabel')}</th>
+                <th>Trusted</th>
                 <th></th>
               </tr>
             </thead>
@@ -104,6 +115,25 @@ export default function UsersView() {
                   <td>{u.displayName || '—'}</td>
                   <td>{u.email}</td>
                   <td><Pill tone={u.role === 'admin' ? 'success' : 'info'}>{u.role}</Pill></td>
+                  <td>
+                    {u.role === 'customer' && (
+                      <button
+                        className="btn"
+                        style={{
+                          padding: '5px 12px',
+                          fontSize: '0.75rem',
+                          borderRadius: 40,
+                          background: u.trusted ? 'var(--success)' : 'var(--surface-glass)',
+                          color: u.trusted ? '#fff' : 'var(--text)',
+                          border: '1px solid var(--border)',
+                        }}
+                        onClick={() => setTrustedOf(u.uid, !u.trusted)}
+                      >
+                        {u.trusted ? '✓ Trusted' : 'Mark trusted'}
+                      </button>
+                    )}
+                    {u.role !== 'customer' && <span className="muted" style={{ fontSize: '0.75rem' }}>—</span>}
+                  </td>
                   <td>
                     <select
                       className="input"

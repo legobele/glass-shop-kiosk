@@ -132,8 +132,15 @@ exports.editOrder = onCall(async (req) => {
   const isStaffMember = ['admin', 'staff'].includes(role);
   const isOwner = req.auth && existing.customerId === req.auth.uid;
 
-  // staff bypasses PIN; otherwise require matching changePIN
-  if (!isStaffMember && !isOwner) {
+  // Determine if this customer is trusted (bypasses PIN).
+  let isTrusted = false;
+  if (isOwner) {
+    const userSnap = await db.doc(`users/${req.auth.uid}`).get();
+    isTrusted = userSnap.exists && userSnap.data().trusted === true;
+  }
+
+  // staff bypasses PIN; trusted owner bypasses PIN; otherwise require matching changePIN
+  if (!isStaffMember && !isTrusted && !isOwner) {
     const pin = String(d.changePIN || '').trim();
     if (!pin || pin !== existing.changePIN) {
       throw new HttpsError('permission-denied', 'Invalid change PIN.');
@@ -242,6 +249,66 @@ exports.setRole = onCall(async (req) => {
   if (!ROLES.includes(newRole)) throw new HttpsError('invalid-argument', 'Invalid role.');
   await db.doc(`users/${uid}`).update({ role: newRole });
   return { success: true };
+});
+
+// setTrusted — admin only. Marks a customer as trusted → skips the PIN flow.
+exports.setTrusted = onCall(async (req) => {
+  const role = await getRole(req.auth && req.auth.uid);
+  assertAdmin(role);
+  const d = req.data || {};
+  const uid = String(d.uid || '');
+  const trusted = !!d.trusted;
+  if (!uid) throw new HttpsError('invalid-argument', 'User ID required.');
+  await db.doc(`users/${uid}`).update({ trusted });
+  return { success: true, uid, trusted };
+});
+
+// claimOrder — signed-in customer claims an order by Order ID + changePIN.
+exports.claimOrder = onCall(async (req) => {
+  const uid = req.auth && req.auth.uid;
+  if (!uid) throw new HttpsError('unauthenticated', 'Sign in first.');
+  const d = req.data || {};
+  const id = String(d.orderId || '').trim().toUpperCase();
+  const pin = String(d.changePIN || '').trim();
+  if (!id || !pin) throw new HttpsError('invalid-argument', 'Order ID and change PIN required.');
+
+  const snap = await db.doc(`orders/${id}`).get();
+  if (!snap.exists) throw new HttpsError('not-found', 'Order not found.');
+  const existing = snap.data();
+  if (existing.customerId && existing.customerId !== uid) {
+    throw new HttpsError('permission-denied', 'Order already claimed by another account.');
+  }
+  if (pin !== existing.changePIN) {
+    throw new HttpsError('permission-denied', 'Invalid change PIN.');
+  }
+
+  await db.doc(`orders/${id}`).update({ customerId: uid, updatedAt: FieldValue.serverTimestamp() });
+  return { success: true, orderId: id };
+});
+
+// getMyOrders — signed-in customer's claimed orders.
+exports.getMyOrders = onCall(async (req) => {
+  const uid = req.auth && req.auth.uid;
+  if (!uid) throw new HttpsError('unauthenticated', 'Sign in first.');
+  const snap = await db.collection('orders').where('customerId', '==', uid).get();
+  const orders = [];
+  snap.forEach((doc) => {
+    const o = doc.data();
+    orders.push({
+      orderId: o.orderId,
+      status: o.status,
+      customerName: o.customerName,
+      projectName: o.projectName,
+      glassType: o.glassType,
+      color: o.color,
+      thickness: o.thickness,
+      width: o.width,
+      height: o.height,
+      createdAt: o.createdAt ? o.createdAt.toDate().toISOString() : null,
+    });
+  });
+  orders.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+  return { orders };
 });
 
 // ── bootstrapAdmin ────────────────────────────────────────

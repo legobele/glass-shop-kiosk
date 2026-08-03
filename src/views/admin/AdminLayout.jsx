@@ -2,18 +2,21 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
 import { auth } from '../../firebase';
 import { useAuth } from '../../hooks/useAuth';
+import { usePermissions } from '../../hooks/usePermissions';
 import { t } from '../../i18n';
 
+// Each link declares the permission it needs; the nav renders only what the role can do.
 const LINKS = [
-  { to: '/admin', labelKey: 'adminOrders', end: true },
-  { to: '/admin/coordinator', labelKey: 'adminCoordinator' },
-  { to: '/admin/catalog', labelKey: 'adminCatalog' },
-  { to: '/admin/settings', labelKey: 'adminSettings' },
-  { to: '/admin/users', labelKey: 'adminUsers', adminOnly: true },
+  { to: '/admin', labelKey: 'adminOrders', end: true, perm: 'orders:read' },
+  { to: '/admin/coordinator', labelKey: 'adminCoordinator', perm: 'jobs:read' },
+  { to: '/admin/catalog', labelKey: 'adminCatalog', perm: 'catalog:read' },
+  { to: '/admin/settings', labelKey: 'adminSettings', perm: 'settings:read' },
+  { to: '/admin/users', labelKey: 'adminUsers', perm: 'users:manage' },
 ];
 
 export default function AdminLayout() {
   const { profile } = useAuth();
+  const { can } = usePermissions();
   const navigate = useNavigate();
 
   const logout = async () => {
@@ -38,7 +41,7 @@ export default function AdminLayout() {
             QGI <span className="muted" style={{ color: 'rgba(255,255,255,0.5)' }}>/ admin</span>
           </NavLink>
           <nav className="row" style={{ gap: 6, flex: 1 }}>
-            {LINKS.filter((l) => !l.adminOnly || profile?.role === 'admin').map((l) => (
+            {LINKS.filter((l) => can(l.perm)).map((l) => (
               <NavLink
                 key={l.to}
                 to={l.to}
@@ -59,6 +62,7 @@ export default function AdminLayout() {
           </nav>
           <span className="muted" style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)' }}>
             {profile?.displayName || profile?.email}
+            {profile?.role && <span style={{ opacity: 0.6 }}> · {profile.role}</span>}
           </span>
           <button className="btn btn-ghost" onClick={logout} style={{ padding: '7px 14px', fontSize: '0.8rem' }}>
             {t('en', 'logout')}

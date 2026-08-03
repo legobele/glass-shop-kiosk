@@ -12,28 +12,39 @@ service cloud.firestore {
     function isStaff() {
       return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'staff'];
     }
+    function isInstaller() {
+      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'installer';
+    }
+    function isTrustedCustomer(uid) {
+      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.trusted == true && request.auth.uid == uid;
+    }
 
     // ── users ──────────────────────────────────────────────
-    // self read/write; admin can manage roles
+    // self read; admin can manage roles AND the trusted flag
     match /users/{uid} {
-      allow read: if isSignedIn() && (request.auth.uid == uid || isAdmin());
+      allow read: if isSignedIn() && (request.auth.uid == uid || isAdmin() || isStaff());
       allow create: if isSignedIn() && request.auth.uid == uid && request.resource.data.role == 'customer';
       allow update: if isSignedIn() && (
+        // self can update displayName only
         (request.auth.uid == uid && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName'])) ||
+        // staff can toggle trusted; admin can toggle trusted + role
+        (isStaff() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['trusted'])) ||
         isAdmin()
       );
       allow delete: if isAdmin();
     }
 
     // ── orders ─────────────────────────────────────────────
-    // anyone can create (kiosk); read/update/delete only by
-    //   the order's owner (changePIN) or staff/admin.
+    // anyone can create (kiosk); read/update/delete by staff, or
+    //   the order's owner — PIN-gated (changePIN) OR trusted-customer bypass.
     match /orders/{orderId} {
       allow create: if true;
       allow read: if isStaff() || (isSignedIn() && resource.data.customerId == request.auth.uid);
       allow update: if isStaff() ||
-        (isSignedIn() && resource.data.customerId == request.auth.uid) ||
-        (isSignedIn() && resource.data.changePIN != null && resource.data.changePIN == request.resource.data.changePIN);
+        // owner + trusted → skip PIN
+        (isTrustedCustomer(resource.data.customerId)) ||
+        // owner + valid changePIN
+        (isSignedIn() && resource.data.customerId == request.auth.uid && resource.data.changePIN != null && resource.data.changePIN == request.resource.data.changePIN);
       allow delete: if isStaff();
     }
 
@@ -51,8 +62,11 @@ service cloud.firestore {
 
     // ── jobs (install coordinator) ─────────────────────────
     match /jobs/{jobId} {
-      allow read: if isStaff() || isSignedIn();
-      allow write: if isStaff();
+      allow read: if isSignedIn();
+      // installers can update status; staff/admin can write anything
+      allow update: if isStaff() || (isInstaller() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']));
+      allow create: if isStaff();
+      allow delete: if isStaff();
     }
   }
 }
