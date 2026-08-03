@@ -1,0 +1,364 @@
+/* iOS 5 — base + shared component styles (skeuomorphic reskin) */
+
+/* ── cards: iOS grouped table cells ─────────────────────── */
+.glass-card {
+  background: var(--ios-cell);
+  border: 1px solid var(--ios-border);
+  border-radius: var(--r-md);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.08);
+}
+.glass-panel {
+  background: var(--ios-cell);
+  border: 1px solid var(--ios-border);
+  border-radius: var(--r-lg);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+.glass-panel-dark {
+  background: linear-gradient(180deg, #f9f9f9 0%, #ececec 100%);
+  border: 1px solid var(--ios-border);
+  border-radius: var(--r-lg);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+.glass-panel-dark .field label {
+  color: var(--ios-text-2);
+}
+.glass-panel-dark .muted {
+  color: var(--ios-text-3);
+}
+.glass-panel-dark h4 {
+  color: var(--ios-text);
+}
+
+/* ── buttons: iOS aqua / gray / red rounded rects ───────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 18px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  font-family: var(--font-ios);
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: 0;
+  transition: filter 0.1s;
+  white-space: nowrap;
+  background: linear-gradient(180deg, #f9f9f9 0%, #e3e3e3 100%);
+  color: var(--ios-text);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+}
+.btn:active:not(:disabled) {
+  filter: brightness(0.9);
+}
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+/* iOS aqua button */
+.btn-primary {
+  background: linear-gradient(180deg, var(--ios-aqua-top) 0%, var(--ios-aqua-bottom) 100%);
+  border-color: rgba(0, 0, 0, 0.25);
+  color: #fff;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.3);
+  box-shadow: inset 0 1px 0 var(--ios-aqua-highlight), 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+.btn-success {
+  background: linear-gradient(180deg, #5be372 0%, var(--ios-green) 100%);
+  border-color: rgba(0, 0, 0, 0.25);
+  color: #fff;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+  box-shadow: inset 0 1px 0 #8ceb9c, 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+.btn-ghost {
+  background: linear-gradient(180deg, #f9f9f9 0%, #e3e3e3 100%);
+  border-color: #a8a8a8;
+  color: var(--ios-text);
+}
+.btn-danger {
+  background: linear-gradient(180deg, #ff6a61 0%, var(--ios-red) 100%);
+  border-color: rgba(0, 0, 0, 0.25);
+  color: #fff;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+  box-shadow: inset 0 1px 0 #ff9a94, 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+.btn-block {
+  width: 100%;
+}
+
+/* ── inputs: iOS text fields ────────────────────────────── */
+.input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #b5b5b5;
+  background: #fff;
+  color: var(--ios-text);
+  font-family: var(--font-ios);
+  font-size: 0.95rem;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  outline: none;
+}
+.input:focus {
+  border-color: var(--ios-blue);
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2);
+}
+.input::placeholder {
+  color: #a0a0a0;
+}
+select.input {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238e8e93' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 34px;
+}
+textarea.input {
+  resize: vertical;
+  min-height: 84px;
+}
+
+/* ── labels + field groups ──────────────────────────────── */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.field label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ios-text-2);
+}
+.field .opt {
+  font-weight: 400;
+  color: var(--ios-text-3);
+}
+
+/* ── pills / badges ─────────────────────────────────────── */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: #ececec;
+  color: var(--ios-text-2);
+}
+.pill-success {
+  background: #e3f7e6;
+  color: #1d7a2e;
+}
+.pill-warn {
+  background: #fdf3d8;
+  color: #8a6d1a;
+}
+.pill-danger {
+  background: #fde3e1;
+  color: #b3261e;
+}
+.pill-info {
+  background: #e1f0ff;
+  color: #0753a8;
+}
+.pill-neutral {
+  background: #ececec;
+  color: var(--ios-text-2);
+}
+
+/* ── toast: iOS linen ───────────────────────────────────── */
+.toast-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 1200;
+}
+.toast {
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: var(--ios-linen);
+  border: 1px solid #2b2b2b;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #fff;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: toastIn 0.25s;
+  max-width: 360px;
+}
+.toast-success {
+  border-color: #1d7a2e;
+}
+.toast-error {
+  border-color: #b3261e;
+}
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ── modal: iOS action sheet-ish ────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 1000;
+  animation: fadeIn 0.15s;
+}
+.modal-panel {
+  background: #fff;
+  border: 1px solid var(--ios-border);
+  border-radius: var(--r-lg);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  padding: 22px;
+  width: min(480px, 95vw);
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: popIn 0.18s;
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ── page shell: iOS nav bar style ──────────────────────── */
+.page {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.page-main {
+  flex: 1;
+  padding: 16px;
+  width: 100%;
+  max-width: 640px; /* phone-ish */
+  margin: 0 auto;
+}
+.page-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: var(--ios-text);
+}
+.page-sub {
+  color: var(--ios-text-3);
+  margin-bottom: 18px;
+  font-size: 0.9rem;
+}
+
+/* ── table: iOS grouped list ────────────────────────────── */
+.table-wrap {
+  overflow-x: auto;
+  border-radius: var(--r-md);
+  border: 1px solid var(--ios-border);
+  background: #fff;
+}
+table.qgi-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+.qgi-table th {
+  text-align: left;
+  padding: 10px 12px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--ios-text-3);
+  border-bottom: 1px solid var(--ios-border);
+  background: #f2f2f2;
+}
+.qgi-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #e5e5e5;
+  color: var(--ios-text-2);
+}
+.qgi-table tr:last-child td {
+  border-bottom: none;
+}
+.qgi-table tr:hover td {
+  background: #f5f5f5;
+}
+
+/* ── misc ───────────────────────────────────────────────── */
+.muted {
+  color: var(--ios-text-3);
+}
+.muted-on-dark {
+  color: var(--ios-text-3);
+}
+.row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.spacer {
+  flex: 1;
+}
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+}
+.mt-1 { margin-top: 8px; }
+.mt-2 { margin-top: 16px; }
+.mt-3 { margin-top: 24px; }
+.mb-1 { margin-bottom: 8px; }
+.mb-2 { margin-bottom: 16px; }
+.mb-3 { margin-bottom: 24px; }
+.hidden { display: none !important; }
+
+/* spinner */
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+  vertical-align: middle;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -1,0 +1,94 @@
+/* iOS 5 — skeuomorphic design tokens. this is a war crime. */
+:root {
+  /* iOS 5 palette */
+  --ios-blue: #007aff;
+  --ios-blue-deep: #0062cc;
+  --ios-aqua-top: #6db5f6;
+  --ios-aqua-bottom: #0e6fd8;
+  --ios-aqua-highlight: #8cc6fa;
+  --ios-green: #4cd964;
+  --ios-green-glow: rgba(76, 217, 100, 0.5);
+  --ios-red: #ff3b30;
+  --ios-orange: #ff9500;
+  --ios-yellow: #ffcc00;
+  --ios-text: #000000;
+  --ios-text-2: #4a4a4a;
+  --ios-text-3: #8e8e93;
+  --ios-link: #007aff;
+  --ios-grouped-bg: #c7c7cc; /* grouped table bg */
+  --ios-cell: #ffffff;
+  --ios-cell-highlight: #d9d9d9;
+  --ios-border: #c8c7cc;
+  --ios-nav: #f7f7f7;
+  --ios-nav-border: #b3b3b3;
+  --ios-tabbar: #f7f7f7;
+  --ios-linen: repeating-linear-gradient(
+    45deg,
+    #4c4a4a 0px,
+    #4c4a4a 2px,
+    #3d3b3b 2px,
+    #3d3b3b 4px
+  );
+  --ios-keyboard: #d1d4db;
+  --ios-key: linear-gradient(180deg, #fdfdfd 0%, #f2f2f2 50%, #e0e0e0 100%);
+  --ios-key-border: #9a9a9a;
+  --ios-key-shadow: 0 1px 0 #ffffff inset, 0 -1px 2px rgba(0, 0, 0, 0.12);
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --font-ios: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-ios);
+  color: var(--ios-text);
+  /* grouped table background — iOS 5 gray */
+  background: var(--ios-grouped-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* iOS 5 grouped table background texture */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(600px 300px at 50% 0%, rgba(255, 255, 255, 0.25), transparent 70%),
+    linear-gradient(180deg, #d7d7db 0%, #c7c7cc 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+a {
+  color: var(--ios-link);
+  text-decoration: none;
+}
+a:active {
+  color: #fff;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-ios);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}

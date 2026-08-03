@@ -1,0 +1,25 @@
+{
+  "name": "qgi-platform",
+  "private": true,
+  "version": "2.0.0",
+  "type": "module",
+  "description": "QGI Unified Platform — one Firebase app for the glass shop: kiosk, order tracking, admin dashboard, catalog editor & install coordinator.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "hosting": "firebase deploy --only hosting",
+    "deploy": "firebase deploy"
+  },
+  "dependencies": {
+    "firebase": "^11.3.1",
+    "qrcode": "^1.5.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^7.1.3"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "vite": "^6.4.3"
+  }
+}
