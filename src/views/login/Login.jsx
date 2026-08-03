@@ -51,7 +51,7 @@ export default function Login() {
 
   return (
     <div className="page" style={{ placeItems: 'center', display: 'grid', padding: 24 }}>
-      <div className="glass-panel" style={{ maxWidth: 400, width: '100%', padding: 32 }}>
+      <div className="glass-panel-dark" style={{ maxWidth: 400, width: '100%', padding: 32 }}>
         <div style={{ textAlign: 'center', marginBottom: 20 }}>
           <div style={{ fontSize: 40, marginBottom: 8 }}>🪟</div>
           <h2 className="page-title" style={{ fontSize: '1.6rem' }}>QGI Platform</h2>
@@ -65,7 +65,7 @@ export default function Login() {
               padding: '7px 16px',
               borderRadius: 40,
               fontSize: '0.8rem',
-              background: mode === 'signin' ? 'var(--glass-deep)' : 'var(--surface-glass)',
+              background: mode === 'signin' ? 'var(--glass-active)' : 'var(--surface-glass)',
               color: mode === 'signin' ? '#fff' : 'var(--text)',
               border: '1px solid var(--border)',
             }}
@@ -79,7 +79,7 @@ export default function Login() {
               padding: '7px 16px',
               borderRadius: 40,
               fontSize: '0.8rem',
-              background: mode === 'bootstrap' ? 'var(--glass-deep)' : 'var(--surface-glass)',
+              background: mode === 'bootstrap' ? 'var(--glass-active)' : 'var(--surface-glass)',
               color: mode === 'bootstrap' ? '#fff' : 'var(--text)',
               border: '1px solid var(--border)',
             }}

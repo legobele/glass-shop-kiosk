@@ -26,7 +26,7 @@ export default function CustomerStep() {
     <div className="page">
       <div className="page-main" style={{ maxWidth: 640 }}>
         <div className="row mb-3">
-          <span className="muted" style={{ fontSize: '0.85rem', fontWeight: 600 }}>QGI</span>
+          <span className="muted-on-dark" style={{ fontSize: '0.85rem', fontWeight: 600 }}>QGI</span>
           <span className="spacer" />
           <button className="btn btn-ghost" onClick={() => setStep(0)}>←</button>
         </div>
@@ -65,7 +65,7 @@ export default function CustomerStep() {
                 className="btn"
                 style={{
                   padding: '8px 16px',
-                  background: contact.tab === tab ? 'var(--glass-deep)' : 'var(--surface-glass)',
+                  background: contact.tab === tab ? 'var(--glass-active)' : 'var(--surface-glass)',
                   color: contact.tab === tab ? '#fff' : 'var(--text)',
                   border: '1px solid var(--border)',
                   borderRadius: 40,

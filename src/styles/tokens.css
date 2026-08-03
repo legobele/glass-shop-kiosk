@@ -14,6 +14,10 @@
   --text-3: #64748b;
   --glass: #38bdf8;
   --glass-deep: #0ea5e9;
+  /* accent text that sits on dark — brighter for AA contrast */
+  --glass-on-dark: #7dd3fc;
+  /* active pill/tab bg with white text — deeper blue for AA contrast */
+  --glass-active: #0369a1;
   --glass-glow: rgba(56, 189, 248, 0.35);
   --success: #10b981;
   --success-glow: rgba(16, 185, 129, 0.35);
@@ -68,7 +72,7 @@ body::before {
 }
 
 a {
-  color: var(--glass-deep);
+  color: var(--glass-on-dark);
   text-decoration: none;
 }
 a:hover {

@@ -29,7 +29,7 @@ export default function SizeStep() {
     <div className="page">
       <div className="page-main" style={{ maxWidth: 560 }}>
         <div className="row mb-3">
-          <span className="muted" style={{ fontSize: '0.85rem', fontWeight: 600 }}>QGI</span>
+          <span className="muted-on-dark" style={{ fontSize: '0.85rem', fontWeight: 600 }}>QGI</span>
           <span className="spacer" />
           <button className="btn btn-ghost" onClick={() => setStep(2)}>←</button>
         </div>

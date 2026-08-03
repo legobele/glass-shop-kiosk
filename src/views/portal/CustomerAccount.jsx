@@ -26,7 +26,7 @@ export default function CustomerAccount() {
     <div className="page">
       <div className="page-main" style={{ maxWidth: 520 }}>
         <div className="row mb-3">
-          <span className="muted" style={{ fontSize: '0.85rem', fontWeight: 600 }}>QGI</span>
+          <span className="muted-on-dark" style={{ fontSize: '0.85rem', fontWeight: 600 }}>QGI</span>
           <span className="spacer" />
           <a href="#/kiosk" style={{ fontSize: '0.8rem' }}>← {t('en', 'backToKiosk')}</a>
         </div>
@@ -42,7 +42,7 @@ export default function CustomerAccount() {
                 padding: '7px 16px',
                 borderRadius: 40,
                 fontSize: '0.8rem',
-                background: tab === t2 ? 'var(--glass-deep)' : 'var(--surface-glass)',
+                background: tab === t2 ? 'var(--glass-active)' : 'var(--surface-glass)',
                 color: tab === t2 ? '#fff' : 'var(--text)',
                 border: '1px solid var(--border)',
               }}
@@ -348,7 +348,7 @@ function SignedIn() {
     <div className="page">
       <div className="page-main" style={{ maxWidth: 640 }}>
         <div className="row mb-3">
-          <span className="muted" style={{ fontSize: '0.85rem', fontWeight: 600 }}>QGI</span>
+          <span className="muted-on-dark" style={{ fontSize: '0.85rem', fontWeight: 600 }}>QGI</span>
           <span className="spacer" />
           <span className="pill pill-info">{profile?.role}</span>
           {profile?.trusted && <span className="pill pill-success">✓ Trusted</span>}

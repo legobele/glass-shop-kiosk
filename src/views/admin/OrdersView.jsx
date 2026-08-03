@@ -97,7 +97,7 @@ export default function OrdersView() {
               padding: '7px 16px',
               borderRadius: 40,
               fontSize: '0.82rem',
-              background: filter === s ? 'var(--glass-deep)' : 'var(--surface-glass)',
+              background: filter === s ? 'var(--glass-active)' : 'var(--surface-glass)',
               color: filter === s ? '#fff' : 'var(--text)',
               border: '1px solid var(--border)',
             }}

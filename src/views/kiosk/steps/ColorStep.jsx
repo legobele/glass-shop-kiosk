@@ -15,7 +15,7 @@ export default function ColorStep() {
     <div className="page">
       <div className="page-main" style={{ maxWidth: 640 }}>
         <div className="row mb-3">
-          <span className="muted" style={{ fontSize: '0.85rem', fontWeight: 600 }}>QGI</span>
+          <span className="muted-on-dark" style={{ fontSize: '0.85rem', fontWeight: 600 }}>QGI</span>
           <span className="spacer" />
           <button className="btn btn-ghost" onClick={() => setStep(4)}>←</button>
         </div>

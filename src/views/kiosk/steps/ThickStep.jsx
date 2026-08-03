@@ -17,7 +17,7 @@ export default function ThickStep() {
     <div className="page">
       <div className="page-main" style={{ maxWidth: 640 }}>
         <div className="row mb-3">
-          <span className="muted" style={{ fontSize: '0.85rem', fontWeight: 600 }}>QGI</span>
+          <span className="muted-on-dark" style={{ fontSize: '0.85rem', fontWeight: 600 }}>QGI</span>
           <span className="spacer" />
           <button className="btn btn-ghost" onClick={() => setStep(3)}>←</button>
         </div>
@@ -65,7 +65,7 @@ export default function ThickStep() {
                       justifyContent: 'center',
                     }}
                   >
-                    <span style={{ fontSize: '0.62rem', fontWeight: 700, color: 'var(--glass-deep)', whiteSpace: 'nowrap' }}>{th}</span>
+                    <span style={{ fontSize: '0.62rem', fontWeight: 700, color: '#0369a1', whiteSpace: 'nowrap' }}>{th}</span>
                   </div>
                 </div>
                 <div className="card-name" style={{ fontWeight: 700 }}>{th}</div>

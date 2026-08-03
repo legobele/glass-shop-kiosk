@@ -17,6 +17,27 @@
   box-shadow: var(--sh-lg);
 }
 
+/* dark frosted panel — for standalone auth screens that sit on the dark body
+   (light headings like .page-title need a dark surface behind them) */
+.glass-panel-dark {
+  background: rgba(15, 23, 42, 0.62);
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: var(--r-xl);
+  box-shadow: var(--sh-lg);
+}
+/* inside dark panels: labels/fields read light */
+.glass-panel-dark .field label {
+  color: rgba(226, 232, 240, 0.92);
+}
+.glass-panel-dark .muted {
+  color: rgba(203, 213, 225, 0.85);
+}
+.glass-panel-dark h4 {
+  color: #f1f5f9;
+}
+
 /* buttons */
 .btn {
   display: inline-flex;
@@ -264,9 +285,11 @@ textarea.input {
   font-size: clamp(1.5rem, 3vw, 2rem);
   font-weight: 700;
   margin-bottom: 4px;
+  /* sits directly on the dark body gradient — must be light to read */
+  color: #f8fafc;
 }
 .page-sub {
-  color: var(--text-2);
+  color: rgba(226, 232, 240, 0.85);
   margin-bottom: 24px;
   font-size: 0.95rem;
 }
@@ -310,6 +333,10 @@ table.qgi-table {
 /* misc */
 .muted {
   color: var(--text-3);
+}
+/* muted text that sits directly on the dark body gradient */
+.muted-on-dark {
+  color: rgba(203, 213, 225, 0.9);
 }
 .row {
   display: flex;
