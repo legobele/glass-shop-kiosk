@@ -267,7 +267,7 @@ textarea.input {
   flex: 1;
   padding: 16px;
   width: 100%;
-  max-width: 640px; /* phone-ish */
+  max-width: 900px; /* full desktop width, not phone-capped */
   margin: 0 auto;
 }
 .page-title {

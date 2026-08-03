@@ -3,14 +3,13 @@ export default function StatusBar() {
   return (
     <div
       style={{
-        position: 'sticky',
-        top: 0,
+        position: 'relative',
         zIndex: 100,
         height: 32,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '0 14px',
+        padding: '0 20px',
         fontSize: 13,
         fontWeight: 700,
         fontFamily: 'Helvetica Neue, Helvetica, Arial, sans-serif',
@@ -21,7 +20,7 @@ export default function StatusBar() {
       }}
     >
       <span style={{ flex: 1, textAlign: 'left' }}>9:41</span>
-      <span style={{ flex: 1, textAlign: 'center', fontSize: 12, fontWeight: 600 }}>QGI</span>
+      <span style={{ flex: 1, textAlign: 'center', fontSize: 12, fontWeight: 600 }}>AT&T</span>
       <span style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 5 }}>
         {/* signal bars */}
         <span style={{ display: 'flex', alignItems: 'flex-end', gap: 1.5, height: 11 }}>
@@ -29,8 +28,6 @@ export default function StatusBar() {
             <span key={h} style={{ width: 3, height: h, background: '#000', borderRadius: 1 }} />
           ))}
         </span>
-        {/* carrier */}
-        <span style={{ fontSize: 12, fontWeight: 600 }}>AT&T</span>
         {/* battery */}
         <span
           style={{
