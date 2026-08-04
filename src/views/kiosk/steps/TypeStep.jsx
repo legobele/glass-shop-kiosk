@@ -10,29 +10,38 @@ export default function TypeStep() {
   const { lang, setStep, order, set } = useKiosk();
 
   const pickBase = (type) => {
-    const patch = { baseType: type };
-    if (type === 'laminated') {
-      patch.isTempered = false;
-      patch.isUltraClear = false;
-    }
-    resolve(type, patch.isTempered ?? order.isTempered, patch.isUltraClear ?? order.isUltraClear);
+    const isTempered = type === 'laminated' ? false : order.isTempered;
+    const isUltraClear = type === 'laminated' ? false : order.isUltraClear;
+    // single state update so baseType isn't lost by a second set() call
+    set({
+      baseType: type,
+      isTempered,
+      isUltraClear,
+      glassType: resolveType(type, isTempered, isUltraClear),
+      thickness: null,
+      color: null,
+    });
   };
 
-  const resolve = (base, tempered, ultra) => {
-    let glassType = null;
-    if (base === 'laminated') glassType = 'laminated';
-    else if (ultra && tempered) glassType = 'ultra-clear-tempered';
-    else if (ultra) glassType = 'ultra-clear-float';
-    else if (tempered) glassType = 'tempered';
-    else glassType = 'float';
-    set({ glassType, thickness: null, color: null });
+  const resolveType = (base, tempered, ultra) => {
+    if (base === 'laminated') return 'laminated';
+    if (ultra && tempered) return 'ultra-clear-tempered';
+    if (ultra) return 'ultra-clear-float';
+    if (tempered) return 'tempered';
+    return 'float';
   };
 
   const toggle = (key) => {
+    if (order.baseType !== 'float') return;
     const isTempered = key === 'tempered' ? !order.isTempered : order.isTempered;
     const isUltraClear = key === 'ultraclear' ? !order.isUltraClear : order.isUltraClear;
-    set({ isTempered, isUltraClear });
-    resolve(order.baseType, isTempered, isUltraClear);
+    set({
+      isTempered,
+      isUltraClear,
+      glassType: resolveType(order.baseType, isTempered, isUltraClear),
+      thickness: null,
+      color: null,
+    });
   };
 
   return (
