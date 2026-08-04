@@ -4,14 +4,14 @@
   --ink: #0b1120;
   --ink-2: #1e293b;
   --ink-3: #334155;
-  --surface: rgba(255, 255, 255, 0.55);
-  --surface-strong: rgba(255, 255, 255, 0.82);
-  --surface-glass: rgba(255, 255, 255, 0.28);
-  --border: rgba(255, 255, 255, 0.55);
+  --surface: rgba(255, 255, 255, 0.92); /* near-opaque so dark text reads on glass */
+  --surface-strong: rgba(255, 255, 255, 0.97);
+  --surface-glass: rgba(255, 255, 255, 0.5);
+  --border: rgba(255, 255, 255, 0.6);
   --border-strong: rgba(15, 23, 42, 0.12);
   --text: #0f172a;
-  --text-2: #475569;
-  --text-3: #64748b;
+  --text-2: #334155; /* darker for AA on the lighter glass */
+  --text-3: #475569; /* darker for AA on the lighter glass */
   --glass: #38bdf8;
   --glass-deep: #0ea5e9;
   /* accent text that sits on dark — brighter for AA contrast */
