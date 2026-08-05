@@ -266,6 +266,21 @@ textarea.input {
   }
 }
 
+/* kiosk step change — slide + fade in like the original app */
+.kiosk-step {
+  animation: stepIn 0.3s var(--ease);
+}
+@keyframes stepIn {
+  from {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 /* page shell */
 .page {
   position: relative;

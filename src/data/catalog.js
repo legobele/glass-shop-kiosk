@@ -164,3 +164,34 @@ export function isFullLite(width, height, glassType, color, thickness) {
   }
   return true;
 }
+
+/** Does this color fit the chosen width/height for this glass type + thickness? */
+export function colorFitsSize(width, height, glassType, color, thickness) {
+  if (!width || !height) return true; // no size chosen yet — don't filter
+  return !isFullLite(width, height, glassType, color, thickness);
+}
+
+/** All thicknesses available across every color of a glass type. */
+export function thicknessesForType(glassType) {
+  const catalog = GLASS_CATALOG[glassType] || {};
+  const set = new Set();
+  Object.values(catalog).forEach((ths) => ths.forEach((th) => set.add(th)));
+  return THICKNESS_ORDER.filter((th) => set.has(th));
+}
+
+/** All thicknesses available across every glass type (union). */
+export function allThicknesses() {
+  const set = new Set();
+  Object.values(GLASS_CATALOG).forEach((colors) =>
+    Object.values(colors).forEach((ths) => ths.forEach((th) => set.add(th)))
+  );
+  return THICKNESS_ORDER.filter((th) => set.has(th));
+}
+
+/** Glass types that offer the given thickness (union over their colors). */
+export function typesForThickness(thickness) {
+  if (!thickness) return Object.keys(GLASS_TYPES);
+  return Object.keys(GLASS_CATALOG).filter((type) =>
+    Object.values(GLASS_CATALOG[type]).some((ths) => ths.includes(thickness))
+  );
+}

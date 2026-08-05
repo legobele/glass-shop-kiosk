@@ -3,7 +3,7 @@ import { t } from '../../../i18n';
 import Stepper from '../../../components/Stepper';
 import Button from '../../../components/Button';
 
-const STEP_IDS = ['customer', 'type', 'size', 'thick', 'color', 'add', 'pay', 'review'];
+const STEP_IDS = ['customer', 'thick', 'type', 'size', 'color', 'add', 'pay', 'review'];
 
 const ADDITIONS = [
   { key: 'beveling', icon: '📐', nameKey: 'addBevName', descKey: 'addBevDesc' },
@@ -24,7 +24,7 @@ export default function AdditionsStep() {
     <div className="page">
       <div className="page-main" style={{ maxWidth: 640 }}>
         <div className="row mb-3">
-          <span className="muted-on-dark" style={{ fontSize: '0.85rem', fontWeight: 600 }}>QGI</span>
+          <span className="muted-on-dark" style={{ fontSize: '0.85rem', fontWeight: 600 }}>Quality Glass</span>
           <span className="spacer" />
           <button className="btn btn-ghost" onClick={() => setStep(5)}>←</button>
         </div>

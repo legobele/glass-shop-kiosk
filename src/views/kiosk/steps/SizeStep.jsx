@@ -8,7 +8,7 @@ import Button from '../../../components/Button';
 import Numpad from '../../../components/Numpad';
 import Modal from '../../../components/Modal';
 
-const STEP_IDS = ['customer', 'type', 'size', 'thick', 'color', 'add', 'pay', 'review'];
+const STEP_IDS = ['customer', 'thick', 'type', 'size', 'color', 'add', 'pay', 'review'];
 
 export default function SizeStep() {
   const { lang, setStep, order, set } = useKiosk();
@@ -29,11 +29,11 @@ export default function SizeStep() {
     <div className="page">
       <div className="page-main" style={{ maxWidth: 560 }}>
         <div className="row mb-3">
-          <span className="muted-on-dark" style={{ fontSize: '0.85rem', fontWeight: 600 }}>QGI</span>
+          <span className="muted-on-dark" style={{ fontSize: '0.85rem', fontWeight: 600 }}>Quality Glass</span>
           <span className="spacer" />
-          <button className="btn btn-ghost" onClick={() => setStep(2)}>←</button>
+          <button className="btn btn-ghost" onClick={() => setStep(3)}>←</button>
         </div>
-        <Stepper steps={STEP_IDS} current={2} />
+        <Stepper steps={STEP_IDS} current={3} />
         <h2 className="page-title mt-3">{t(lang, 'sizeTitle')}</h2>
         <p className="page-sub">{t(lang, 'sizeSub')}</p>
 
@@ -89,7 +89,7 @@ export default function SizeStep() {
         )}
 
         <div className="mt-3">
-          <Button block disabled={!bothSet} onClick={() => setStep(4)}>
+          <Button block disabled={!bothSet} onClick={() => setStep(5)}>
             {t(lang, 'continueBtn')}
           </Button>
         </div>

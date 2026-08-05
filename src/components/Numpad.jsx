@@ -72,7 +72,7 @@ export default function Numpad({
                 fontSize: '0.78rem',
                 borderRadius: 10,
                 border: sel ? '2px solid var(--glass)' : undefined,
-                background: sel ? 'rgba(56,189,248,0.12)' : undefined,
+                background: sel ? 'rgba(56,189,248,0.18)' : undefined,
               }}
             >
               {f.val === 0 ? '0"' : f.label}

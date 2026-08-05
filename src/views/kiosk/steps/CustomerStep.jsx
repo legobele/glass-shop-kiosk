@@ -6,9 +6,9 @@ import Button from '../../../components/Button';
 const STEPS = [
   { id: 'lang' },
   { id: 'customer' },
+  { id: 'thick' },
   { id: 'type' },
   { id: 'size' },
-  { id: 'thick' },
   { id: 'color' },
   { id: 'add' },
   { id: 'pay' },
@@ -26,7 +26,7 @@ export default function CustomerStep() {
     <div className="page">
       <div className="page-main" style={{ maxWidth: 640 }}>
         <div className="row mb-3">
-          <span className="muted-on-dark" style={{ fontSize: '0.85rem', fontWeight: 600 }}>QGI</span>
+          <span className="muted-on-dark" style={{ fontSize: '0.85rem', fontWeight: 600 }}>Quality Glass</span>
           <span className="spacer" />
           <button className="btn btn-ghost" onClick={() => setStep(0)}>←</button>
         </div>
