@@ -38,7 +38,7 @@ export default function AdminLayout() {
       >
         <div className="page-main" style={{ maxWidth: 1200, display: 'flex', alignItems: 'center', gap: 20, paddingTop: 12, paddingBottom: 12 }}>
           <NavLink to="/admin" style={{ color: '#fff', fontFamily: 'var(--font-display)', fontWeight: 800, letterSpacing: '0.02em', textDecoration: 'none' }}>
-            QGI <span className="muted" style={{ color: 'rgba(255,255,255,0.5)' }}>/ admin</span>
+            Quality Glass <span className="muted" style={{ color: 'rgba(255,255,255,0.5)' }}>/ admin</span>
           </NavLink>
           <nav className="row" style={{ gap: 6, flex: 1 }}>
             {LINKS.filter((l) => can(l.perm)).map((l) => (

@@ -1,24 +1,27 @@
 import { useKiosk } from '../KioskContext';
 import { t } from '../../../i18n';
-import { GLASS_TYPES } from '../../../data/catalog';
+import { GLASS_TYPES, typesForThickness } from '../../../data/catalog';
 import Stepper from '../../../components/Stepper';
 import Button from '../../../components/Button';
 
-const STEP_IDS = ['customer', 'type', 'size', 'thick', 'color', 'add', 'pay', 'review'];
+const STEP_IDS = ['customer', 'thick', 'type', 'size', 'color', 'add', 'pay', 'review'];
 
 export default function TypeStep() {
   const { lang, setStep, order, set } = useKiosk();
+  const supported = typesForThickness(order.thickness);
 
   const pickBase = (type) => {
     const isTempered = type === 'laminated' ? false : order.isTempered;
     const isUltraClear = type === 'laminated' ? false : order.isUltraClear;
-    // single state update so baseType isn't lost by a second set() call
+    const glassType = resolveType(type, isTempered, isUltraClear);
+    // thickness was chosen before this step — keep it if this type supports it
+    const thicknessOk = order.thickness && typesForThickness(order.thickness).includes(glassType);
     set({
       baseType: type,
       isTempered,
       isUltraClear,
-      glassType: resolveType(type, isTempered, isUltraClear),
-      thickness: null,
+      glassType,
+      thickness: thicknessOk ? order.thickness : null,
       color: null,
     });
   };
@@ -35,11 +38,14 @@ export default function TypeStep() {
     if (order.baseType !== 'float') return;
     const isTempered = key === 'tempered' ? !order.isTempered : order.isTempered;
     const isUltraClear = key === 'ultraclear' ? !order.isUltraClear : order.isUltraClear;
+    const glassType = resolveType(order.baseType, isTempered, isUltraClear);
+    // switching to tempered/ultra-clear may change the thickness range
+    const thicknessOk = order.thickness && typesForThickness(order.thickness).includes(glassType);
     set({
       isTempered,
       isUltraClear,
-      glassType: resolveType(order.baseType, isTempered, isUltraClear),
-      thickness: null,
+      glassType,
+      thickness: thicknessOk ? order.thickness : null,
       color: null,
     });
   };
@@ -48,16 +54,22 @@ export default function TypeStep() {
     <div className="page">
       <div className="page-main" style={{ maxWidth: 640 }}>
         <div className="row mb-3">
-          <span className="muted-on-dark" style={{ fontSize: '0.85rem', fontWeight: 600 }}>QGI</span>
+          <span className="muted-on-dark" style={{ fontSize: '0.85rem', fontWeight: 600 }}>Quality Glass</span>
           <span className="spacer" />
-          <button className="btn btn-ghost" onClick={() => setStep(1)}>←</button>
+          <button className="btn btn-ghost" onClick={() => setStep(2)}>←</button>
         </div>
-        <Stepper steps={STEP_IDS} current={1} />
+        <Stepper steps={STEP_IDS} current={2} />
         <h2 className="page-title mt-3">{t(lang, 'typeTitle')}</h2>
         <p className="page-sub">{t(lang, 'typeSub')}</p>
 
+        {!supported.length && (
+          <div className="glass-card mt-2" style={{ padding: 14, borderColor: 'rgba(245,158,11,0.5)', background: 'var(--warn-bg)' }}>
+            <strong style={{ color: '#b45309' }}>⚠️ {t(lang, 'thickNoType')}</strong>
+          </div>
+        )}
+
         <div className="grid-2">
-          {['float', 'laminated'].map((type) => {
+          {supported.map((type) => {
             const info = GLASS_TYPES[type];
             const sel = order.baseType === type;
             return (
@@ -73,7 +85,7 @@ export default function TypeStep() {
                   alignItems: 'center',
                   border: sel ? '2px solid var(--glass)' : '1px solid var(--border)',
                   boxShadow: sel ? 'var(--glow-md)' : undefined,
-                  background: sel ? 'rgba(56,189,248,0.1)' : undefined,
+                  background: sel ? 'rgba(56,189,248,0.18)' : undefined,
                 }}
               >
                 <span style={{ fontSize: 30 }}>{info.icon}</span>
@@ -97,41 +109,23 @@ export default function TypeStep() {
             const on = sw.key === 'tempered' ? order.isTempered : order.isUltraClear;
             const disabled = order.baseType !== 'float';
             return (
-              <div key={sw.key} style={{ display: 'flex', alignItems: 'center', gap: 10, opacity: disabled ? 0.4 : 1 }}>
-                <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>{sw.icon} {sw.label}</span>
-                {/* iOS toggle switch */}
-                <button
-                  onClick={() => toggle(sw.key)}
-                  disabled={disabled}
-                  style={{
-                    width: 52,
-                    height: 30,
-                    borderRadius: 15,
-                    border: '1px solid rgba(0,0,0,0.2)',
-                    background: on
-                      ? 'linear-gradient(180deg, #5be372 0%, #4cd964 100%)'
-                      : 'linear-gradient(180deg, #fdfdfd 0%, #e3e3e3 100%)',
-                    boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.15)',
-                    position: 'relative',
-                    cursor: disabled ? 'not-allowed' : 'pointer',
-                    transition: 'background 0.15s',
-                  }}
-                >
-                  <span
-                    style={{
-                      position: 'absolute',
-                      top: 2,
-                      left: on ? 24 : 2,
-                      width: 24,
-                      height: 24,
-                      borderRadius: 12,
-                      background: 'radial-gradient(circle at 35% 30%, #fff 0%, #e8e8e8 60%, #cfcfcf 100%)',
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.9)',
-                      transition: 'left 0.15s',
-                    }}
-                  />
-                </button>
-              </div>
+              <button
+                key={sw.key}
+                className="btn"
+                onClick={() => toggle(sw.key)}
+                disabled={disabled}
+                style={{
+                  padding: '10px 18px',
+                  borderRadius: 40,
+                  background: on ? 'var(--glass-deep)' : 'var(--surface-glass)',
+                  color: on ? '#fff' : 'var(--text)',
+                  border: on ? '1px solid var(--glass)' : '1px solid var(--border)',
+                  opacity: disabled ? 0.4 : 1,
+                  pointerEvents: disabled ? 'none' : 'auto',
+                }}
+              >
+                {sw.icon} {sw.label}
+              </button>
             );
           })}
         </div>
@@ -144,7 +138,7 @@ export default function TypeStep() {
         )}
 
         <div className="mt-3">
-          <Button block disabled={!order.glassType} onClick={() => setStep(3)}>
+          <Button block disabled={!order.glassType} onClick={() => setStep(4)}>
             {t(lang, 'continueBtn')}
           </Button>
         </div>

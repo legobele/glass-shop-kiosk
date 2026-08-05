@@ -87,7 +87,7 @@ export default function Track() {
     <div className="page">
       <div className="page-main" style={{ maxWidth: 520 }}>
         <div className="row mb-3">
-          <span className="muted-on-dark" style={{ fontSize: '0.85rem', fontWeight: 600 }}>QGI</span>
+          <span className="muted-on-dark" style={{ fontSize: '0.85rem', fontWeight: 600 }}>Quality Glass</span>
           <span className="spacer" />
           {user ? (
             <span className="pill pill-info">{profile?.displayName || user.email}</span>

@@ -6,9 +6,9 @@ import Button from '../../../components/Button';
 const STEPS = [
   { id: 'lang' },
   { id: 'customer' },
+  { id: 'thick' },
   { id: 'type' },
   { id: 'size' },
-  { id: 'thick' },
   { id: 'color' },
   { id: 'add' },
   { id: 'pay' },
@@ -26,7 +26,7 @@ export default function CustomerStep() {
     <div className="page">
       <div className="page-main" style={{ maxWidth: 640 }}>
         <div className="row mb-3">
-          <span className="muted-on-dark" style={{ fontSize: '0.85rem', fontWeight: 600 }}>QGI</span>
+          <span className="muted-on-dark" style={{ fontSize: '0.85rem', fontWeight: 600 }}>Quality Glass</span>
           <span className="spacer" />
           <button className="btn btn-ghost" onClick={() => setStep(0)}>←</button>
         </div>
@@ -57,30 +57,18 @@ export default function CustomerStep() {
             />
           </div>
 
-          {/* contact tabs — iOS segmented control */}
-          <div
-            style={{
-              display: 'flex',
-              marginBottom: 16,
-              border: '1px solid #007aff',
-              borderRadius: 8,
-              overflow: 'hidden',
-              background: '#fff',
-            }}
-          >
-            {['phone', 'email', 'both', 'none'].map((tab, i) => (
+          {/* contact tabs */}
+          <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
+            {['phone', 'email', 'both', 'none'].map((tab) => (
               <button
                 key={tab}
+                className="btn"
                 style={{
-                  flex: 1,
-                  padding: '8px 4px',
-                  background: contact.tab === tab ? '#007aff' : '#fff',
-                  color: contact.tab === tab ? '#fff' : '#007aff',
-                  border: 'none',
-                  borderLeft: i > 0 ? '1px solid #007aff' : 'none',
-                  fontSize: '0.8rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
+                  padding: '8px 16px',
+                  background: contact.tab === tab ? 'var(--glass-active)' : 'var(--surface-glass)',
+                  color: contact.tab === tab ? '#fff' : 'var(--text)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 40,
                 }}
                 onClick={() => setContact({ tab })}
               >

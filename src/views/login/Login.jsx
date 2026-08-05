@@ -54,7 +54,7 @@ export default function Login() {
       <div className="glass-panel-dark" style={{ maxWidth: 400, width: '100%', padding: 32 }}>
         <div style={{ textAlign: 'center', marginBottom: 20 }}>
           <div style={{ fontSize: 40, marginBottom: 8 }}>🪟</div>
-          <h2 className="page-title" style={{ fontSize: '1.6rem' }}>QGI Platform</h2>
+          <h2 className="page-title" style={{ fontSize: '1.6rem' }}>Quality Glass Platform</h2>
           <p className="page-sub" style={{ marginBottom: 0 }}>{t('en', 'loginSub')}</p>
         </div>
 

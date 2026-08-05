@@ -8,7 +8,7 @@ import Button from '../../../components/Button';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '../../../firebase';
 
-const STEP_IDS = ['customer', 'type', 'size', 'thick', 'color', 'add', 'pay', 'review'];
+const STEP_IDS = ['customer', 'thick', 'type', 'size', 'color', 'add', 'pay', 'review'];
 
 export default function ReviewStep() {
   const { lang, setStep, order, set } = useKiosk();
@@ -70,7 +70,7 @@ export default function ReviewStep() {
     <div className="page">
       <div className="page-main" style={{ maxWidth: 560 }}>
         <div className="row mb-3">
-          <span className="muted-on-dark" style={{ fontSize: '0.85rem', fontWeight: 600 }}>QGI</span>
+          <span className="muted-on-dark" style={{ fontSize: '0.85rem', fontWeight: 600 }}>Quality Glass</span>
           <span className="spacer" />
           <button className="btn btn-ghost" onClick={() => setStep(7)}>←</button>
         </div>

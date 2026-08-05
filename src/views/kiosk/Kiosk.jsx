@@ -15,9 +15,9 @@ import { isMobileLike, isProd } from '../../lib/device';
 const STEPS = [
   { id: 'lang', el: LangStep },
   { id: 'customer', el: CustomerStep },
+  { id: 'thick', el: ThickStep },
   { id: 'type', el: TypeStep },
   { id: 'size', el: SizeStep },
-  { id: 'thick', el: ThickStep },
   { id: 'color', el: ColorStep },
   { id: 'add', el: AdditionsStep },
   { id: 'pay', el: PaymentStep },
@@ -45,7 +45,9 @@ function KioskInner() {
   const Current = STEPS[step].el;
   return (
     <div className="page" style={{ padding: 0 }}>
-      <Current />
+      <div key={step} className="kiosk-step">
+        <Current />
+      </div>
     </div>
   );
 }

@@ -3,7 +3,7 @@ import { t } from '../../../i18n';
 import Stepper from '../../../components/Stepper';
 import Button from '../../../components/Button';
 
-const STEP_IDS = ['customer', 'type', 'size', 'thick', 'color', 'add', 'pay', 'review'];
+const STEP_IDS = ['customer', 'thick', 'type', 'size', 'color', 'add', 'pay', 'review'];
 
 const METHODS = [
   { key: 'cash', icon: '💵', labelKey: 'payCash' },
@@ -18,7 +18,7 @@ export default function PaymentStep() {
     <div className="page">
       <div className="page-main" style={{ maxWidth: 560 }}>
         <div className="row mb-3">
-          <span className="muted-on-dark" style={{ fontSize: '0.85rem', fontWeight: 600 }}>QGI</span>
+          <span className="muted-on-dark" style={{ fontSize: '0.85rem', fontWeight: 600 }}>Quality Glass</span>
           <span className="spacer" />
           <button className="btn btn-ghost" onClick={() => setStep(6)}>←</button>
         </div>
@@ -42,7 +42,7 @@ export default function PaymentStep() {
                   alignItems: 'center',
                   border: sel ? '2px solid var(--glass)' : '1px solid var(--border)',
                   boxShadow: sel ? 'var(--glow-md)' : undefined,
-                  background: sel ? 'rgba(56,189,248,0.1)' : undefined,
+                  background: sel ? 'rgba(56,189,248,0.18)' : undefined,
                 }}
               >
                 <span style={{ fontSize: 26 }}>{m.icon}</span>

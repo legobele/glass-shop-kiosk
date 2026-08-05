@@ -26,7 +26,7 @@ export default function CustomerAccount() {
     <div className="page">
       <div className="page-main" style={{ maxWidth: 520 }}>
         <div className="row mb-3">
-          <span className="muted-on-dark" style={{ fontSize: '0.85rem', fontWeight: 600 }}>QGI</span>
+          <span className="muted-on-dark" style={{ fontSize: '0.85rem', fontWeight: 600 }}>Quality Glass</span>
           <span className="spacer" />
           <a href="#/kiosk" style={{ fontSize: '0.8rem' }}>← {t('en', 'backToKiosk')}</a>
         </div>
@@ -348,7 +348,7 @@ function SignedIn() {
     <div className="page">
       <div className="page-main" style={{ maxWidth: 640 }}>
         <div className="row mb-3">
-          <span className="muted-on-dark" style={{ fontSize: '0.85rem', fontWeight: 600 }}>QGI</span>
+          <span className="muted-on-dark" style={{ fontSize: '0.85rem', fontWeight: 600 }}>Quality Glass</span>
           <span className="spacer" />
           <span className="pill pill-info">{profile?.role}</span>
           {profile?.trusted && <span className="pill pill-success">✓ Trusted</span>}
