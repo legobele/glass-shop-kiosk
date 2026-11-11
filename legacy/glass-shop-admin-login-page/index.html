@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In to QGI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            max-width: 450px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .login-header {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .login-form {
+            padding: 40px 30px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #e74c3c;
+            box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
+        }
+
+        .btn-secondary {
+            background: #ecf0f1;
+            color: #2c3e50;
+        }
+
+        .btn-secondary:hover {
+            background: #d5dbdb;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 25px 0;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e0e0e0;
+        }
+
+        .divider span {
+            padding: 0 15px;
+        }
+
+        .alert {
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+
+        .alert-error {
+            background: #fee;
+            color: #c0392b;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .text-link {
+            color: #e74c3c;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .text-link:hover {
+            text-decoration: underline;
+        }
+
+        .text-center {
+            text-align: center;
+            margin-top: 15px;
+            color: #7f8c8d;
+            font-size: 0.95rem;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* PIN pad styles */
+        .pin-display {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .pin-dots {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .pin-dot {
+            width: 20px;
+            height: 20px;
+            border: 3px solid #e0e0e0;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .pin-dot.filled {
+            background: #e74c3c;
+            border-color: #e74c3c;
+        }
+
+        .pin-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            max-width: 280px;
+            margin: 0 auto 20px;
+        }
+
+        .pin-key {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #2c3e50;
+            user-select: none;
+        }
+
+        .pin-key:hover {
+            background: #f8f9fa;
+            border-color: #e74c3c;
+            transform: scale(1.05);
+        }
+
+        .pin-key:active {
+            transform: scale(0.95);
+        }
+
+        .pin-key.clear {
+            background: #fee;
+            color: #c0392b;
+        }
+
+        .pin-key.clear:hover {
+            background: #fdd;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .password-toggle {
+            position: relative;
+        }
+
+        .password-toggle-btn {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #7f8c8d;
+            cursor: pointer;
+            font-size: 0.9rem;
+            padding: 5px 10px;
+        }
+
+        .password-toggle-btn:hover {
+            color: #2c3e50;
+        }
+
+        /* accessibility button styling */
+        .accessibility-fab {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            z-index: 9998;
+            border: none;
+            transition: all 0.3s ease;
+            font-size: 1.5rem;
+        }
+
+        .accessibility-fab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .accessibility-fab:focus {
+            outline: 3px solid #fbbf24;
+            outline-offset: 3px;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h1 class="logo">Quality Glass</h1>
+            <p class="subtitle">Admin Dashboard</p>
+        </div>
+
+        <!-- EMAIL/PASSWORD LOGIN VIEW -->
+        <div id="login-view" class="login-form">
+            <div id="alert-container"></div>
+
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" id="email" class="form-input" placeholder="user@qgipr.com" autocomplete="email">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <div class="password-toggle">
+                    <input type="password" id="password" class="form-input" placeholder="Enter your password" autocomplete="current-password">
+                    <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility()">Show</button>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="login()">
+                <span id="login-btn-text">Sign In</span>
+            </button>
+
+            <div class="divider">
+                <span>OR</span>
+            </div>
+
+            <button class="btn btn-secondary" onclick="showPinView()">
+                Sign In with PIN
+            </button>
+
+            <div class="text-center">
+                Don't have an account? <a class="text-link" onclick="showSignupView()">Sign Up</a>
+            </div>
+        </div>
+
+        <!-- PIN LOGIN VIEW -->
+        <div id="pin-view" class="login-form hidden">
+            <div id="pin-alert-container"></div>
+
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" id="pin-email" class="form-input" placeholder="user@qgipr.com">
+            </div>
+
+            <div class="pin-display">
+                <label class="form-label">Enter PIN</label>
+                <div class="pin-dots">
+                    <div class="pin-dot" id="dot-1"></div>
+                    <div class="pin-dot" id="dot-2"></div>
+                    <div class="pin-dot" id="dot-3"></div>
+                    <div class="pin-dot" id="dot-4"></div>
+                </div>
+            </div>
+
+            <div class="pin-grid">
+                <div class="pin-key" onclick="addPinDigit('1')">1</div>
+                <div class="pin-key" onclick="addPinDigit('2')">2</div>
+                <div class="pin-key" onclick="addPinDigit('3')">3</div>
+                <div class="pin-key" onclick="addPinDigit('4')">4</div>
+                <div class="pin-key" onclick="addPinDigit('5')">5</div>
+                <div class="pin-key" onclick="addPinDigit('6')">6</div>
+                <div class="pin-key" onclick="addPinDigit('7')">7</div>
+                <div class="pin-key" onclick="addPinDigit('8')">8</div>
+                <div class="pin-key" onclick="addPinDigit('9')">9</div>
+                <div class="pin-key clear" onclick="clearPin()">✕</div>
+                <div class="pin-key" onclick="addPinDigit('0')">0</div>
+                <div class="pin-key clear" onclick="backspacePin()">⌫</div>
+            </div>
+
+            <button class="btn btn-secondary" onclick="showLoginView()">
+                Back to Email Login
+            </button>
+        </div>
+
+        <!-- SIGNUP VIEW -->
+        <div id="signup-view" class="login-form hidden">
+            <div id="signup-alert-container"></div>
+
+            <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <input type="text" id="signup-name" class="form-input" placeholder="John Doe" autocomplete="name">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Email (@qgipr.com only)</label>
+                <input type="email" id="signup-email" class="form-input" placeholder="user@qgipr.com" autocomplete="email">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Password (min 8 characters)</label>
+                <div class="password-toggle">
+                    <input type="password" id="signup-password" class="form-input" placeholder="Create a password" autocomplete="new-password">
+                    <button type="button" class="password-toggle-btn" onclick="toggleSignupPasswordVisibility()">Show</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Confirm Password</label>
+                <div class="password-toggle">
+                    <input type="password" id="signup-password-confirm" class="form-input" placeholder="Confirm your password" autocomplete="new-password">
+                    <button type="button" class="password-toggle-btn" onclick="toggleConfirmPasswordVisibility()">Show</button>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="signup()">
+                <span id="signup-btn-text">Create Account</span>
+            </button>
+
+            <div class="text-center">
+                Already have an account? <a class="text-link" onclick="showLoginView()">Sign In</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Accessibility Floating Action Button -->
+    <button class="accessibility-fab" onclick="window.MakeMeAccessible()" aria-label="Open accessibility settings" title="Accessibility Settings">
+        ♿
+    </button>
+
+    <script>
+        // API endpoint - UPDATE THIS WITH YOUR NGROK URL
+        const API_BASE_URL = 'https://vague-nonspeculatively-florida.ngrok-free.dev';
+
+        let currentPin = '';
+
+        // View switching
+        function showLoginView() {
+            document.getElementById('login-view').classList.remove('hidden');
+            document.getElementById('pin-view').classList.add('hidden');
+            document.getElementById('signup-view').classList.add('hidden');
+            clearAlerts();
+        }
+
+        function showPinView() {
+            document.getElementById('login-view').classList.add('hidden');
+            document.getElementById('pin-view').classList.remove('hidden');
+            document.getElementById('signup-view').classList.add('hidden');
+            clearAlerts();
+            clearPin();
+        }
+
+        function showSignupView() {
+            document.getElementById('login-view').classList.add('hidden');
+            document.getElementById('pin-view').classList.add('hidden');
+            document.getElementById('signup-view').classList.remove('hidden');
+            clearAlerts();
+        }
+
+        // Password visibility toggles
+        function togglePasswordVisibility() {
+            const input = document.getElementById('password');
+            const btn = event.target;
+            if (input.type === 'password') {
+                input.type = 'text';
+                btn.textContent = 'Hide';
+            } else {
+                input.type = 'password';
+                btn.textContent = 'Show';
+            }
+        }
+
+        function toggleSignupPasswordVisibility() {
+            const input = document.getElementById('signup-password');
+            const btn = event.target;
+            if (input.type === 'password') {
+                input.type = 'text';
+                btn.textContent = 'Hide';
+            } else {
+                input.type = 'password';
+                btn.textContent = 'Show';
+            }
+        }
+
+        function toggleConfirmPasswordVisibility() {
+            const input = document.getElementById('signup-password-confirm');
+            const btn = event.target;
+            if (input.type === 'password') {
+                input.type = 'text';
+                btn.textContent = 'Hide';
+            } else {
+                input.type = 'password';
+                btn.textContent = 'Show';
+            }
+        }
+
+        // Alert helpers
+        function showAlert(containerId, message, type) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+        }
+
+        function clearAlerts() {
+            document.getElementById('alert-container').innerHTML = '';
+            document.getElementById('pin-alert-container').innerHTML = '';
+            document.getElementById('signup-alert-container').innerHTML = '';
+        }
+
+        // PIN pad functions
+        function addPinDigit(digit) {
+            if (currentPin.length < 4) {
+                currentPin += digit;
+                updatePinDisplay();
+                
+                // Auto-submit when 4 digits entered
+                if (currentPin.length === 4) {
+                    setTimeout(() => loginWithPin(), 300);
+                }
+            }
+        }
+
+        function backspacePin() {
+            if (currentPin.length > 0) {
+                currentPin = currentPin.slice(0, -1);
+                updatePinDisplay();
+            }
+        }
+
+        function clearPin() {
+            currentPin = '';
+            updatePinDisplay();
+        }
+
+        function updatePinDisplay() {
+            for (let i = 1; i <= 4; i++) {
+                const dot = document.getElementById(`dot-${i}`);
+                if (i <= currentPin.length) {
+                    dot.classList.add('filled');
+                } else {
+                    dot.classList.remove('filled');
+                }
+            }
+        }
+
+        // Email/Password Login
+        async function login() {
+            clearAlerts();
+            
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+
+            if (!email || !password) {
+                showAlert('alert-container', 'Please enter both email and password', 'error');
+                return;
+            }
+
+            const btnText = document.getElementById('login-btn-text');
+            btnText.innerHTML = '<span class="loading-spinner"></span>';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Save token
+                    localStorage.setItem('qgi-auth-token', data.token);
+                    localStorage.setItem('qgi-user', JSON.stringify(data.user));
+                    
+                    // Redirect to admin dashboard
+                    window.location.href = 'https://legobele.github.io/glass-shop-admin-tool';
+                } else {
+                    showAlert('alert-container', data.message || 'Login failed', 'error');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showAlert('alert-container', 'Failed to connect to server. Check your API URL.', 'error');
+            } finally {
+                btnText.textContent = 'Sign In';
+            }
+        }
+
+        // PIN Login
+        async function loginWithPin() {
+            clearAlerts();
+            
+            const email = document.getElementById('pin-email').value.trim();
+
+            if (!email) {
+                showAlert('pin-alert-container', 'Please enter your email', 'error');
+                clearPin();
+                return;
+            }
+
+            if (currentPin.length !== 4) {
+                showAlert('pin-alert-container', 'Please enter a 4-digit PIN', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/auth/login-pin`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        email, 
+                        pin: currentPin 
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Save token
+                    localStorage.setItem('qgi-auth-token', data.token);
+                    localStorage.setItem('qgi-user', JSON.stringify(data.user));
+                    
+                    // Redirect to admin dashboard
+                    window.location.href = 'https://legobele.github.io/glass-shop-admin-tool';
+                } else {
+                    showAlert('pin-alert-container', data.message || 'PIN login failed', 'error');
+                    clearPin();
+                }
+            } catch (error) {
+                console.error('PIN login error:', error);
+                showAlert('pin-alert-container', 'Failed to connect to server. Check your API URL.', 'error');
+                clearPin();
+            }
+        }
+
+        // Signup
+        async function signup() {
+            clearAlerts();
+            
+            const fullName = document.getElementById('signup-name').value.trim();
+            const email = document.getElementById('signup-email').value.trim();
+            const password = document.getElementById('signup-password').value;
+            const confirmPassword = document.getElementById('signup-password-confirm').value;
+
+            // Validation
+            if (!fullName || !email || !password || !confirmPassword) {
+                showAlert('signup-alert-container', 'Please fill in all fields', 'error');
+                return;
+            }
+
+            if (!email.toLowerCase().endsWith('@qgipr.com')) {
+                showAlert('signup-alert-container', 'Only @qgipr.com email addresses are allowed', 'error');
+                return;
+            }
+
+            if (password.length < 8) {
+                showAlert('signup-alert-container', 'Password must be at least 8 characters long', 'error');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showAlert('signup-alert-container', 'Passwords do not match', 'error');
+                return;
+            }
+
+            const btnText = document.getElementById('signup-btn-text');
+            btnText.innerHTML = '<span class="loading-spinner"></span>';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/auth/signup`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        email, 
+                        password, 
+                        fullName 
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showAlert('signup-alert-container', 
+                        'Account created successfully! Please wait for an administrator to verify your account before you can sign in.', 
+                        'success'
+                    );
+                    
+                    // Clear form
+                    document.getElementById('signup-name').value = '';
+                    document.getElementById('signup-email').value = '';
+                    document.getElementById('signup-password').value = '';
+                    document.getElementById('signup-password-confirm').value = '';
+                } else {
+                    showAlert('signup-alert-container', data.message || 'Signup failed', 'error');
+                }
+            } catch (error) {
+                console.error('Signup error:', error);
+                showAlert('signup-alert-container', 'Failed to connect to server. Check your API URL.', 'error');
+            } finally {
+                btnText.textContent = 'Create Account';
+            }
+        }
+
+        // Enter key handlers
+        document.getElementById('password').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') login();
+        });
+
+        document.getElementById('signup-password-confirm').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') signup();
+        });
+
+        // Check if already logged in
+        window.addEventListener('load', async function() {
+            const token = localStorage.getItem('qgi-auth-token');
+            if (token) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/auth/verify`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        // Already logged in, redirect
+                        window.location.href = 'https://legobele.github.io/glass-shop-admin-tool';
+                    } else {
+                        // Token invalid, clear it
+                        localStorage.removeItem('qgi-auth-token');
+                        localStorage.removeItem('qgi-user');
+                    }
+                } catch (error) {
+                    console.error('Token verification failed:', error);
+                }
+            }
+        });
+
+        // ============================================================
+        // ACCESSIBILITY MENU
+        // ============================================================
+        
+        let accessibilitySettings = {
+            highContrast: false,
+            reducedMotion: false,
+            colorTone: 'default',
+            fontSize: 'default',
+            focusIndicators: false
+        };
+
+        window.MakeMeAccessible = function() {
+            const existingMenu = document.getElementById('accessibility-menu');
+            if (existingMenu) {
+                existingMenu.remove();
+                return;
+            }
+
+            const menu = document.createElement('div');
+            menu.id = 'accessibility-menu';
+            menu.setAttribute('role', 'dialog');
+            menu.setAttribute('aria-modal', 'true');
+            menu.setAttribute('aria-labelledby', 'accessibility-title');
+            menu.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: white;
+                padding: 30px;
+                border-radius: 15px;
+                box-shadow: 0 10px 50px rgba(0,0,0,0.3);
+                z-index: 10000;
+                max-width: 500px;
+                width: 90%;
+                max-height: 80vh;
+                overflow-y: auto;
+            `;
+
+            menu.innerHTML = `
+                <div style="margin-bottom: 20px;">
+                    <h2 id="accessibility-title" style="margin: 0 0 10px 0; color: #2c3e50;">accessibility settings</h2>
+                    <p style="margin: 0; color: #7f8c8d; font-size: 0.9rem;">customize the login page</p>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                        <input type="checkbox" id="high-contrast-toggle" ${accessibilitySettings.highContrast ? 'checked' : ''} style="width: 20px; height: 20px;" aria-label="Enable high contrast mode">
+                        <div>
+                            <strong style="display: block; color: #2c3e50;">high contrast mode</strong>
+                            <span style="font-size: 0.85rem; color: #7f8c8d;">makes text easier to read</span>
+                        </div>
+                    </label>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                        <input type="checkbox" id="reduced-motion-toggle" ${accessibilitySettings.reducedMotion ? 'checked' : ''} style="width: 20px; height: 20px;" aria-label="Reduce motion and animations">
+                        <div>
+                            <strong style="display: block; color: #2c3e50;">reduce motion</strong>
+                            <span style="font-size: 0.85rem; color: #7f8c8d;">removes animations</span>
+                        </div>
+                    </label>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                        <input type="checkbox" id="focus-indicators-toggle" ${accessibilitySettings.focusIndicators ? 'checked' : ''} style="width: 20px; height: 20px;" aria-label="Show enhanced focus indicators">
+                        <div>
+                            <strong style="display: block; color: #2c3e50;">enhanced focus indicators</strong>
+                            <span style="font-size: 0.85rem; color: #7f8c8d;">shows where keyboard focus is</span>
+                        </div>
+                    </label>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label for="color-tone-select" style="display: block; margin-bottom: 8px; color: #2c3e50; font-weight: 600;">color tone</label>
+                    <select id="color-tone-select" aria-label="Choose color scheme" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1rem;">
+                        <option value="default" ${accessibilitySettings.colorTone === 'default' ? 'selected' : ''}>default (red/dark)</option>
+                        <option value="warm" ${accessibilitySettings.colorTone === 'warm' ? 'selected' : ''}>warm (orange/brown)</option>
+                        <option value="cool" ${accessibilitySettings.colorTone === 'cool' ? 'selected' : ''}>cool (blue/teal)</option>
+                        <option value="monochrome" ${accessibilitySettings.colorTone === 'monochrome' ? 'selected' : ''}>monochrome (grayscale)</option>
+                    </select>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label for="font-size-select" style="display: block; margin-bottom: 8px; color: #2c3e50; font-weight: 600;">font size</label>
+                    <select id="font-size-select" aria-label="Choose font size" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1rem;">
+                        <option value="default" ${accessibilitySettings.fontSize === 'default' ? 'selected' : ''}>default</option>
+                        <option value="large" ${accessibilitySettings.fontSize === 'large' ? 'selected' : ''}>large (+20%)</option>
+                        <option value="xlarge" ${accessibilitySettings.fontSize === 'xlarge' ? 'selected' : ''}>extra large (+40%)</option>
+                    </select>
+                </div>
+
+                <div style="display: flex; gap: 10px;">
+                    <button id="apply-accessibility" style="flex: 1; padding: 12px; background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">apply</button>
+                    <button id="close-accessibility" style="flex: 1; padding: 12px; background: #ecf0f1; color: #2c3e50; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;" aria-label="Close accessibility menu">close</button>
+                </div>
+            `;
+
+            document.body.appendChild(menu);
+
+            // focus trap for accessibility
+            const focusableElements = menu.querySelectorAll('input, select, button');
+            const firstFocusable = focusableElements[0];
+            const lastFocusable = focusableElements[focusableElements.length - 1];
+            
+            firstFocusable.focus();
+
+            menu.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    menu.remove();
+                } else if (e.key === 'Tab') {
+                    if (e.shiftKey && document.activeElement === firstFocusable) {
+                        e.preventDefault();
+                        lastFocusable.focus();
+                    } else if (!e.shiftKey && document.activeElement === lastFocusable) {
+                        e.preventDefault();
+                        firstFocusable.focus();
+                    }
+                }
+            });
+
+            document.getElementById('apply-accessibility').onclick = function() {
+                accessibilitySettings.highContrast = document.getElementById('high-contrast-toggle').checked;
+                accessibilitySettings.reducedMotion = document.getElementById('reduced-motion-toggle').checked;
+                accessibilitySettings.focusIndicators = document.getElementById('focus-indicators-toggle').checked;
+                accessibilitySettings.colorTone = document.getElementById('color-tone-select').value;
+                accessibilitySettings.fontSize = document.getElementById('font-size-select').value;
+                
+                applyAccessibilitySettings();
+                menu.remove();
+                
+                // announce to screen readers
+                const announcement = document.createElement('div');
+                announcement.setAttribute('role', 'status');
+                announcement.setAttribute('aria-live', 'polite');
+                announcement.style.cssText = 'position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden;';
+                announcement.textContent = 'Accessibility settings applied successfully';
+                document.body.appendChild(announcement);
+                setTimeout(() => announcement.remove(), 1000);
+            };
+
+            document.getElementById('close-accessibility').onclick = function() {
+                menu.remove();
+            };
+        };
+
+        function applyAccessibilitySettings() {
+            let styleId = 'accessibility-overrides';
+            let existingStyle = document.getElementById(styleId);
+            if (existingStyle) existingStyle.remove();
+
+            let css = '';
+
+            if (accessibilitySettings.highContrast) {
+                css += `body { filter: contrast(1.3); }`;
+            }
+
+            if (accessibilitySettings.reducedMotion) {
+                css += `
+                    *, *::before, *::after {
+                        animation-duration: 0.01ms !important;
+                        transition-duration: 0.01ms !important;
+                    }
+                `;
+            }
+
+            if (accessibilitySettings.focusIndicators) {
+                css += `
+                    *:focus {
+                        outline: 3px solid #fbbf24 !important;
+                        outline-offset: 2px !important;
+                    }
+                `;
+            }
+
+            if (accessibilitySettings.colorTone === 'warm') {
+                css += `
+                    body { background: linear-gradient(135deg, #d35400 0%, #e67e22 100%) !important; }
+                    .login-btn, .pin-login-btn, .submit-btn { background: linear-gradient(135deg, #d35400, #e67e22) !important; }
+                `;
+            } else if (accessibilitySettings.colorTone === 'cool') {
+                css += `
+                    body { background: linear-gradient(135deg, #2980b9 0%, #3498db 100%) !important; }
+                    .login-btn, .pin-login-btn, .submit-btn { background: linear-gradient(135deg, #2980b9, #3498db) !important; }
+                `;
+            } else if (accessibilitySettings.colorTone === 'monochrome') {
+                css += `* { filter: grayscale(100%) !important; }`;
+            }
+
+            if (accessibilitySettings.fontSize === 'large') {
+                css += `body { font-size: 120% !important; }`;
+            } else if (accessibilitySettings.fontSize === 'xlarge') {
+                css += `body { font-size: 140% !important; }`;
+            }
+
+            if (css) {
+                const style = document.createElement('style');
+                style.id = styleId;
+                style.textContent = css;
+                document.head.appendChild(style);
+            }
+        }
+
+        console.log('%c🎨 accessibility menu available:', 'font-size: 14px; font-weight: bold;');
+        console.log('%cwindow.MakeMeAccessible()', 'font-size: 12px; color: #e74c3c;');
+        console.log('%cMade by Benjamin Lebron, a part of the Lebrones (owners of Quality Glass Industries/Quality Glazing Contractors)', 'font-size: 10px; color: #ffffff;');
+        console.log('%cMADE BY A LEBRON', 'font-size: 16px; font-weight: bold; color: #e91e63; background: #fff; padding: 10px;');
+        console.log('%cMADE BY AN ND', 'font-size: 16px; font-weight: bold; color: #e91e63; background: #fff; padding: 10px;');
+        console.log('%cPROUDLY ACCESSIBLE SITE', 'font-size: 16px; font-weight: bold; color: #e91e63; background: #fff; padding: 10px;');
+        console.log('%cFor the business\'s site:');
+        console.log('%chttps://www.facebook.com/qualityglasspuertorico', 'font-size: 17px; font-weight: bold; color: #23bdf0; background: fff; padding: 5px');
+    </script>
+</body>
+</html>
