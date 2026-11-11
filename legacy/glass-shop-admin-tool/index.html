@@ -1,0 +1,2382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=0.9">
+    <title>QGI Admin Dashboard v0.7</title>
+    <style>
+        * {
+            max-height: 100vh;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            padding: 20px;
+        }
+
+        .dashboard-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    /* max-height: 95vh; */
+    display: flex;
+    flex-direction: column;
+    zoom: 0.9;
+    flex-wrap: nowrap;
+    align-items: stretch;
+}
+
+        .header {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            padding: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left {
+            flex: 1;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .header-btn {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            border: 2px solid white;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .header-btn:hover {
+            background: white;
+            color: #e74c3c;
+        }
+
+        .lang-toggle {
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.3);
+            border: 2px solid white;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .lang-toggle:hover {
+            background: white;
+            color: #e74c3c;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px 30px;
+            background: #f8f9fa;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #e74c3c;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .controls {
+            padding: 20px 30px;
+            background: white;
+            border-bottom: 2px solid #f1f3f4;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            max-width: 400px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 8px 40px 8px 12px;
+            border: 2px solid #e0e6ed;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #e74c3c;
+            box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+        }
+
+        .search-input::placeholder {
+            color: #95a5a6;
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #95a5a6;
+            pointer-events: none;
+        }
+
+        .filter-select {
+            padding: 8px 12px;
+            border: 2px solid #e0e6ed;
+            border-radius: 8px;
+            font-size: 14px; /* HOLY HELL I FIGURED OUT HOW TO COMMENT IN HTML FOR ONCE */
+        }
+
+        .refresh-btn {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+            transition: all 0.3s ease; /* PERFECTION */
+        }
+
+.orders-container {
+    padding: 20px 30px;
+    max-height: calc(95vh - 100px);  /* subtract header + stats + controls height */
+    overflow-y: auto; /* WHAT THE FUCK IS AN OVERFLOW */
+    flex: 1;  /* take remaining space */
+}
+
+        .order-card {
+            background: white;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 15px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .order-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+            border-color: #e74c3c;
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #f1f3f4;
+        }
+
+        .order-id {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .order-timestamp {
+            color: #6c757d;
+            font-size: 0.85rem;
+        }
+
+        .status-badge {
+            padding: 6px 14px;
+            border-radius: 18px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-pending { 
+            background: linear-gradient(135deg, #ffeaa7, #fdcb6e); 
+            color: #d63031; 
+        }
+        .status-in-progress { 
+            background: linear-gradient(135deg, #74b9ff, #0984e3); 
+            color: white; 
+        }
+        .status-ready { 
+            background: linear-gradient(135deg, #00b894, #00a085); 
+            color: white; 
+        }
+        .status-completed { 
+            background: linear-gradient(135deg, #6c757d, #495057); 
+            color: white; 
+        }
+        .status-cancelled { 
+            background: linear-gradient(135deg, #fd79a8, #e84393); 
+            color: white; 
+        }
+
+        .order-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .info-section {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .info-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-item {
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+        }
+
+        .info-label {
+            color: #6c757d;
+        }
+
+        .info-value {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .customer-section {
+            background: #e3f2fd;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .customer-input-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .customer-input {
+            padding: 8px 12px;
+            border: 2px solid #90caf9;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .customer-input:focus {
+            outline: none;
+            border-color: #1976d2;
+        }
+
+        .customer-btn {
+            padding: 8px 16px;
+            background: #1976d2;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .customer-btn:hover {
+            background: #1565c0;
+        }
+
+        .order-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-status {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-edit {
+            background: linear-gradient(135deg, #ffc107, #ff9800);
+            color: #000;
+        }
+
+        .btn-delete {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: clamp(20px, 3vw, 40px);
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: modalPop 0.3s ease;
+        }
+
+        @keyframes modalPop {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .modal-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .modal-btn.btn-primary {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        .modal-btn.btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+        }
+
+        .modal-btn.btn-secondary {
+            background: #ecf0f1;
+            color: #2c3e50;
+        }
+
+        .modal-btn.btn-secondary:hover {
+            background: #d5dbdb;
+        }
+
+        .pin-input-section {
+            margin: 20px 0;
+        }
+
+        .pin-input-section h4 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .pin-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e6ed;
+            border-radius: 10px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: center;
+            letter-spacing: 0.3em;
+            transition: all 0.3s ease;
+        }
+
+        .pin-input:focus {
+            outline: none;
+            border-color: #e74c3c;
+            box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+        }
+
+        .pin-input::placeholder {
+            opacity: 0.4;
+        }
+
+        .status-selector {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .status-option {
+            padding: 15px 20px;
+            border: 2px solid #e0e6ed;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-option:hover {
+            background: #f8f9fa;
+            border-color: #667eea;
+            transform: translateX(5px);
+        }
+
+        .status-option.selected {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .status-option[data-status="pending"] {
+            border-left: 4px solid #fdcb6e;
+        }
+
+        .status-option[data-status="in-progress"] {
+            border-left: 4px solid #0984e3;
+        }
+
+        .status-option[data-status="ready"] {
+            border-left: 4px solid #00b894;
+        }
+
+        .status-option[data-status="completed"] {
+            border-left: 4px solid #6c757d;
+        }
+
+        .status-option[data-status="cancelled"] {
+            border-left: 4px solid #e84393;
+        }
+
+        /* accessibility button styling */
+        .accessibility-fab {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            z-index: 9998;
+            border: none;
+            transition: all 0.3s ease;
+            font-size: 1.5rem;
+        }
+
+        .accessibility-fab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .accessibility-fab:focus {
+            outline: 3px solid #fbbf24;
+            outline-offset: 3px;
+        }
+
+        .modal-title {
+            font-size: clamp(1.3rem, 3vw, 1.8rem);
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .modal-description {
+     …</style>
+</head>
+<body>
+    <div class="dashboard-container" role="main" aria-label="Admin Dashboard">
+        <header class="header" role="banner">
+            <div class="header-left">
+                <h1 class="logo">QGI Admin Dashboard</h1>
+                <p class="subtitle" data-i18n="subtitle">Sales Team Portal v0.7</p>
+            </div>
+            <nav class="header-actions" role="navigation" aria-label="Main navigation">
+                <span id="user-info" style="margin-right: 15px; opacity: 0.9;" aria-live="polite"></span>
+                <button class="lang-toggle" onclick="toggleLanguage()" id="langToggle" aria-label="Switch language to Spanish">🌐 ES</button>
+                <button class="header-btn" onclick="window.location.href='https://legobele.github.io/glass-shop-admin-tool-acc-settings'" aria-label="Settings">
+                    <span>⚙️ Settings</span>
+                </button>
+                <button class="header-btn" onclick="downloadActivityLog()" aria-label="Download activity log">
+                    <span data-i18n="downloadLog">📥 Download Activity Log</span>
+                </button>
+                <button class="header-btn" onclick="loadOrders()" aria-label="Refresh orders">
+                    <span data-i18n="refresh">🔄 Refresh</span>
+                </button>
+                <button class="header-btn" onclick="logout()" style="background: rgba(255,100,100,0.3);" aria-label="Logout">
+                    <span>🚪 Logout</span>
+                </button>
+            </nav>
+        </header>
+
+        <section class="stats-grid" id="statsGrid" role="region" aria-label="Order statistics">
+            <!-- Stats will be populated here -->
+        </section>
+
+        <div class="controls" role="search" aria-label="Order filters">
+            <div class="search-box">
+                <input 
+                    type="text" 
+                    class="search-input" 
+                    id="searchInput" 
+                    placeholder="Search by Order ID, Customer Name, or Customer ID..." 
+                    oninput="searchOrders()"
+                    aria-label="Search orders"
+                >
+                <span class="search-icon">🔍</span>
+            </div>
+            <div class="filter-group">
+                <label for="statusFilter" data-i18n="filterLabel">Filter by status:</label>
+                <select class="filter-select" id="statusFilter" onchange="filterOrders()" aria-label="Filter orders by status">
+                    <option value="all" data-i18n="allOrders">All Orders</option>
+                    <option value="pending" data-i18n="pending">Pending</option>
+                    <option value="in-progress" data-i18n="inProgress">In Progress</option>
+                    <option value="ready" data-i18n="ready">Ready</option>
+                    <option value="completed" data-i18n="completed">Completed</option>
+                    <option value="cancelled" data-i18n="cancelled">Cancelled</option>
+                </select>
+            </div>
+            <button class="refresh-btn" onclick="loadOrders()" aria-label="Refresh order list">
+                <span data-i18n="refreshOrders">Refresh Orders</span>
+            </button>
+        </div>
+
+        <section class="orders-container" id="ordersContainer" role="region" aria-label="Orders list" aria-live="polite">
+            <!-- Orders will be populated here -->
+        </section>
+    </div>
+
+    <!-- Status Change Modal -->
+    <div class="modal" id="statusModal" role="dialog" aria-modal="true" aria-labelledby="statusModalTitle">
+        <div class="modal-content">
+            <h2 class="modal-title" id="statusModalTitle" data-i18n="changeStatus">Change Order Status</h2>
+            <p class="modal-description">
+                <span data-i18n="updateStatusDesc">Update the status of order</span> 
+                <strong id="statusModalOrderId"></strong>
+            </p>
+
+            <div class="status-selector" id="statusSelector" role="radiogroup" aria-label="Select new order status">
+                <div class="status-option" data-status="pending" role="radio" aria-checked="false" tabindex="0">
+                    <span data-i18n="statusPending">⏳ Pending</span>
+                </div>
+                <div class="status-option" data-status="in-progress" role="radio" aria-checked="false" tabindex="-1">
+                    <span data-i18n="statusInProgress">🔧 In Progress</span>
+                </div>
+                <div class="status-option" data-status="ready" role="radio" aria-checked="false" tabindex="-1">
+                    <span data-i18n="statusReady">✅ Ready</span>
+                </div>
+                <div class="status-option" data-status="completed" role="radio" aria-checked="false" tabindex="-1">
+                    <span data-i18n="statusCompleted">📦 Completed</span>
+                </div>
+                <div class="status-option" data-status="cancelled" role="radio" aria-checked="false" tabindex="-1">
+                    <span data-i18n="statusCancelled">❌ Cancelled</span>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="modal-btn btn-secondary" onclick="closeStatusModal()">
+                    <span data-i18n="cancel">Cancel</span>
+                </button>
+                <button class="modal-btn btn-primary" onclick="updateStatus()">
+                    <span data-i18n="updateStatus">Update Status</span>
+                </button>
+            </div>
+
+            <div class="error-message" id="statusError"></div>
+        </div>
+    </div>
+
+    <!-- Edit Order Modal -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <h2 class="modal-title" data-i18n="editOrderTitle">Edit Order Details</h2>
+            <p class="modal-description">
+                <span data-i18n="pinRequired">Customer PIN required to edit order</span>
+                <strong id="editModalOrderId"></strong>
+            </p>
+
+            <div class="pin-input-section">
+                <h4 data-i18n="enterPin">🔒 Enter Customer PIN</h4>
+                <input type="text" class="pin-input" id="editPinInput" placeholder="000000" maxlength="6">
+            </div>
+
+            <div class="modal-actions">
+                <button class="modal-btn btn-secondary" onclick="closeEditModal()">
+                    <span data-i18n="cancel">Cancel</span>
+                </button>
+                <button class="modal-btn btn-primary" onclick="verifyAndEdit()">
+                    <span data-i18n="verifyEdit">Verify & Edit</span>
+                </button>
+            </div>
+
+            <div class="error-message" id="editError"></div>
+        </div>
+    </div>
+
+    <!-- Edit Form Modal (shown after PIN verification) -->
+    <div class="modal" id="editFormModal">
+        <div class="modal-content" style="max-width: 700px;">
+            <h2 class="modal-title">
+                <span data-i18n="editOrder">Edit Order</span> 
+                <span id="editFormOrderId"></span>
+            </h2>
+            <p class="modal-description" data-i18n="modifyDetails">Modify order details below</p>
+
+            <div style="max-height: 60vh; overflow-y: auto; padding: 10px;">
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                    <h4 style="margin-bottom: 10px;" data-i18n="dimensions">📏 Dimensions</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div>
+                            <label style="font-size: 0.85rem; color: #6c757d;" data-i18n="width">Width (inches)</label>
+                            <input type="number" id="editWidth" class="customer-input" style="width: 100%; margin-top: 5px;" step="0.01">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.85rem; color: #6c757d;" data-i18n="height">Height (inches)</label>
+                            <input type="number" id="editHeight" class="customer-input" style="width: 100%; margin-top: 5px;" step="0.01">
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                    <h4 style="margin-bottom: 10px;" data-i18n="specifications">🎨 Specifications</h4>
+                    <div style="margin-bottom: 10px;">
+                        <label style="font-size: 0.85rem; color: #6c757d;" data-i18n="color">Color</label>
+                        <select id="editColor" class="customer-input" style="width: 100%; margin-top: 5px;">
+                            <option value="clear" data-i18n="clear">Clear</option>
+                            <option value="bronze" data-i18n="bronze">Bronze</option>
+                            <option value="gray" data-i18n="gray">Gray</option>
+                            <option value="blue" data-i18n="blue">Blue</option>
+                            <option value="green" data-i18n="green">Green</option>
+                            <option value="antique" data-i18n="antique">Antique</option>
+                            <option value="mirror-clear" data-i18n="mirrorClear">Mirror Clear</option>
+                            <option value="mirror-dark" data-i18n="mirrorDark">Mirror Dark</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.85rem; color: #6c757d;" data-i18n="thickness">Thickness</label>
+                        <select id="editThickness" class="customer-input" style="width: 100%; margin-top: 5px;">
+                            <option value="1/8 in">1/8"</option>
+                            <option value="1/4 in">1/4"</option>
+                            <option value="3/8 in">3/8"</option>
+                            <option value="1/2 in">1/2"</option>
+                            <option value="3/4 in">3/4"</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                    <h4 style="margin-bottom: 10px;" data-i18n="additionalServices">➕ Additional Services</h4>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+                        <label style="display: flex; align-items: center; padding: 8px; background: white; border-radius: 8px; cursor: pointer;">
+                            <input type="checkbox" id="editDiamondFusion" style="margin-right: 8px;">
+                            <span style="font-size: 0.9rem;" data-i18n="diamonFusion">Diamon-Fusion Treatment</span>
+                        </label>
+                        <label style="display: flex; align-items: center; padding: 8px; background: white; border-radius: 8px; cursor: pointer;">
+                            <input type="checkbox" id="editTempering" style="margin-right: 8px;">
+                            <span style="font-size: 0.9rem;" data-i18n="tempering">Tempering</span>
+                        </label>
+                        <label style="display: flex; align-items: center; padding: 8px; background: white; border-radius: 8px; cursor: pointer;">
+                            <input type="checkbox" id="editSandblasting" style="margin-right: 8px;">
+                            <span style="font-size: 0.9rem;" data-i18n="sandblasting">Sandblasting</span>
+                        </label>
+                        <label style="display: flex; align-items: center; padding: 8px; background: white; border-radius: 8px; cursor: pointer;">
+                            <input type="checkbox" id="editBeveling" style="margin-right: 8px;">
+                            <span style="font-size: 0.9rem;" data-i18n="beveling">Beveling</span>
+                        </label>
+                        <label style="display: flex; align-items: center; padding: 8px; background: white; border-radius: 8px; cursor: pointer; grid-column: span 2;">
+                            <input type="checkbox" id="editEdgeRounding" style="margin-right: 8px;">
+                            <span style="font-size: 0.9rem;" data-i18n="edgeRounding">Edge Rounding</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 10px;">
+                    <h4 style="margin-bottom: 10px;" data-i18n="paymentMethod">💳 Payment Method</h4>
+                    <select id="editPayment" class="customer-input" style="width: 100%;">
+                        <option value="cash" data-i18n="cash">Cash</option>
+                        <option value="credit-debit" data-i18n="creditDebit">Credit/Debit Card</option>
+                        <option value="apple-google-ath" data-i18n="digitalPayment">Apple Pay / Google Pay / ATH Móvil</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="modal-actions" style="margin-top: 20px;">
+                <button class="modal-btn btn-secondary" onclick="closeEditFormModal()">
+                    <span data-i18n="cancel">Cancel</span>
+                </button>
+                <button class="modal-btn btn-primary" onclick="saveOrderEdits()">
+                    <span data-i18n="saveChanges">💾 Save Changes</span>
+                </button>
+            </div>
+
+            <div class="error-message" id="editFormError"></div>
+        </div>
+    </div>
+
+    <!-- Accessibility Floating Action Button -->
+    <button class="accessibility-fab" onclick="window.MakeMeAccessible()" aria-label="Open accessibility settings" title="Accessibility Settings">
+        ♿
+    </button>
+
+    <script>
+        const SERVER_CONFIG = {
+            baseUrl: 'https://vague-nonspeculatively-florida.ngrok-free.dev',
+            endpoints: {
+                orders: '/api/orders',
+                stats: '/api/stats',
+                updateStatus: '/api/orders/:id/status',
+                updateCustomer: '/api/orders/:id/customer',
+                verifyPin: '/api/orders/:id/verify-pin',
+                updateOrder: '/api/orders/:id',
+                deleteOrder: '/api/orders/:id',
+                activityLog: '/api/activity/download',
+                generatePin: '/api/orders/:id/generate-pin'
+            }
+        };
+
+        // Auth helpers
+        function getAuthToken() {
+            return localStorage.getItem('qgi-auth-token');
+        }
+
+        function getAuthHeaders() {
+            const token = getAuthToken();
+            return {
+                'Content-Type': 'application/json',
+                'ngrok-skip-browser-warning': 'true',
+                'Authorization': token ? `Bearer ${token}` : ''
+            };
+        }
+
+        function logout() {
+            localStorage.removeItem('qgi-auth-token');
+            localStorage.removeItem('qgi-user');
+            window.location.href = 'https://legobele.github.io/glass-shop-admin-login-page';
+        }
+
+        // Check auth on page load
+        window.addEventListener('load', async function() {
+            const token = getAuthToken();
+            if (!token) {
+                console.log('no auth token found, redirecting to login...');
+                window.location.href = 'https://legobele.github.io/glass-shop-admin-login-page';
+                return;
+            }
+
+            // Verify token is still valid
+            try {
+                const response = await fetch(`${SERVER_CONFIG.baseUrl}/api/auth/verify`, {
+                    headers: getAuthHeaders()
+                });
+
+                if (!response.ok) {
+                    console.log('auth verification failed, redirecting to login...');
+                    logout();
+                    return;
+                }
+
+                const data = await response.json();
+                console.log('auth verified successfully');
+                
+                // Display user info
+                const userInfo = localStorage.getItem('qgi-user');
+                if (userInfo) {
+                    const user = JSON.parse(userInfo);
+                    document.getElementById('user-info').textContent = `👤 ${user.fullName || user.email}`;
+                }
+
+                // NOW load orders after auth is confirmed
+                console.log('loading orders...');
+                await loadOrders();
+                
+                // Set up auto-refresh
+                setInterval(loadOrders, 30000);
+                
+            } catch (error) {
+                console.error('Auth verification failed:', error);
+                console.log('error during auth check, redirecting to login...');
+                logout();
+            }
+        });
+
+        // Translations
+        const translations = {
+            en: {
+                subtitle: "Sales Team Portal v0.4",
+                downloadLog: "📥 Download Activity Log",
+                refresh: "🔄 Refresh",
+                filterLabel: "Filter by status:",
+                allOrders: "All Orders",
+                pending: "Pending",
+                inProgress: "In Progress",
+                ready: "Ready",
+                completed: "Completed",
+                cancelled: "Cancelled",
+                refreshOrders: "Refresh Orders",
+                totalOrders: "Total Orders",
+                todayOrders: "Today's Orders",
+                changeStatus: "Change Order Status",
+                updateStatusDesc: "Update the status of order",
+                statusPending: "⏳ Pending",
+                statusInProgress: "🔧 In Progress",
+                statusReady: "✅ Ready",
+                statusCompleted: "📦 Completed",
+                statusCancelled: "❌ Cancelled",
+                cancel: "Cancel",
+                updateStatus: "Update Status",
+                editOrderTitle: "Edit Order Details",
+                pinRequired: "Customer PIN required to edit order",
+                enterPin: "🔒 Enter Customer PIN",
+                verifyEdit: "Verify & Edit",
+                editOrder: "Edit Order",
+                modifyDetails: "Modify order details below",
+                dimensions: "📏 Dimensions",
+                width: "Width (inches)",
+                height: "Height (inches)",
+                specifications: "🎨 Specifications",
+                color: "Color",
+                clear: "Clear",
+                bronze: "Bronze",
+                gray: "Gray",
+                blue: "Blue",
+                green: "Green",
+                antique: "Antique",
+                mirrorClear: "Mirror Clear",
+                mirrorDark: "Mirror Dark",
+                thickness: "Thickness",
+                additionalServices: "➕ Additional Services",
+                diamonFusion: "Diamon-Fusion Treatment",
+                tempering: "Tempering",
+                sandblasting: "Sandblasting",
+                beveling: "Beveling",
+                edgeRounding: "Edge Rounding",
+                paymentMethod: "💳 Payment Method",
+                cash: "Cash",
+                creditDebit: "Credit/Debit Card",
+                digitalPayment: "Apple Pay / Google Pay / ATH Móvil",
+                saveChanges: "💾 Save Changes",
+                customerInfo: "👤 Customer Information",
+                customerName: "Customer Name",
+                customerId: "Customer ID",
+                save: "💾 Save",
+                changeStatusBtn: "🔄 Change Status",
+                editOrderBtn: "✏️ Edit Order (Requires PIN)",
+                deleteBtn: "🗑️ Delete",
+                noOrders: "No Orders Found",
+                noOrdersDesc: "No orders match the current filter"
+            },
+            es: {
+                subtitle: "Portal del Equipo de Ventas v0.4",
+                downloadLog: "📥 Descargar Registro",
+                refresh: "🔄 Actualizar",
+                filterLabel: "Filtrar por estado:",
+                allOrders: "Todas las Órdenes",
+                pending: "Pendiente",
+                inProgress: "En Progreso",
+                ready: "Listo",
+                completed: "Completado",
+                cancelled: "Cancelado",
+                refreshOrders: "Actualizar Órdenes",
+                totalOrders: "Total de Órdenes",
+                todayOrders: "Órdenes de Hoy",
+                changeStatus: "Cambiar Estado de Orden",
+                updateStatusDesc: "Actualizar el estado de la orden",
+                statusPending: "⏳ Pendiente",
+                statusInProgress: "🔧 En Progreso",
+                statusReady: "✅ Listo",
+                statusCompleted: "📦 Completado",
+                statusCancelled: "❌ Cancelado",
+                cancel: "Cancelar",
+                updateStatus: "Actualizar Estado",
+                editOrderTitle: "Editar Detalles de Orden",
+                pinRequired: "Se requiere PIN del cliente para editar orden",
+                enterPin: "🔒 Ingrese PIN del Cliente",
+                verifyEdit: "Verificar y Editar",
+                editOrder: "Editar Orden",
+                modifyDetails: "Modificar detalles de la orden",
+                dimensions: "📏 Dimensiones",
+                width: "Ancho (pulgadas)",
+                height: "Alto (pulgadas)",
+                specifications: "🎨 Especificaciones",
+                color: "Color",
+                clear: "Claro",
+                bronze: "Bronce",
+                gray: "Gris",
+                blue: "Azul",
+                green: "Verde",
+                antique: "Antiguo",
+                mirrorClear: "Espejo Claro",
+                mirrorDark: "Espejo Oscuro",
+                thickness: "Grosor",
+                additionalServices: "➕ Servicios Adicionales",
+                diamonFusion: "Tratamiento Diamon-Fusion",
+                tempering: "Templado",
+                sandblasting: "Arenado",
+                beveling: "Biselado",
+                edgeRounding: "Redondeo de Bordes",
+                paymentMethod: "💳 Método de Pago",
+                cash: "Efectivo",
+                creditDebit: "Tarjeta de Crédito/Débito",
+                digitalPayment: "Apple Pay / Google Pay / ATH Móvil",
+                saveChanges: "💾 Guardar Cambios",
+                customerInfo: "👤 Información del Cliente",
+                customerName: "Nombre del Cliente",
+                customerId: "ID del Cliente",
+                save: "💾 Guardar",
+                changeStatusBtn: "🔄 Cambiar Estado",
+                editOrderBtn: "✏️ Editar Orden (Requiere PIN)",
+                deleteBtn: "🗑️ Eliminar",
+                noOrders: "No se Encontraron Órdenes",
+                noOrdersDesc: "No hay órdenes que coincidan con el filtro actual"
+            }
+        };
+
+        let currentLang = localStorage.getItem('qgi-lang') || 'en';
+        let allOrders = [];
+        let currentEditOrderId = null;
+        let currentEditPin = null;
+        let currentEditOrder = null;
+        let selectedStatus = null;
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'en' ? 'es' : 'en';
+            localStorage.setItem('qgi-lang', currentLang);
+            updateLanguage();
+            loadOrders(); // Reload to update order cards
+        }
+
+        function updateLanguage() {
+            const lang = translations[currentLang];
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (lang[key]) {
+                    el.textContent = lang[key];
+                }
+            });
+            document.getElementById('langToggle').textContent = currentLang === 'en' ? '🌐 ES' : '🌐 EN';
+        }
+
+        async function loadOrders() {
+            try {
+                const response = await fetch(`${SERVER_CONFIG.baseUrl}${SERVER_CONFIG.endpoints.orders}`, {
+                    headers: getAuthHeaders()
+                });
+
+                if (!response.ok) {
+                    if (response.status === 401 || response.status === 403) {
+                        logout();
+                        return;
+                    }
+                    throw new Error('Failed to fetch orders');
+                }
+
+                allOrders = await response.json();
+                filterOrders();
+                updateStats();
+
+            } catch (error) {
+                console.error('Error loading orders:', error);
+                alert(currentLang === 'en' ? 'Failed to load orders. Please check your connection.' : 'Error al cargar órdenes. Por favor verifique su conexión.');
+            }
+        }
+
+        async function updateStats() {
+            try {
+                const response = await fetch(`${SERVER_CONFIG.baseUrl}${SERVER_CONFIG.endpoints.stats}`, {
+                    headers: getAuthHeaders()
+                });
+
+                if (!response.ok) throw new Error('Failed to fetch stats');
+
+                const stats = await response.json();
+                const lang = translations[currentLang];
+                
+                const statsHTML = `
+                    <div class="stat-card">
+                        <div class="stat-number">${stats.total}</div>
+                        <div class="stat-label">${lang.totalOrders}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${stats.todayCount}</div>
+                        <div class="stat-label">${lang.todayOrders}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${stats.byStatus.pending || 0}</div>
+                        <div class="stat-label">${lang.pending}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${stats.byStatus['in-progress'] || 0}</div>
+                        <div class="stat-label">${lang.inProgress}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${stats.byStatus.ready || 0}</div>
+                        <div class="stat-label">${lang.ready}</div>
+                    </div>
+                `;
+
+                document.getElementById('statsGrid').innerHTML = statsHTML;
+
+            } catch (error) {
+                console.error('Error updating stats:', error);
+            }
+        }
+
+        function filterOrders() {
+            // just call searchOrders which handles both filtering and searching
+            searchOrders();
+        }
+
+        function searchOrders() {
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
+            const statusFilter = document.getElementById('statusFilter').value;
+            
+            // start with valid orders
+            const validOrders = allOrders.filter(order => {
+                if (!order.orderId || order.orderId === 'N/A') return false;
+                if (!order.dimensions && !order.specifications) return false;
+                return true;
+            });
+            
+            // apply status filter first
+            let filteredOrders = statusFilter === 'all' 
+                ? validOrders 
+                : validOrders.filter(o => o.status === statusFilter);
+            
+            // if there's a search query, filter by it
+            if (searchQuery) {
+                filteredOrders = filteredOrders.filter(order => {
+                    // search in order ID
+                    if (order.orderId && order.orderId.toLowerCase().includes(searchQuery)) {
+                        return true;
+                    }
+                    
+                    // search in customer name
+                    if (order.customerName && order.customerName.toLowerCase().includes(searchQuery)) {
+                        return true;
+                    }
+                    
+                    // search in customer ID
+                    if (order.customerId && order.customerId.toLowerCase().includes(searchQuery)) {
+                        return true;
+                    }
+                    
+                    // search in dimensions (width x height)
+                    if (order.dimensions) {
+                        const dimString = `${order.dimensions.width}x${order.dimensions.height}`.toLowerCase();
+                        if (dimString.includes(searchQuery)) return true;
+                    }
+                    
+                    // search in specifications (color, thickness)
+                    if (order.specifications) {
+                        if (order.specifications.color && order.specifications.color.toLowerCase().includes(searchQuery)) {
+                            return true;
+                        }
+                        if (order.specifications.thickness && order.specifications.thickness.toLowerCase().includes(searchQuery)) {
+                            return true;
+                        }
+                    }
+                    
+                    return false;
+                });
+            }
+            
+            filteredOrders.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            displayOrders(filteredOrders);
+        }
+
+        function displayOrders(orders) {
+            const lang = translations[currentLang];
+            
+            if (orders.length === 0) {
+                document.getElementById('ordersContainer').innerHTML = `
+                    <div style="text-align: center; padding: 60px; color: #6c757d;">
+                        <div style="font-size: 3rem; margin-bottom: 20px;">📦</div>
+                        <h3>${lang.noOrders}</h3>
+                        <p>${lang.noOrdersDesc}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const ordersHTML = orders.map(order => createOrderCard(order)).join('');
+            document.getElementById('ordersContainer').innerHTML = ordersHTML;
+        }
+
+        function createOrderCard(order) {
+            const lang = translations[currentLang];
+            const statusClass = `status-${order.status || 'pending'}`;
+            const timestamp = new Date(order.timestamp || Date.now()).toLocaleString();
+            
+            const statusText = {
+                'pending': lang.pending,
+                'in-progress': lang.inProgress,
+                'ready': lang.ready,
+                'completed': lang.completed,
+                'cancelled': lang.cancelled
+            }[order.status] || order.status || 'pending';
+            
+            // defensive checks for missing data
+            const specs = order.specifications || {};
+            const dims = order.dimensions || {};
+            const additions = specs.additions || [];
+            const payment = order.payment || {};
+            
+            const additionsHTML = additions.length > 0
+                ? additions.map(add => `<span style="background: #667eea; color: white; padding: 3px 8px; border-radius: 10px; font-size: 0.75rem; margin-right: 5px;">${formatAddition(add)}</span>`).join('')
+                : `<span style="color: #6c757d;">${currentLang === 'en' ? 'None' : 'Ninguno'}</span>`;
+
+            return `
+                <div class="order-card">
+                    <div class="order-header">
+                        <div>
+                            <div class="order-id">${order.orderId || 'N/A'}</div>
+                            <div class="order-timestamp">${timestamp}</div>
+                        </div>
+                        <div class="status-badge ${statusClass}">${statusText}</div>
+                    </div>
+
+                    <div class="customer-section">
+                        <div class="info-title">${lang.customerInfo}</div>
+                        <div class="customer-input-group">
+                            <input type="text" class="customer-input" id="customerName-${order.orderId}" 
+                                   placeholder="${lang.customerName}" value="${order.customerName || ''}">
+                            <input type="text" class="customer-input" id="customerId-${order.orderId}" 
+                                   placeholder="${lang.customerId}" value="${order.customerId || ''}">
+                            <button class="customer-btn" onclick="updateCustomerInfo('${order.orderId}')">
+                                ${lang.save}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="order-info">
+                        <div class="info-section">
+                            <div class="info-title">${lang.dimensions}</div>
+                            <div class="info-item">
+                                <span class="info-label">${lang.width}:</span>
+                                <span class="info-value">${dims.width || 'N/A'}"</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">${lang.height}:</span>
+                                <span class="info-value">${dims.height || 'N/A'}"</span>
+                            </div>
+                        </div>
+
+                        <div class="info-section">
+                            <div class="info-title">${lang.specifications}</div>
+                            <div class="info-item">
+                                <span class="info-label">${lang.color}:</span>
+                                <span class="info-value">${formatColor(specs.color || 'N/A')}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">${lang.thickness}:</span>
+                                <span class="info-value">${specs.thickness || 'N/A'}</span>
+                            </div>
+                        </div>
+
+                        <div class="info-section">
+                            <div class="info-title">${lang.paymentMethod}</div>
+                            <div class="info-item">
+                                <span class="info-label">${currentLang === 'en' ? 'Method' : 'Método'}:</span>
+                                <span class="info-value">${formatPaymentMethod(payment.method || 'N/A')}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-section" style="margin-bottom: 20px;">
+                        <div class="info-title">${lang.additionalServices}</div>
+                        <div>${additionsHTML}</div>
+                    </div>
+
+                    <div class="order-actions">
+                        <button class="action-btn btn-status" onclick="openStatusModal('${order.orderId}')">
+                            ${lang.changeStatusBtn}
+                        </button>
+                        <button class="action-btn btn-edit" onclick="openEditModal('${order.orderId}')">
+                            ${lang.editOrderBtn}
+                        </button>
+                        <button class="action-btn btn-delete" onclick="deleteOrder('${order.orderId}')">
+                            ${lang.deleteBtn}
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function updateCustomerInfo(orderId) {
+            const customerName = document.getElementById(`customerName-${orderId}`).value.trim();
+            const customerId = document.getElementById(`customerId-${orderId}`).value.trim();
+
+            try {
+                const response = await fetch(
+                    `${SERVER_CONFIG.baseUrl}${SERVER_CONFIG.endpoints.updateCustomer.replace(':id', orderId)}`,
+                    {
+                        method: 'PATCH',
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify({
+                            customerName: customerName || null,
+                            customerId: customerId || null
+                        })
+                    }
+                );
+
+                if (!response.ok) throw new Error('Failed to update customer info');
+
+                alert(currentLang === 'en' ? 'Customer information updated successfully!' : '¡Información del cliente actualizada exitosamente!');
+                loadOrders();
+
+            } catch (error) {
+                console.error('Error updating customer info:', error);
+                alert(currentLang === 'en' ? 'Failed to update customer information.' : 'Error al actualizar información del cliente.');
+            }
+        }
+
+        function openStatusModal(orderId) {
+            currentEditOrderId = orderId;
+            selectedStatus = null;
+            document.getElementById('statusModalOrderId').textContent = orderId;
+            document.querySelectorAll('.status-option').forEach(opt => opt.classList.remove('selected'));
+            document.getElementById('statusError').classList.remove('active');
+            document.getElementById('statusModal').classList.add('active');
+        }
+
+        function closeStatusModal() {
+            document.getElementById('statusModal').classList.remove('active');
+            currentEditOrderId = null;
+            selectedStatus = null;
+        }
+
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('status-option') || e.target.parentElement.classList.contains('status-option')) {
+                const option = e.target.classList.contains('status-option') ? e.target : e.target.parentElement;
+                document.querySelectorAll('.status-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                    opt.setAttribute('aria-checked', 'false');
+                    opt.setAttribute('tabindex', '-1');
+                });
+                option.classList.add('selected');
+                option.setAttribute('aria-checked', 'true');
+                option.setAttribute('tabindex', '0');
+                selectedStatus = option.dataset.status;
+            }
+        });
+
+        // keyboard navigation for status options (ARIA radio pattern)
+        document.addEventListener('keydown', function(e) {
+            const focused = document.activeElement;
+            if (!focused.classList.contains('status-option')) return;
+
+            const options = Array.from(document.querySelectorAll('.status-option'));
+            const currentIndex = options.indexOf(focused);
+
+            let nextIndex = currentIndex;
+            
+            if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+                e.preventDefault();
+                nextIndex = (currentIndex + 1) % options.length;
+            } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+                e.preventDefault();
+                nextIndex = (currentIndex - 1 + options.length) % options.length;
+            } else if (e.key === ' ' || e.key === 'Enter') {
+                e.preventDefault();
+                focused.click();
+                return;
+            } else {
+                return;
+            }
+
+            options[nextIndex].focus();
+        });
+
+        async function updateStatus() {
+            if (!selectedStatus) {
+                const lang = translations[currentLang];
+                document.getElementById('statusError').textContent = currentLang === 'en' ? 'Please select a status' : 'Por favor seleccione un estado';
+                document.getElementById('statusError').classList.add('active');
+                return;
+            }
+
+            try {
+                const response = await fetch(
+                    `${SERVER_CONFIG.baseUrl}${SERVER_CONFIG.endpoints.updateStatus.replace(':id', currentEditOrderId)}`,
+                    {
+                        method: 'PATCH',
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify({ status: selectedStatus })
+                    }
+                );
+
+                if (!response.ok) throw new Error('Failed to update status');
+
+                closeStatusModal();
+                loadOrders();
+
+            } catch (error) {
+                console.error('Error updating status:', error);
+                document.getElementById('statusError').textContent = currentLang === 'en' ? 'Failed to update status' : 'Error al actualizar estado';
+                document.getElementById('statusError').classList.add('active');
+            }
+        }
+
+        function openEditModal(orderId) {
+            currentEditOrderId = orderId;
+            document.getElementById('editModalOrderId').textContent = orderId;
+            document.getElementById('editPinInput').value = '';
+            document.getElementById('editError').classList.remove('active');
+            document.getElementById('editModal').classList.add('active');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('active');
+            document.getElementById('editPinInput').value = '';
+            document.getElementById('editError').classList.remove('active');
+            document.getElementById('editError').textContent = '';
+            currentEditOrderId = null;
+        }
+
+        async function verifyAndEdit() {
+            const pin = document.getElementById('editPinInput').value.trim();
+
+            if (!pin || pin.length !== 6) {
+                document.getElementById('editError').textContent = currentLang === 'en' ? 'Please enter a valid 6-digit PIN' : 'Por favor ingrese un PIN válido de 6 dígitos';
+                document.getElementById('editError').classList.add('active');
+                return;
+            }
+
+            try {
+                const response = await fetch(
+                    `${SERVER_CONFIG.baseUrl}${SERVER_CONFIG.endpoints.verifyPin.replace(':id', currentEditOrderId)}`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'ngrok-skip-browser-warning': 'true'
+                        },
+                        body: JSON.stringify({ pin: pin })
+                    }
+                );
+
+                const result = await response.json();
+
+                if (!result.success) {
+                    document.getElementById('editError').textContent = currentLang === 'en' 
+                        ? 'Invalid PIN. Customer must generate a change PIN from the customer portal.' 
+                        : 'PIN inválido. El cliente debe generar un PIN de cambio desde el portal del cliente.';
+                    document.getElementById('editError').classList.add('active');
+                    return;
+                }
+
+                currentEditPin = pin;
+                currentEditOrder = result.order;
+                closeEditModal();
+                showEditForm();
+
+            } catch (error) {
+                console.error('Error verifying PIN:', error);
+                document.getElementById('editError').textContent = currentLang === 'en' ? 'Failed to verify PIN' : 'Error al verificar PIN';
+                document.getElementById('editError').classList.add('active');
+            }
+        }
+
+        function showEditForm() {
+            document.getElementById('editFormOrderId').textContent = currentEditOrder.orderId || 'N/A';
+            
+            // defensive checks for missing data
+            const dims = currentEditOrder.dimensions || {};
+            const specs = currentEditOrder.specifications || {};
+            const additions = specs.additions || [];
+            const payment = currentEditOrder.payment || {};
+            
+            document.getElementById('editWidth').value = dims.width || '';
+            document.getElementById('editHeight').value = dims.height || '';
+            document.getElementById('editColor').value = specs.color || '';
+            document.getElementById('editThickness').value = specs.thickness || '';
+            
+            document.getElementById('editDiamondFusion').checked = additions.includes('diamon-fusion') || additions.includes('diamond-fusion');
+            document.getElementById('editTempering').checked = additions.includes('tempering');
+            document.getElementById('editSandblasting').checked = additions.includes('sandblasting');
+            document.getElementById('editBeveling').checked = additions.includes('beveling');
+            document.getElementById('editEdgeRounding').checked = additions.includes('edge-rounding');
+            
+            document.getElementById('editPayment').value = payment.method || '';
+            
+            document.getElementById('editFormModal').classList.add('active');
+        }
+
+        function closeEditFormModal() {
+            document.getElementById('editFormModal').classList.remove('active');
+            document.getElementById('editFormError').classList.remove('active');
+            currentEditPin = null;
+            currentEditOrder = null;
+        }
+
+        async function saveOrderEdits() {
+            try {
+                const additions = [];
+                if (document.getElementById('editDiamondFusion').checked) additions.push('diamon-fusion');
+                if (document.getElementById('editTempering').checked) additions.push('tempering');
+                if (document.getElementById('editSandblasting').checked) additions.push('sandblasting');
+                if (document.getElementById('editBeveling').checked) additions.push('beveling');
+                if (document.getElementById('editEdgeRounding').checked) additions.push('edge-rounding');
+
+                const updatedOrder = {
+                    orderId: currentEditOrder.orderId,
+                    timestamp: currentEditOrder.timestamp,
+                    dimensions: {
+                        width: parseFloat(document.getElementById('editWidth').value),
+                        height: parseFloat(document.getElementById('editHeight').value)
+                    },
+                    specifications: {
+                        color: document.getElementById('editColor').value,
+                        thickness: document.getElementById('editThickness').value,
+                        additions: additions
+                    },
+                    payment: {
+                        method: document.getElementById('editPayment').value
+                    },
+                    status: currentEditOrder.status,
+                    customerName: currentEditOrder.customerName,
+                    customerId: currentEditOrder.customerId
+                };
+
+                const response = await fetch(
+                    `${SERVER_CONFIG.baseUrl}${SERVER_CONFIG.endpoints.updateOrder.replace(':id', currentEditOrder.orderId)}`,
+                    {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'ngrok-skip-browser-warning': 'true'
+                        },
+                        body: JSON.stringify({
+                            pin: currentEditPin,
+                            updatedOrder: updatedOrder
+                        })
+                    }
+                );
+
+                const result = await response.json();
+
+                if (!result.success) {
+                    throw new Error(result.message || 'Failed to update order');
+                }
+
+                closeEditFormModal();
+                alert(currentLang === 'en' ? 'Order updated successfully!' : '¡Orden actualizada exitosamente!');
+                loadOrders();
+
+            } catch (error) {
+                console.error('Error saving order edits:', error);
+                document.getElementById('editFormError').textContent = currentLang === 'en' ? error.message || 'Failed to save changes' : error.message || 'Error al guardar cambios';
+                document.getElementById('editFormError').classList.add('active');
+            }
+        }
+
+        async function deleteOrder(orderId) {
+            const confirmMsg = currentLang === 'en' 
+                ? `Are you sure you want to delete order ${orderId}?\n\nThis action cannot be undone.`
+                : `¿Está seguro que desea eliminar la orden ${orderId}?\n\nEsta acción no se puede deshacer.`;
+                
+            if (!confirm(confirmMsg)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(
+                    `${SERVER_CONFIG.baseUrl}${SERVER_CONFIG.endpoints.deleteOrder.replace(':id', orderId)}`,
+                    {
+                        method: 'DELETE',
+                        headers: getAuthHeaders()
+                    }
+                );
+
+                if (!response.ok) throw new Error('Failed to delete order');
+
+                loadOrders();
+
+            } catch (error) {
+                console.error('Error deleting order:', error);
+                alert(currentLang === 'en' ? 'Failed to delete order' : 'Error al eliminar orden');
+            }
+        }
+
+        async function downloadActivityLog() {
+            try {
+                const response = await fetch(
+                    `${SERVER_CONFIG.baseUrl}${SERVER_CONFIG.endpoints.activityLog}`,
+                    {
+                        headers: getAuthHeaders()
+                    }
+                );
+
+                if (!response.ok) throw new Error('Failed to download activity log');
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `activity-log-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+
+            } catch (error) {
+                console.error('Error downloading activity log:', error);
+                alert(currentLang === 'en' ? 'Failed to download activity log' : 'Error al descargar registro de actividad');
+            }
+        }
+
+        function formatColor(color) {
+            const colorMap = {
+                'en': {
+                    'clear': 'Clear',
+                    'bronze': 'Bronze',
+                    'gray': 'Gray',
+                    'blue': 'Blue',
+                    'green': 'Green',
+                    'antique': 'Antique (Stained)',
+                    'mirror-clear': 'Mirror - Clear',
+                    'mirror-dark': 'Mirror - Dark',
+                    'undiagnosed-autism': '🌈 Undiagnosed Autism'
+                },
+                'es': {
+                    'clear': 'Claro',
+                    'bronze': 'Bronce',
+                    'gray': 'Gris',
+                    'blue': 'Azul',
+                    'green': 'Verde',
+                    'antique': 'Antiguo (Manchado)',
+                    'mirror-clear': 'Espejo - Claro',
+                    'mirror-dark': 'Espejo - Oscuro',
+                    'undiagnosed-autism': '🌈 Autismo Sin Diagnosticar'
+                }
+            };
+            return colorMap[currentLang][color] || color;
+        }
+
+        function formatAddition(addition) {
+            const additionMap = {
+                'en': {
+                    'diamon-fusion': 'Diamon-Fusion®',
+                    'diamond-fusion': 'Diamon-Fusion®',
+                    'tempering': 'Tempering',
+                    'sandblasting': 'Sandblasting',
+                    'beveling': 'Beveling',
+                    'edge-rounding': 'Edge Rounding',
+                    'special-interest-glass': '✨ Special Interest in Glass',
+                    'autistic-vibes': '♾️ Autistic Vibes'
+                },
+                'es': {
+                    'diamon-fusion': 'Diamon-Fusion®',
+                    'diamond-fusion': 'Diamon-Fusion®',
+                    'tempering': 'Templado',
+                    'sandblasting': 'Arenado',
+                    'beveling': 'Biselado',
+                    'edge-rounding': 'Redondeo de Bordes',
+                    'special-interest-glass': '✨ Interés Especial en Vidrio',
+                    'autistic-vibes': '♾️ Vibras Autistas'
+                }
+            };
+            return additionMap[currentLang][addition] || addition;
+        }
+
+        function formatPaymentMethod(method) {
+            const methodMap = {
+                'en': {
+                    'credit-debit': 'Credit/Debit Card',
+                    'card': 'Card',
+                    'cash': 'Cash',
+                    'apple-google-ath': 'Apple Pay / Google Pay / ATH Móvil',
+                    'digital': 'Digital',
+                    'ath-movil': 'ATH Móvil',
+                    'autistic-vibes-payment': '♾️ Autistic Vibes',
+                    'infodumping-until-forgot-payment': '💬 Infodumping About Glass Until The Other Person Forgets You Haven\'t Been Charged',
+                    'special-interest-energy-payment': '✨ Special Interest Energy'
+                },
+                'es': {
+                    'credit-debit': 'Tarjeta de Crédito/Débito',
+                    'card': 'Tarjeta',
+                    'cash': 'Efectivo',
+                    'apple-google-ath': 'Apple Pay / Google Pay / ATH Móvil',
+                    'digital': 'Digital',
+                    'ath-movil': 'ATH Móvil',
+                    'autistic-vibes-payment': '♾️ Vibras Autistas',
+                    'infodumping-until-forgot-payment': '💬 Infodumpear Sobre Vidrio Hasta Que La Otra Persona Olvide Que No Has Pagado',
+                    'special-interest-energy-payment': '✨ Energía de Interés Especial'
+                }
+            };
+            return methodMap[currentLang][method] || method;
+        }
+
+        // Initialize
+        updateLanguage();
+        // loadOrders() is now called after auth verification in the load event listener
+        // setInterval is also set up there
+
+        // ============================================================
+        // EASTER EGGS - because why the fuck not
+        // ============================================================
+        
+        // accessibility settings state
+        let accessibilitySettings = {
+            highContrast: false,
+            reducedMotion: false,
+            colorTone: 'default', // default, warm, cool, monochrome
+            fontSize: 'default', // default, large, xlarge
+            focusIndicators: false
+        };
+
+        // autism-friendly mode state
+        let autismMode = false;
+
+        window.MakeMeAccessible = function() {
+            const existingMenu = document.getElementById('accessibility-menu');
+            if (existingMenu) {
+                existingMenu.remove();
+                return;
+            }
+
+            const menu = document.createElement('div');
+            menu.id = 'accessibility-menu';
+            menu.setAttribute('role', 'dialog');
+            menu.setAttribute('aria-modal', 'true');
+            menu.setAttribute('aria-labelledby', 'accessibility-title');
+            menu.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: white;
+                padding: 30px;
+                border-radius: 15px;
+                box-shadow: 0 10px 50px rgba(0,0,0,0.3);
+                z-index: 10000;
+                max-width: 500px;
+                width: 90%;
+                max-height: 80vh;
+                overflow-y: auto;
+            `;
+
+            menu.innerHTML = `
+                <div style="margin-bottom: 20px;">
+                    <h2 id="accessibility-title" style="margin: 0 0 10px 0; color: #2c3e50;">accessibility settings</h2>
+                    <p style="margin: 0; color: #7f8c8d; font-size: 0.9rem;">make this tool work better for you</p>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                        <input type="checkbox" id="high-contrast-toggle" ${accessibilitySettings.highContrast ? 'checked' : ''} style="width: 20px; height: 20px;" aria-label="Enable high contrast mode">
+                        <div>
+                            <strong style="display: block; color: #2c3e50;">high contrast mode</strong>
+                            <span style="font-size: 0.85rem; color: #7f8c8d;">makes text easier to read</span>
+                        </div>
+                    </label>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                        <input type="checkbox" id="reduced-motion-toggle" ${accessibilitySettings.reducedMotion ? 'checked' : ''} style="width: 20px; height: 20px;" aria-label="Reduce motion and animations">
+                        <div>
+                            <strong style="display: block; color: #2c3e50;">reduce motion</strong>
+                            <span style="font-size: 0.85rem; color: #7f8c8d;">removes animations and transitions</span>
+                        </div>
+                    </label>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                        <input type="checkbox" id="focus-indicators-toggle" ${accessibilitySettings.focusIndicators ? 'checked' : ''} style="width: 20px; height: 20px;" aria-label="Show enhanced focus indicators">
+                        <div>
+                            <strong style="display: block; color: #2c3e50;">enhanced focus indicators</strong>
+                            <span style="font-size: 0.85rem; color: #7f8c8d;">shows where keyboard focus is</span>
+                        </div>
+                    </label>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label for="color-tone-select" style="display: block; margin-bottom: 8px; color: #2c3e50; font-weight: 600;">color tone</label>
+                    <select id="color-tone-select" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1rem;" aria-label="Choose color scheme">
+                        <option value="default" ${accessibilitySettings.colorTone === 'default' ? 'selected' : ''}>default (red/dark)</option>
+                        <option value="warm" ${accessibilitySettings.colorTone === 'warm' ? 'selected' : ''}>warm (orange/brown)</option>
+                        <option value="cool" ${accessibilitySettings.colorTone === 'cool' ? 'selected' : ''}>cool (blue/teal)</option>
+                        <option value="monochrome" ${accessibilitySettings.colorTone === 'monochrome' ? 'selected' : ''}>monochrome (grayscale)</option>
+                    </select>
+                    <span style="font-size: 0.85rem; color: #7f8c8d; display: block; margin-top: 5px;">because bright colors can be overwhelming af</span>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label for="font-size-select" style="display: block; margin-bottom: 8px; color: #2c3e50; font-weight: 600;">font size</label>
+                    <select id="font-size-select" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1rem;" aria-label="Choose font size">
+                        <option value="default" ${accessibilitySettings.fontSize === 'default' ? 'selected' : ''}>default</option>
+                        <option value="large" ${accessibilitySettings.fontSize === 'large' ? 'selected' : ''}>large (+20%)</option>
+                        <option value="xlarge" ${accessibilitySettings.fontSize === 'xlarge' ? 'selected' : ''}>extra large (+40%)</option>
+                    </select>
+                </div>
+
+                <div style="display: flex; gap: 10px;">
+                    <button id="apply-accessibility" style="flex: 1; padding: 12px; background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;" aria-label="Apply accessibility settings">apply settings</button>
+                    <button id="close-accessibility" style="flex: 1; padding: 12px; background: #ecf0f1; color: #2c3e50; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;" aria-label="Close accessibility menu">close</button>
+                </div>
+            `;
+
+            document.body.appendChild(menu);
+
+            // focus trap for accessibility
+            const focusableElements = menu.querySelectorAll('input, select, button');
+            const firstFocusable = focusableElements[0];
+            const lastFocusable = focusableElements[focusableElements.length - 1];
+            
+            firstFocusable.focus();
+
+            menu.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    menu.remove();
+                } else if (e.key === 'Tab') {
+                    if (e.shiftKey && document.activeElement === firstFocusable) {
+                        e.preventDefault();
+                        lastFocusable.focus();
+                    } else if (!e.shiftKey && document.activeElement === lastFocusable) {
+                        e.preventDefault();
+                        firstFocusable.focus();
+                    }
+                }
+            });
+
+            // event listeners for the menu
+            document.getElementById('apply-accessibility').onclick = function() {
+                accessibilitySettings.highContrast = document.getElementById('high-contrast-toggle').checked;
+                accessibilitySettings.reducedMotion = document.getElementById('reduced-motion-toggle').checked;
+                accessibilitySettings.focusIndicators = document.getElementById('focus-indicators-toggle').checked;
+                accessibilitySettings.colorTone = document.getElementById('color-tone-select').value;
+                accessibilitySettings.fontSize = document.getElementById('font-size-select').value;
+                
+                applyAccessibilitySettings();
+                menu.remove();
+                
+                // announce to screen readers
+                const announcement = document.createElement('div');
+                announcement.setAttribute('role', 'status');
+                announcement.setAttribute('aria-live', 'polite');
+                announcement.style.cssText = 'position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden;';
+                announcement.textContent = 'Accessibility settings applied successfully';
+                document.body.appendChild(announcement);
+                setTimeout(() => announcement.remove(), 1000);
+            };
+
+            document.getElementById('close-accessibility').onclick = function() {
+                menu.remove();
+            };
+
+            console.log('accessibility menu opened - customize away!');
+        };
+
+        function applyAccessibilitySettings() {
+            let styleId = 'accessibility-overrides';
+            let existingStyle = document.getElementById(styleId);
+            if (existingStyle) existingStyle.remove();
+
+            let css = '';
+
+            // high contrast
+            if (accessibilitySettings.highContrast) {
+                css += `
+                    body { filter: contrast(1.3); }
+                    .order-card { border: 2px solid #000 !important; }
+                    .stat-card { border: 2px solid #000 !important; }
+                `;
+            }
+
+            // reduced motion
+            if (accessibilitySettings.reducedMotion) {
+                css += `
+                    *, *::before, *::after {
+                        animation-duration: 0.01ms !important;
+                        animation-iteration-count: 1 !important;
+                        transition-duration: 0.01ms !important;
+                    }
+                `;
+            }
+
+            // focus indicators
+            if (accessibilitySettings.focusIndicators) {
+                css += `
+                    *:focus {
+                        outline: 3px solid #e74c3c !important;
+                        outline-offset: 2px !important;
+                    }
+                `;
+            }
+
+            // color tones
+            if (accessibilitySettings.colorTone === 'warm') {
+                css += `
+                    .header { background: linear-gradient(135deg, #d35400, #e67e22) !important; }
+                    body { background: linear-gradient(135deg, #34495e 0%, #5d4037 100%) !important; }
+                    .btn-primary { background: linear-gradient(135deg, #d35400, #e67e22) !important; }
+                `;
+            } else if (accessibilitySettings.colorTone === 'cool') {
+                css += `
+                    .header { background: linear-gradient(135deg, #2980b9, #3498db) !important; }
+                    body { background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%) !important; }
+                    .btn-primary { background: linear-gradient(135deg, #2980b9, #3498db) !important; }
+                `;
+            } else if (accessibilitySettings.colorTone === 'monochrome') {
+                css += `
+                    * { filter: grayscale(100%) !important; }
+                `;
+            }
+
+            // font size
+            if (accessibilitySettings.fontSize === 'large') {
+                css += `
+                    body { font-size: 120% !important; }
+                `;
+            } else if (accessibilitySettings.fontSize === 'xlarge') {
+                css += `
+                    body { font-size: 140% !important; }
+                `;
+            }
+
+            if (css) {
+                const style = document.createElement('style');
+                style.id = styleId;
+                style.textContent = css;
+                document.head.appendChild(style);
+            }
+
+            console.log('accessibility settings applied:', accessibilitySettings);
+        }
+
+        window.autismify = function(options = {}) {
+            const useComicSans = options.comicSans !== false; // default true unless explicitly false
+            
+            if (autismMode) {
+                // turn it off
+                autismMode = false;
+                const styleTag = document.getElementById('autism-mode-styles');
+                if (styleTag) styleTag.remove();
+                console.log('autism mode disabled - back to neurotypical mode (boring)');
+                return;
+            }
+
+            autismMode = true;
+            console.log('autism mode activated - get ready for sensory-friendly vibes');
+            if (!useComicSans) {
+                console.log('(sans comic sans, because that can also be sensory hell)');
+            }
+
+            const fontFamily = useComicSans 
+                ? "'Comic Sans MS', 'Segoe UI', sans-serif" 
+                : "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+
+            const autismStyles = document.createElement('style');
+            autismStyles.id = 'autism-mode-styles';
+            autismStyles.textContent = `
+                /* ============================================================
+                   AUTISM MODE - sensory-friendly interface
+                   ============================================================ */
+                
+                /* soft, muted color palette - no bright aggressive colors */
+                body {
+                    background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%) !important;
+                    font-family: ${fontFamily} !important;
+                }
+
+                .header {
+                    background: linear-gradient(135deg, #5a67d8, #667eea) !important;
+                    animation: none !important;
+                }
+
+                /* reduce all motion - animations can be overwhelming */
+                *, *::before, *::after {
+                    animation-duration: 0.01ms !important;
+                    animation-iteration-count: 1 !important;
+                    transition-duration: 0.01ms !important;
+                    scroll-behavior: auto !important;
+                }
+
+                /* enhanced focus indicators - always know where you are */
+                *:focus {
+                    outline: 4px solid #fbbf24 !important;
+                    outline-offset: 3px !important;
+                    box-shadow: 0 0 0 8px rgba(251, 191, 36, 0.2) !important;
+                }
+
+                /* softer shadows - less visual noise */
+                .dashboard-container,
+                .stat-card,
+                .order-card {
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+                }
+
+                /* predictable button states */
+                .header-btn,
+                .lang-toggle,
+                .btn-primary,
+                .refresh-btn {
+                    transition: none !important;
+                    position: relative !important;
+                }
+
+                .header-btn:hover,
+                .lang-toggle:hover,
+                .btn-primary:hover,
+                .refresh-btn:hover {
+                    transform: none !important;
+                    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.4) !important;
+                }
+
+                /* clearer visual hierarchy */
+                .stat-card {
+                    border: 2px solid #cbd5e0 !important;
+                    background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%) !important;
+                }
+
+                .order-card {
+                    border-left: 4px solid #5a67d8 !important;
+                }
+
+                /* status badges with better contrast */
+                .status-badge {
+                    font-weight: 700 !important;
+                    padding: 6px 14px !important;
+                    border: 2px solid currentColor !important;
+                }
+
+                /* increased spacing - less crowded */
+                .stat-card {
+                    padding: 25px !important;
+                }
+
+                .order-card {
+                    padding: 25px !important;
+                    margin-bottom: 18px !important;
+                }
+
+                /* comforting rounded corners everywhere */
+                .header-btn,
+                .lang-toggle,
+                .refresh-btn,
+                .btn-primary,
+                .status-badge {
+                    border-radius: 12px !important;
+                }
+
+                /* readable text with good contrast */
+                .stat-value {
+                    color: #1a202c !important;
+                    font-weight: 700 !important;
+                }
+
+                .stat-label {
+                    color: #4a5568 !important;
+                    font-weight: 600 !important;
+                }
+
+                /* subtle background patterns for texture */
+                .dashboard-container {
+                    background: linear-gradient(135deg, #ffffff 0%, #f7fafc 100%) !important;
+                }
+
+                /* emoji indicators for quick scanning */
+                .stat-card::before {
+                    content: '📊';
+                    font-size: 2rem;
+                    display: block;
+                    margin-bottom: 10px;
+                }
+
+                .order-card::before {
+                    content: '📦';
+                    font-size: 1.5rem;
+                    margin-right: 10px;
+                    display: inline-block;
+                }
+
+                /* loading states are clear and non-distracting */
+                @keyframes gentle-pulse {
+                    0%, 100% { opacity: 0.6; }
+                    50% { opacity: 1; }
+                }
+
+                .loading {
+                    animation: gentle-pulse 2s ease-in-out infinite !important;
+                }
+
+                /* consistent spacing rhythm */
+                .stats-grid {
+                    gap: 25px !important;
+                    padding: 25px 35px !important;
+                }
+
+                .orders-section {
+                    padding: 25px 35px !important;
+                }
+
+                /* high contrast text */
+                body {
+                    filter: contrast(1.1) !important;
+                }
+            `;
+
+            document.head.appendChild(autismStyles);
+            
+            // show a brief notification that fades away instead of permanent badge
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: #5a67d8;
+                color: white;
+                padding: 12px 20px;
+                border-radius: 12px;
+                font-size: 0.9rem;
+                font-weight: 600;
+                box-shadow: 0 4px 12px rgba(90, 103, 216, 0.3);
+                z-index: 9999;
+                opacity: 1;
+                transition: opacity 0.5s ease;
+            `;
+            notification.textContent = '🌟 autism mode activated';
+            document.body.appendChild(notification);
+            
+            // fade out after 3 seconds
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => notification.remove(), 500);
+            }, 3000);
+
+            console.log('🌟 interface transformed:');
+            console.log('- reduced motion ✓');
+            console.log('- softer colors ✓');
+            console.log('- enhanced focus indicators ✓');
+            console.log('- predictable interactions ✓');
+            console.log('- increased spacing ✓');
+            console.log('- better contrast ✓');
+            console.log('- emoji indicators ✓');
+            console.log('');
+            console.log('run window.autismify() again to toggle off');
+            console.log('run window.autismify({comicSans: false}) to disable comic sans');
+        };
+
+        // expose accessibility settings to console
+        window.getAccessibilitySettings = function() {
+            return accessibilitySettings;
+        };
+
+        // ============================================================
+        // FAMILY DIAGNOSIS EASTER EGGS - multi-generational autism recognition
+        // ============================================================
+
+        window.IsTheGlassShopOwnerND = function() {
+            console.log('%c🔍 DIAGNOSTIC ANALYSIS INITIATED', 'font-size: 16px; font-weight: bold; color: #9c27b0;');
+            console.log('');
+            console.log('analyzing glass shop owner behavior patterns...');
+            console.log('');
+            console.log('📋 EVIDENCE:');
+            console.log('✓ started working at family business at age 10');
+            console.log('✓ has maintained every machine since 1985');
+            console.log('✓ can hyperfocus on glass cutting for hours');
+            console.log('✓ structured business operations with extreme detail');
+            console.log('✓ listened to 14yo nephew complaining about unstructuredness');
+            console.log('✓ actually implemented structural changes based on feedback');
+            console.log('✓ special interest: industrial glass manufacturing');
+            console.log('✓ neurodivergent nephew can\'t mask around him (ND recognizes ND)');
+            console.log('');
+            console.log('%c🎯 DIAGNOSTIC CONCLUSION:', 'font-size: 14px; font-weight: bold; color: #ff69b4;');
+            console.log('%cYUP HE IS ND', 'font-size: 16px; font-weight: bold; color: #00bcd4;');
+            console.log('');
+            console.log('confidence level: 99.7%');
+            console.log('margin of error: negligible (it\'s obvious bestie)');
+            console.log('');
+            console.log('%crecommendation: maybe mention it to him casually?', 'font-size: 12px; font-style: italic; color: #7f8c8d;');
+            console.log('%cor just keep diagnosing via javascript, that works too', 'font-size: 12px; font-style: italic; color: #7f8c8d;');
+            
+            // CONFETTI TIME
+            createConfetti('🎉 DIAGNOSIS CONFIRMED 🎉', '#9c27b0');
+        };
+
+        window.AreTheLebronesND = function() {
+            console.log('Oh god. This will be a bit cringe. If ur someone off my family im generally sorry because this was supposed to be put off the prod version of this.')
+            console.log('%c🏢 MULTIGENERATIONAL ANALYSIS INITIATED', 'font-size: 18px; font-weight: bold; color: #e91e63;');
+            console.log('');
+            console.log('analyzing the Lebron family business (founded 1970)...');
+            console.log('');
+            console.log('👴 GENERATION 1 (1970s) - THE FOUNDERS:');
+            console.log('  Abu aka Carlos:');
+            console.log('    ✓ founded specialized glass business in 1970');
+            console.log('    ✓ special interest: glass manufacturing');
+            console.log('    ✓ built business from hyperfixation');
+            console.log('    ✓ passed down detailed knowledge systems');
+            console.log('  Abi aka Gladys:');
+            console.log('    ✓ co-founded and managed operations');
+            console.log('    ✓ detail-oriented systems management');
+            console.log('    ✓ VERDICT: neurodivergent power couple ♾️');
+            console.log('');
+            console.log('👨‍💼 GENERATION 2 (1980s-present) - THE INHERITORS:');
+            console.log('  Tio aka Danny:');
+            console.log('    ✓ started working at age 10 (!!!)');
+            console.log('    ✓ knows every machine since 1985');
+            console.log('    ✓ current owner & operator');
+            console.log('    ✓ responds well to structured feedback from ND nephew');
+            console.log('    ✓ VERDICT: undiagnosed autistic 💯');
+            console.log('  Titi aka Rose:');
+            console.log('    ✓ works HR in a neurodivergent-heavy business');
+            console.log('    ✓ adapted to the Lebron family systems');
+            console.log('    ✓ VERDICT: at minimum ND-adjacent, possibly ND herself');
+            console.log('  Dad:');
+            console.log('    ✓ worked there until 2012');
+            console.log('    ✓ special interest: buying top tier shit');
+            console.log('    ✓ somehow drowned EVERY phone he ever owned');
+            console.log('    ✓ hyperfixation on quality products');
+            console.log('    ✓ VERDICT: absolutely neurodivergent (RIP king 👑)');
+            console.log('');
+            console.log('👤 GENERATION 3 (2010s-present) - THE TECH ERA:');
+            console.log('  Me:');
+            console.log('    ✓ started apprenticeship at age 11');
+            console.log('    ✓ diagnosed AuDHD');
+            console.log('    ✓ special interest: glass logistics & web development');
+            console.log('    ✓ literally diagnosing family via javascript');
+            console.log('    ✓ can\'t mask around my uncle (lol) (ND → ND recognition)');
+            console.log('    ✓ VERDICT: diagnosed, thriving, carrying the legacy ✨');
+            console.log('');
+            console.log('📊 STATISTICAL ANALYSIS:');
+            console.log('  Total family members analyzed: 6');
+            console.log('  Confirmed/highly suspected ND: 6');
+            console.log('  Percentage: 100%');
+            console.log('  Generations affected: 3/3');
+            console.log('');
+            console.log('%c🎯 FINAL DIAGNOSTIC CONCLUSION:', 'font-size: 16px; font-weight: bold; color: #ff6b6b;');
+            console.log('%cTHE ENTIRE LEBRON FAMILY IS NEURODIVERGENT.', 'font-size: 18px; font-weight: bold; color: #4ecdc4;');
+            console.log('%cTHIS IS A MULTI-GENERATIONAL AUTISTIC GLASS EMPIRE.', 'font-size: 18px; font-weight: bold; color: #4ecdc4;');
+            console.log('');
+            console.log('🏆 ACHIEVEMENTS UNLOCKED:');
+            console.log('  ✓ 3-generation neurodivergent business succession');
+            console.log('  ✓ Special interest passed down through family');
+            console.log('  ✓ Undiagnosed → Undiagnosed → Diagnosed pipeline');
+            console.log('  ✓ First generation with tech diagnosing previous generations');
+            console.log('  ✓ Embedded easter eggs in production business software');
+            console.log('');
+            console.log('');
+            console.log('%c♾️ THE LEBRONES: AUTISTIC AF SINCE 1970 ♾️', 'font-size: 16px; font-weight: bold; color: #e91e63; background: #fff; padding: 10px;');
+            
+            // MEGA CONFETTI
+            createConfetti('♾️ MULTIGENERATIONAL AUTISM CONFIRMED ♾️', '#e91e63');
+            
+            // extra confetti burst after 1 second
+            setTimeout(() => {
+                createConfetti('🌟 3 GENERATIONS OF SPECIAL INTERESTS 🌟', '#4ecdc4');
+            }, 1000);
+            
+            setTimeout(() => {
+                createConfetti('🏆 UNDIAGNOSED → DIAGNOSED PIPELINE COMPLETE 🏆', '#9c27b0');
+            }, 2000);
+        };
+
+        function createConfetti(message, color) {
+            // create confetti container
+            const confettiContainer = document.createElement('div');
+            confettiContainer.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                pointer-events: none;
+                z-index: 99999;
+                overflow: hidden;
+            `;
+            document.body.appendChild(confettiContainer);
+
+            // create message banner
+            const banner = document.createElement('div');
+            banner.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%) scale(0);
+                background: ${color};
+                color: white;
+                padding: 30px 50px;
+                border-radius: 20px;
+                font-size: 1.5rem;
+                font-weight: bold;
+                box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+                z-index: 100000;
+                text-align: center;
+                animation: banner-pop 0.5s ease forwards;
+                pointer-events: none;
+            `;
+            banner.textContent = message;
+            
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes banner-pop {
+                    0% { transform: translate(-50%, -50%) scale(0); }
+                    50% { transform: translate(-50%, -50%) scale(1.1); }
+                    100% { transform: translate(-50%, -50%) scale(1); }
+                }
+                @keyframes confetti-fall {
+                    0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+                    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(style);
+            document.body.appendChild(banner);
+
+            // create confetti pieces
+            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24', '#6c5ce7', '#a29bfe', '#fd79a8', '#fdcb6e'];
+            const emojis = ['♾️', '🌟', '✨', '🎉', '💜', '🌈', '⭐', '💫'];
+            
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                const isEmoji = Math.random() > 0.7;
+                
+                if (isEmoji) {
+                    confetti.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                    confetti.style.fontSize = Math.random() * 20 + 15 + 'px';
+                } else {
+                    confetti.style.width = Math.random() * 10 + 5 + 'px';
+                    confetti.style.height = Math.random() * 10 + 5 + 'px';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                }
+                
+                confetti.style.cssText += `
+                    position: absolute;
+                    left: ${Math.random() * 100}vw;
+                    top: -20px;
+                    pointer-events: none;
+                    animation: confetti-fall ${Math.random() * 3 + 2}s linear forwards;
+                    animation-delay: ${Math.random() * 0.5}s;
+                `;
+                
+                confettiContainer.appendChild(confetti);
+            }
+
+            // cleanup after animation
+            setTimeout(() => {
+                banner.style.opacity = '0';
+                banner.style.transition = 'opacity 0.5s ease';
+                setTimeout(() => {
+                    confettiContainer.remove();
+                    banner.remove();
+                    style.remove();
+                }, 500);
+            }, 4000);
+        }
+
+        // quick console hint
+        console.log('%cOverwhelming UI? Need accessibility options?', 'font-size: 16px; font-weight: bold; color: #e74c3c;');
+        console.log('%cwindow.autismify() for an ND-friendly UI mode', 'font-size: 14px; color: #5a67d8;');
+        console.log('%cwindow.MakeMeAccessible() for full accessibility settings', 'font-size: 14px; color: #2980b9;');
+        console.log('');
+        console.log('%cMade by Benjamin Lebron, a part of the Lebrones (owners of Quality Glass Industries/Quality Glazing Contractors)', 'font-size: 10px; color: #ffffff;');
+        console.log('%cMADE BY A LEBRON', 'font-size: 16px; font-weight: bold; color: #e91e63; background: #fff; padding: 10px;');
+        console.log('%cMADE BY AN ND', 'font-size: 16px; font-weight: bold; color: #e91e63; background: #fff; padding: 10px;');
+        console.log('%cPROUDLY ACCESSIBLE SITE', 'font-size: 16px; font-weight: bold; color: #e91e63; background: #fff; padding: 10px;');
+        console.log('%cFor the business\'s site:');
+        console.log('%chttps://www.facebook.com/qualityglasspuertorico', 'font-size: 17px; font-weight: bold; color: #23bdf0; background: fff; padding: 5px');
+    </script>
+</body>
+</html>
