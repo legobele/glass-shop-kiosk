@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings for your QGI employee account</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            padding: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .back-btn {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            border: 2px solid white;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: white;
+            color: #e74c3c;
+        }
+
+        .card-body {
+            padding: 30px;
+        }
+
+        .user-info {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #ecf0f1;
+        }
+
+        .user-info h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .user-info p {
+            color: #7f8c8d;
+            margin: 5px 0;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #e74c3c;
+            box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .alert {
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+
+        .alert-error {
+            background: #fee;
+            color: #c0392b;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .help-text {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+
+        .pin-status {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .pin-status.active {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .pin-status.inactive {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* accessibility button styling */
+        .accessibility-fab {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            z-index: 9998;
+            border: none;
+            transition: all 0.3s ease;
+            font-size: 1.5rem;
+        }
+
+        .accessibility-fab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .accessibility-fab:focus {
+            outline: 3px solid #fbbf24;
+            outline-offset: 3px;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <header class="header" role="banner">
+                <h1 class="logo">⚙️ Account Settings</h1>
+                <a href="https://legobele.github.io/glass-shop-admin-tool" class="back-btn">← Back</a>
+            </div>
+            
+            <div class="card-body">
+                <div class="user-info" id="user-info-section">
+                    <!-- User info will be populated here -->
+                </div>
+
+                <div id="alert-container"></div>
+
+                <h2 class="section-title">Set Login PIN</h2>
+                
+                <div class="pin-status inactive" id="pin-status">
+                    <strong>📍 PIN Status:</strong> Not Set
+                </div>
+
+                <p style="color: #7f8c8d; margin-bottom: 25px;">
+                    Set a 4-digit PIN for faster touchscreen login. You'll still need your email address to login with PIN.
+                </p>
+
+                <form id="pin-form" onsubmit="event.preventDefault(); setPIN();">
+                    <div class="form-group">
+                        <label class="form-label">Current Password</label>
+                        <input type="password" id="current-password" class="form-input" placeholder="Enter your current password" required>
+                        <div class="help-text">Required to verify your identity</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">New PIN (4 digits)</label>
+                        <input type="text" id="new-pin" class="form-input" placeholder="Enter 4-digit PIN" maxlength="4" pattern="\d{4}" required>
+                        <div class="help-text">Must be exactly 4 digits (e.g., 1234)</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Confirm PIN</label>
+                        <input type="text" id="confirm-pin" class="form-input" placeholder="Re-enter PIN" maxlength="4" pattern="\d{4}" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" id="submit-btn">
+                        <span id="btn-text">Set PIN</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Accessibility Floating Action Button -->
+    <button class="accessibility-fab" onclick="window.MakeMeAccessible()" aria-label="Open accessibility settings" title="Accessibility Settings">
+        ♿
+    </button>
+
+    <script>
+        // API endpoint - UPDATE THIS WITH YOUR NGROK URL
+        const API_BASE_URL = 'http://localhost:3000';
+
+        function getAuthToken() {
+            return localStorage.getItem('qgi-auth-token');
+        }
+
+        function getAuthHeaders() {
+            const token = getAuthToken();
+            return {
+                'Content-Type': 'application/json',
+                'ngrok-skip-browser-warning': 'true',
+                'Authorization': token ? `Bearer ${token}` : ''
+            };
+        }
+
+        function showAlert(message, type) {
+            const container = document.getElementById('alert-container');
+            container.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 5000);
+        }
+
+        // Check auth on page load
+        window.addEventListener('load', async function() {
+            const token = getAuthToken();
+            if (!token) {
+                window.location.href = 'https://legobele.github.io/glass-shop-admin-login-page';
+                return;
+            }
+
+            // Verify token and load user info
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/auth/verify`, {
+                    headers: getAuthHeaders()
+                });
+
+                if (!response.ok) {
+                    window.location.href = 'https://legobele.github.io/glass-shop-admin-login-page';
+                    return;
+                }
+
+                const data = await response.json();
+                displayUserInfo(data.user);
+                
+                // Check if user has PIN
+                const userInfo = localStorage.getItem('qgi-user');
+                if (userInfo) {
+                    const user = JSON.parse(userInfo);
+                    updatePinStatus(user.hasPin);
+                }
+            } catch (error) {
+                console.error('Auth verification failed:', error);
+                window.location.href = 'https://legobele.github.io/glass-shop-admin-login-page';
+            }
+        });
+
+        function displayUserInfo(user) {
+            const section = document.getElementById('user-info-section');
+            section.innerHTML = `
+                <h3>👤 Account Information</h3>
+                <p><strong>Name:</strong> ${user.fullName || 'Not set'}</p>
+                <p><strong>Email:</strong> ${user.email}</p>
+                <p><strong>User ID:</strong> ${user.userId}</p>
+            `;
+        }
+
+        function updatePinStatus(hasPin) {
+            const statusDiv = document.getElementById('pin-status');
+            if (hasPin) {
+                statusDiv.className = 'pin-status active';
+                statusDiv.innerHTML = '<strong>✅ PIN Status:</strong> Active';
+                document.getElementById('btn-text').textContent = 'Update PIN';
+            } else {
+                statusDiv.className = 'pin-status inactive';
+                statusDiv.innerHTML = '<strong>📍 PIN Status:</strong> Not Set';
+                document.getElementById('btn-text').textContent = 'Set PIN';
+            }
+        }
+
+        async function setPIN() {
+            const currentPassword = document.getElementById('current-password').value;
+            const newPin = document.getElementById('new-pin').value;
+            const confirmPin = document.getElementById('confirm-pin').value;
+
+            // Validation
+            if (!/^\d{4}$/.test(newPin)) {
+                showAlert('PIN must be exactly 4 digits', 'error');
+                return;
+            }
+
+            if (newPin !== confirmPin) {
+                showAlert('PINs do not match', 'error');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submit-btn');
+            const btnText = document.getElementById('btn-text');
+            
+            submitBtn.disabled = true;
+            btnText.innerHTML = '<span class="loading-spinner"></span>';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/auth/set-pin`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({
+                        currentPassword: currentPassword,
+                        pin: newPin
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showAlert('PIN set successfully! You can now use PIN login.', 'success');
+                    
+                    // Update user info in localStorage
+                    const userInfo = localStorage.getItem('qgi-user');
+                    if (userInfo) {
+                        const user = JSON.parse(userInfo);
+                        user.hasPin = true;
+                        localStorage.setItem('qgi-user', JSON.stringify(user));
+                        updatePinStatus(true);
+                    }
+                    
+                    // Clear form
+                    document.getElementById('pin-form').reset();
+                } else {
+                    showAlert(data.message || 'Failed to set PIN', 'error');
+                }
+            } catch (error) {
+                console.error('Set PIN error:', error);
+                showAlert('Failed to connect to server. Check your API URL.', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                btnText.textContent = document.getElementById('pin-status').classList.contains('active') ? 'Update PIN' : 'Set PIN';
+            }
+        }
+
+        // Input validation - only allow digits
+        document.getElementById('new-pin').addEventListener('input', function(e) {
+            this.value = this.value.replace(/\D/g, '');
+        });
+
+        document.getElementById('confirm-pin').addEventListener('input', function(e) {
+            this.value = this.value.replace(/\D/g, '');
+        });
+
+        // ============================================================
+        // ACCESSIBILITY MENU
+        // ============================================================
+        
+        let accessibilitySettings = {
+            highContrast: false,
+            reducedMotion: false,
+            colorTone: 'default',
+            fontSize: 'default',
+            focusIndicators: false
+        };
+
+        window.MakeMeAccessible = function() {
+            const existingMenu = document.getElementById('accessibility-menu');
+            if (existingMenu) {
+                existingMenu.remove();
+                return;
+            }
+
+            const menu = document.createElement('div');
+            menu.id = 'accessibility-menu';
+            menu.setAttribute('role', 'dialog');
+            menu.setAttribute('aria-modal', 'true');
+            menu.setAttribute('aria-labelledby', 'accessibility-title');
+            menu.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: white;
+                padding: 30px;
+                border-radius: 15px;
+                box-shadow: 0 10px 50px rgba(0,0,0,0.3);
+                z-index: 10000;
+                max-width: 500px;
+                width: 90%;
+                max-height: 80vh;
+                overflow-y: auto;
+            `;
+
+            menu.innerHTML = `
+                <div style="margin-bottom: 20px;">
+                    <h2 id="accessibility-title" style="margin: 0 0 10px 0; color: #2c3e50;">accessibility settings</h2>
+                    <p style="margin: 0; color: #7f8c8d; font-size: 0.9rem;">customize the settings page</p>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                        <input type="checkbox" id="high-contrast-toggle" style="width: 20px; height: 20px;" aria-label="Enable high contrast mode">
+                        <div>
+                            <strong style="display: block; color: #2c3e50;">high contrast mode</strong>
+                            <span style="font-size: 0.85rem; color: #7f8c8d;">makes text easier to read</span>
+                        </div>
+                    </label>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                        <input type="checkbox" id="reduced-motion-toggle" style="width: 20px; height: 20px;" aria-label="Reduce motion and animations">
+                        <div>
+                            <strong style="display: block; color: #2c3e50;">reduce motion</strong>
+                            <span style="font-size: 0.85rem; color: #7f8c8d;">removes animations</span>
+                        </div>
+                    </label>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                        <input type="checkbox" id="focus-indicators-toggle" style="width: 20px; height: 20px;" aria-label="Show enhanced focus indicators">
+                        <div>
+                            <strong style="display: block; color: #2c3e50;">enhanced focus indicators</strong>
+                            <span style="font-size: 0.85rem; color: #7f8c8d;">shows where keyboard focus is</span>
+                        </div>
+                    </label>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label for="color-tone-select" style="display: block; margin-bottom: 8px; color: #2c3e50; font-weight: 600;">color tone</label>
+                    <select id="color-tone-select" aria-label="Choose color scheme" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1rem;">
+                        <option value="default">default (red/dark)</option>
+                        <option value="warm">warm (orange/brown)</option>
+                        <option value="cool">cool (blue/teal)</option>
+                        <option value="monochrome">monochrome (grayscale)</option>
+                    </select>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label for="font-size-select" style="display: block; margin-bottom: 8px; color: #2c3e50; font-weight: 600;">font size</label>
+                    <select id="font-size-select" aria-label="Choose font size" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1rem;">
+                        <option value="default">default</option>
+                        <option value="large">large (+20%)</option>
+                        <option value="xlarge">extra large (+40%)</option>
+                    </select>
+                </div>
+
+                <div style="display: flex; gap: 10px;">
+                    <button id="apply-accessibility" style="flex: 1; padding: 12px; background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">apply</button>
+                    <button id="close-accessibility" style="flex: 1; padding: 12px; background: #ecf0f1; color: #2c3e50; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;" aria-label="Close accessibility menu">close</button>
+                </div>
+            `;
+
+            document.body.appendChild(menu);
+
+            // focus trap for accessibility
+            const focusableElements = menu.querySelectorAll('input, select, button');
+            const firstFocusable = focusableElements[0];
+            const lastFocusable = focusableElements[focusableElements.length - 1];
+            
+            firstFocusable.focus();
+
+            menu.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    menu.remove();
+                } else if (e.key === 'Tab') {
+                    if (e.shiftKey && document.activeElement === firstFocusable) {
+                        e.preventDefault();
+                        lastFocusable.focus();
+                    } else if (!e.shiftKey && document.activeElement === lastFocusable) {
+                        e.preventDefault();
+                        firstFocusable.focus();
+                    }
+                }
+            });
+
+            document.getElementById('apply-accessibility').onclick = function() {
+                accessibilitySettings.highContrast = document.getElementById('high-contrast-toggle').checked;
+                accessibilitySettings.reducedMotion = document.getElementById('reduced-motion-toggle').checked;
+                accessibilitySettings.focusIndicators = document.getElementById('focus-indicators-toggle').checked;
+                accessibilitySettings.colorTone = document.getElementById('color-tone-select').value;
+                accessibilitySettings.fontSize = document.getElementById('font-size-select').value;
+                
+                applyAccessibilitySettings();
+                menu.remove();
+                
+                // announce to screen readers
+                const announcement = document.createElement('div');
+                announcement.setAttribute('role', 'status');
+                announcement.setAttribute('aria-live', 'polite');
+                announcement.style.cssText = 'position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden;';
+                announcement.textContent = 'Accessibility settings applied successfully';
+                document.body.appendChild(announcement);
+                setTimeout(() => announcement.remove(), 1000);
+            };
+
+            document.getElementById('close-accessibility').onclick = function() {
+                menu.remove();
+            };
+        };
+
+        function applyAccessibilitySettings() {
+            let styleId = 'accessibility-overrides';
+            let existingStyle = document.getElementById(styleId);
+            if (existingStyle) existingStyle.remove();
+
+            let css = '';
+
+            if (accessibilitySettings.highContrast) {
+                css += `body { filter: contrast(1.3); }`;
+            }
+
+            if (accessibilitySettings.reducedMotion) {
+                css += `
+                    *, *::before, *::after {
+                        animation-duration: 0.01ms !important;
+                        transition-duration: 0.01ms !important;
+                    }
+                `;
+            }
+
+            if (accessibilitySettings.focusIndicators) {
+                css += `
+                    *:focus {
+                        outline: 3px solid #fbbf24 !important;
+                        outline-offset: 2px !important;
+                    }
+                `;
+            }
+
+            if (accessibilitySettings.colorTone === 'warm') {
+                css += `
+                    body { background: linear-gradient(135deg, #d35400 0%, #e67e22 100%) !important; }
+                    .header { background: linear-gradient(135deg, #34495e, #5d4037) !important; }
+                    .btn-primary { background: linear-gradient(135deg, #d35400, #e67e22) !important; }
+                `;
+            } else if (accessibilitySettings.colorTone === 'cool') {
+                css += `
+                    body { background: linear-gradient(135deg, #2980b9 0%, #3498db 100%) !important; }
+                    .header { background: linear-gradient(135deg, #2c3e50, #34495e) !important; }
+                    .btn-primary { background: linear-gradient(135deg, #2980b9, #3498db) !important; }
+                `;
+            } else if (accessibilitySettings.colorTone === 'monochrome') {
+                css += `* { filter: grayscale(100%) !important; }`;
+            }
+
+            if (accessibilitySettings.fontSize === 'large') {
+                css += `body { font-size: 120% !important; }`;
+            } else if (accessibilitySettings.fontSize === 'xlarge') {
+                css += `body { font-size: 140% !important; }`;
+            }
+
+            if (css) {
+                const style = document.createElement('style');
+                style.id = styleId;
+                style.textContent = css;
+                document.head.appendChild(style);
+            }
+        }
+
+        console.log('%c🎨 accessibility menu available:', 'font-size: 14px; font-weight: bold;');
+        console.log('%cwindow.MakeMeAccessible()', 'font-size: 12px; color: #e74c3c;');
+        console.log('%cMade by Benjamin Lebron, a part of the Lebrones (owners of Quality Glass Industries/Quality Glazing Contractors)', 'font-size: 10px; color: #ffffff;');
+        console.log('%cMADE BY A LEBRON', 'font-size: 16px; font-weight: bold; color: #e91e63; background: #fff; padding: 10px;');
+        console.log('%cMADE BY AN ND', 'font-size: 16px; font-weight: bold; color: #e91e63; background: #fff; padding: 10px;');
+        console.log('%cPROUDLY ACCESSIBLE SITE', 'font-size: 16px; font-weight: bold; color: #e91e63; background: #fff; padding: 10px;');
+        console.log('%cFor the business\'s site:');
+        console.log('%chttps://www.facebook.com/qualityglasspuertorico', 'font-size: 17px; font-weight: bold; color: #23bdf0; background: fff; padding: 5px');
+    </script>
+</body>
+</html>
