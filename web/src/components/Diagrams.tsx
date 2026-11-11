@@ -19,7 +19,15 @@ export function SizeDiagram({ w, h }: { w: number | null; h: number | null }) {
   const y = (220 - rh) / 2;
   return (
     <svg viewBox="0 0 320 220" role="img" aria-label="Glass size diagram">
-      <rect x={x} y={y} width={rw} height={rh} fill="rgba(255,255,255,.05)" stroke={INK} strokeWidth="1.4" />
+      <defs>
+        <linearGradient id="glass-size" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#ffffff" stopOpacity=".13" />
+          <stop offset=".45" stopColor="#ffffff" stopOpacity=".04" />
+          <stop offset="1" stopColor="#ffffff" stopOpacity=".08" />
+        </linearGradient>
+      </defs>
+      <rect x={x} y={y} width={rw} height={rh} fill="url(#glass-size)" stroke={INK} strokeWidth="1.4" />
+      <line x1={x} y1={y} x2={x + rw} y2={y} stroke="#ffffff" strokeOpacity=".65" strokeWidth="2" />
       <line x1={x} y1={y - 16} x2={x + rw} y2={y - 16} stroke={DIM} strokeWidth="1" />
       <line x1={x} y1={y - 21} x2={x} y2={y - 11} stroke={DIM} strokeWidth="1" />
       <line x1={x + rw} y1={y - 21} x2={x + rw} y2={y - 11} stroke={DIM} strokeWidth="1" />
@@ -62,10 +70,17 @@ export function BevelDiagram({ angle, sides }: { angle: number; sides: Record<st
   const midY = (topY + botY) / 2;
   return (
     <svg viewBox="0 0 400 190" role="img" aria-label="Bevel angle diagram">
+      <defs>
+        <linearGradient id="glass-bevel" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#ffffff" stopOpacity=".14" />
+          <stop offset=".5" stopColor="#ffffff" stopOpacity=".04" />
+          <stop offset="1" stopColor="#ffffff" stopOpacity=".09" />
+        </linearGradient>
+      </defs>
       {/* glass body outline (cross section, edges labeled e1 top, e2 right, e3 bottom, e4 left) */}
       <polygon
         points={`${left + bw},${topY} ${right - bw},${topY} ${right},${midY} ${right - bw},${botY} ${left + bw},${botY} ${left},${midY}`}
-        fill="rgba(255,255,255,.05)"
+        fill="url(#glass-bevel)"
         stroke="none"
       />
       <line x1={left + bw} y1={topY} x2={right - bw} y2={topY} stroke={col(active('e1'))} strokeWidth={active('e1') ? 3 : 1.4} />
@@ -114,6 +129,14 @@ export function EdgeRoundingDiagram({
   );
   return (
     <svg viewBox="0 0 400 280" role="img" aria-label="Edge rounding diagram">
+      <defs>
+        <linearGradient id="glass-edge" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#ffffff" stopOpacity=".12" />
+          <stop offset=".5" stopColor="#ffffff" stopOpacity=".03" />
+          <stop offset="1" stopColor="#ffffff" stopOpacity=".08" />
+        </linearGradient>
+      </defs>
+      <rect x={x} y={y} width={W} height={H} rx={r} fill="url(#glass-edge)" stroke="none" />
       <rect x={x + r} y={y} width={W - 2 * r} height={H} fill="none" stroke={col(edges.e1)} strokeWidth={wdt(edges.e1)} />
       <rect x={x} y={y + r} width={W} height={H - 2 * r} fill="none" stroke="none" />
       <line x1={x} y1={y + r} x2={x} y2={y + H - r} stroke={col(edges.e4)} strokeWidth={wdt(edges.e4)} />
