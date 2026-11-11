@@ -14,6 +14,25 @@ uhhh. i can 100% defo explain the 2 rickroll links in this page. or the code. de
 
 # Changelog
 
+# 1.3.0 (Nov 11 2026)
+
+The rebuild. The whole system was rewritten from scratch in React + TypeScript (Vite), living in `web/`. The old single-file kiosk stays in the repo root as the historical record.
+
+## What changed
+- One SPA, three surfaces: the kiosk (`/`), the admin dashboard (`/admin`), and the customer portal (`/portal`).
+- The full 10-slide kiosk flow is back, bilingual EN / ES as always: language, customer, device handoff (only when `IsKioskInShop=true`), glass type with the tempered and ultra-clear switches, fraction numpad sizes, thickness, color, additions (beveling, Diamon-Fusion®, edge rounding with the diagram done properly this time, sandblasting), payment, review, success with the QR code.
+- Catalog math ported faithfully: `resolveGlassType`, the 16ths fraction system with `toFracStr`, full-lite checks in both orientations against the lite tables, mirror lite limits per thickness.
+- Admin: stats cards, status filters, inline customer edits, status changes, order deletion, downloadable activity log. Order edits are still gated by the customer's 6-digit change PIN from the portal. The PIN is single-use now.
+- Portal: order tracking by ID (or `?order=` link), status, and change PIN generation.
+- One shared local-first order store (localStorage, syncs across tabs). The originals persisted nothing in the browser and died with the laptop server; orders placed at the kiosk now show up in admin and the portal immediately. The historical order QG1HZLVYSG is seeded so the portal demo works out of the box.
+- Design: rebuilt on the Nivelato Neue language. Monochrome chrome, semantic color for status only, drawn SVG swatches and diagrams (no images). The purple gradient stays dead.
+
+## Notes
+- Hash routing + relative asset base, so the built app runs from any static subpath with no server rewrites.
+- Still no backend. The store is local to the browser; the old server contract (order payload shape, addition strings) is preserved in the data model for when a backend comes back.
+
+---
+
 # 1.2.0 (Apr 9 2026)
 
 Came back to this project.
