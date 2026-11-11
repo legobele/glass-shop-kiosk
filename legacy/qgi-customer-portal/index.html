@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QGI Customer Portal v0.7</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .lang-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.2);
+            border: 2px solid white;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .lang-toggle:hover {
+            background: white;
+            color: #2c3e50;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .search-section {
+            padding: 30px;
+            background: white;
+            border-bottom: 2px solid #f1f3f4;
+        }
+
+        .search-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .search-title {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e0e6ed;
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .search-btn {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .search-note {
+            text-align: center;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .order-display {
+            padding: 30px;
+            display: none;
+        }
+
+        .order-display.active {
+            display: block;
+        }
+
+        .order-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f1f3f4;
+        }
+
+        .order-id {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .status-badge {
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-pending { 
+            background: linear-gradient(135deg, #ffeaa7, #fdcb6e); 
+            color: #d63031; 
+        }
+        .status-in-progress { 
+            background: linear-gradient(135deg, #74b9ff, #0984e3); 
+            color: white; 
+        }
+        .status-ready { 
+            background: linear-gradient(135deg, #00b894, #00a085); 
+            color: white; 
+        }
+        .status-completed { 
+            background: linear-gradient(135deg, #6c757d, #495057); 
+            color: white; 
+        }
+        .status-cancelled { 
+            background: linear-gradient(135deg, #fd79a8, #e84393); 
+            color: white; 
+        }
+
+        .order-meta {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .meta-label {
+            color: #6c757d;
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .meta-value {
+            color: #2c3e50;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .order-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .order-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .section-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .spec-item {
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .spec-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .spec-value {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .additions-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .addition-badge {
+            background: #667eea;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+        }
+
+        .order-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .action-btn {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .btn-change {
+            background: linear-gradient(135deg, #ffc107, #ff9800);
+            color: #000;
+        }
+
+        .btn-refresh {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-new {
+            background: linear-gradient(135deg, #00b894, #00a085);
+            color: white;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        /* accessibility button styling */
+        .accessibility-fab {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            z-index: 9998;
+            border: none;
+            transition: all 0.3s ease;
+            font-size: 1.5rem;
+        }
+
+        .accessibility-fab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .accessibility-fab:focus {
+            outline: 3px solid #fbbf24;
+            outline-offset: 3px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            animation: modalPop 0.3s ease;
+        }
+
+        @keyframes modalPop {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .modal-header {
+            margin-bottom: 25px;
+        }
+
+        .modal-title {
+            font-size: 1.8rem;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .modal-description {
+            color: #6c757d;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .pin-display {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            margin: 25px 0;
+        }
+
+        .pin-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .pin-code {
+            font-size: 3rem;
+            font-weight: bold;
+            letter-spacing: 8px;
+            font-family: monospace;
+        }
+
+        .pin-instructions {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .pin-instructions h4 {
+            color: #1976d2;
+            margin-bottom: 10px;
+        }
+
+        .pin-instructions ol {
+            margin-left: 20px;
+            color: #424242;
+        }
+
+        .pin-instructions li {
+            margin-bottom: 8px;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .warning-box strong {
+            color: #856404;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #e0e6ed;
+            color: #2c3e50;
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .error-message.active {
+            display: block;
+        }
+
+        .no-order {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+
+        .no-order-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .order-content {
+                grid-template-columns: 1fr;
+            }
+
+            .order-meta {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .pin-code {
+                font-size: 2rem;
+                letter-spacing: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container" role="main" aria-label="Customer Portal">
+        <header class="header" role="banner">
+            <button class="lang-toggle" onclick="toggleLanguage()" id="langToggle" aria-label="Switch language to Spanish">🌐 ES</button>
+            <h1 class="logo">Quality Glass Industries</h1>
+            <p class="subtitle" data-i18n="subtitle">Customer Portal v0.7-access</p>
+        </header>
+
+        <section class="search-section" role="search" aria-label="Order search">
+            <div class="search-container">
+                <h2 class="search-title" data-i18n="trackOrder">Track Your Order</h2>
+                <div class="search-box">
+                    <input type="text" class="search-input" id="orderIdInput" data-i18n-placeholder="orderIdPlaceholder" placeholder="Enter your Order ID (e.g., QGABCD1234)" aria-label="Order ID input">
+                    <button class="search-btn" onclick="searchOrder()" data-i18n="search" aria-label="Search for order">Search</button>
+                </div>
+                <p class="search-note" data-i18n="searchNote">📸 Your Order ID was shown as a QR code when you placed your order</p>
+            </div>
+        </section>
+
+        <section class="order-display" id="orderDisplay" role="region" aria-label="Order details" aria-live="polite">
+            <div class="order-card" id="orderCard">
+                <!-- Order details will be populated here -->
+            </div>
+        </section>
+
+        <div class="no-order" id="noOrder" style="display: none;" role="status" aria-live="polite">
+            <div class="no-order-icon">📦</div>
+            <h3 data-i18n="noOrderFound">No Order Found</h3>
+            <p data-i18n="checkOrderId">Please check your Order ID and try again</p>
+        </div>
+    </div>
+
+    <!-- PIN Generation Modal -->
+    <div class="modal" id="pinModal" role="dialog" aria-modal="true" aria-labelledby="pinModalTitle">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="pinModalTitle" data-i18n="requestChange">Request Order Change</h2>
+                <p class="modal-description" data-i18n="pinGenerated">A secure PIN has been generated for your order change request.</p>
+            </div>
+
+            <div class="pin-display">
+                <div class="pin-label" data-i18n="yourPin">Your Change PIN</div>
+                <div class="pin-code" id="generatedPin" role="status" aria-live="polite" aria-atomic="true">------</div>
+            </div>
+
+            <div class="pin-instructions">
+                <h4 data-i18n="nextSteps">📋 Next Steps:</h4>
+                <ol id="pinStepsList">
+                    <li data-i18n="step1"><strong>Write down or screenshot this PIN</strong> - you'll need it</li>
+                    <li data-i18n="step2">Contact our sales team (in person, phone, or email)</li>
+                    <li data-i18n="step3">Provide them with your Order ID and this PIN</li>
+                    <li data-i18n="step4">Tell them what changes you need</li>
+                    <li data-i18n="step5">Sales team will verify your PIN and update the order</li>
+                </ol>
+            </div>
+
+            <div class="warning-box" role="alert">
+                <strong data-i18n="warning">⚠️ Important:</strong>
+                <span data-i18n="warningText"> The sales team CANNOT change your order without this PIN. Keep it secure!</span>
+            </div>
+
+            <div class="modal-actions">
+                <button class="modal-btn btn-primary" onclick="closePinModal()" data-i18n="gotIt" aria-label="Close PIN modal">Got It</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Accessibility Floating Action Button -->
+    <button class="accessibility-fab" onclick="window.MakeMeAccessible()" aria-label="Open accessibility settings" title="Accessibility Settings">
+        ♿
+    </button>
+
+    <script>
+        const SERVER_CONFIG = {
+            baseUrl: 'https://vague-nonspeculatively-florida.ngrok-free.dev',
+            endpoints: {
+                getOrder: '/api/orders/:id',
+                generatePin: '/api/orders/:id/generate-pin'
+            }
+        };
+
+        const translations = {
+            en: {
+                subtitle: "Customer Portal v0.4",
+                trackOrder: "Track Your Order",
+                orderIdPlaceholder: "Enter your Order ID (e.g., QGABCD1234)",
+                search: "Search",
+                searchNote: "📸 Your Order ID was shown as a QR code when you placed your order",
+                noOrderFound: "No Order Found",
+                checkOrderId: "Please check your Order ID and try again",
+                requestChange: "Request Order Change",
+                pinGenerated: "A secure PIN has been generated for your order change request.",
+                yourPin: "Your Change PIN",
+                nextSteps: "📋 Next Steps:",
+                step1: "Write down or screenshot this PIN - you'll need it",
+                step2: "Contact our sales team (in person, phone, or email)",
+                step3: "Provide them with your Order ID and this PIN",
+                step4: "Tell them what changes you need",
+                step5: "Sales team will verify your PIN and update the order",
+                warning: "⚠️ Important:",
+                warningText: " The sales team CANNOT change your order without this PIN. Keep it secure!",
+                gotIt: "Got It",
+                order: "Order",
+                orderDate: "Order Date",
+                customer: "Customer",
+                paymentMethod: "Payment Method",
+                dimensions: "Dimensions",
+                width: "Width",
+                height: "Height",
+                specifications: "Specifications",
+                color: "Color",
+                thickness: "Thickness",
+                additionalServices: "Additional Services",
+                none: "None",
+                requestChangeBtn: "🔄 Request Order Change",
+                refreshStatus: "🔃 Refresh Status",
+                shareOrder: "🔗 Share Order Link",
+                placeNewOrder: "➕ Place New Order",
+                pending: "Pending",
+                inProgress: "In Progress",
+                ready: "Ready",
+                completed: "Completed",
+                cancelled: "Cancelled",
+                clear: "Clear",
+                bronze: "Bronze",
+                gray: "Gray",
+                blue: "Blue",
+                green: "Green",
+                antique: "Antique (Stained)",
+                mirrorClear: "Mirror - Clear",
+                mirrorDark: "Mirror - Dark",
+                cash: "Cash",
+                creditDebit: "Credit/Debit Card",
+                digitalPayment: "Apple Pay / Google Pay / ATH Móvil"
+            },
+            es: {
+                subtitle: "Portal del Cliente v0.4",
+                trackOrder: "Rastrear tu Orden",
+                orderIdPlaceholder: "Ingresa tu ID de Orden (ej., QGABCD1234)",
+                search: "Buscar",
+                searchNote: "📸 Tu ID de Orden fue mostrado como código QR cuando hiciste tu pedido",
+                noOrderFound: "Orden No Encontrada",
+                checkOrderId: "Por favor verifica tu ID de Orden e intenta de nuevo",
+                requestChange: "Solicitar Cambio de Orden",
+                pinGenerated: "Se ha generado un PIN seguro para tu solicitud de cambio de orden.",
+                yourPin: "Tu PIN de Cambio",
+                nextSteps: "📋 Próximos Pasos:",
+                step1: "Anota o toma captura de este PIN - lo necesitarás",
+                step2: "Contacta a nuestro equipo de ventas (en persona, teléfono, o correo)",
+                step3: "Proporciona tu ID de Orden y este PIN",
+                step4: "Diles qué cambios necesitas",
+                step5: "El equipo de ventas verificará tu PIN y actualizará la orden",
+                warning: "⚠️ Importante:",
+                warningText: " El equipo de ventas NO PUEDE cambiar tu orden sin este PIN. ¡Manténlo seguro!",
+                gotIt: "Entendido",
+                order: "Orden",
+                orderDate: "Fecha de Orden",
+                customer: "Cliente",
+                paymentMethod: "Método de Pago",
+                dimensions: "Dimensiones",
+                width: "Ancho",
+                height: "Alto",
+                specifications: "Especificaciones",
+                color: "Color",
+                thickness: "Grosor",
+                additionalServices: "Servicios Adicionales",
+                none: "Ninguno",
+                requestChangeBtn: "🔄 Solicitar Cambio",
+                refreshStatus: "🔃 Actualizar Estado",
+                shareOrder: "🔗 Compartir Enlace",
+                placeNewOrder: "➕ Nueva Orden",
+                pending: "Pendiente",
+                inProgress: "En Progreso",
+                ready: "Listo",
+                completed: "Completado",
+                cancelled: "Cancelado",
+                clear: "Claro",
+                bronze: "Bronce",
+                gray: "Gris",
+                blue: "Azul",
+                green: "Verde",
+                antique: "Antiguo (Manchado)",
+                mirrorClear: "Espejo - Claro",
+                mirrorDark: "Espejo - Oscuro",
+                cash: "Efectivo",
+                creditDebit: "Tarjeta de Crédito/Débito",
+                digitalPayment: "Apple Pay / Google Pay / ATH Móvil"
+            }
+        };
+
+        let currentLang = localStorage.getItem('qgi-lang') || 'en';
+        let currentOrder = null;
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'en' ? 'es' : 'en';
+            localStorage.setItem('qgi-lang', currentLang);
+            updateLanguage();
+            if (currentOrder) {
+                displayOrder(currentOrder);
+            }
+        }
+
+        function updateLanguage() {
+            const lang = translations[currentLang];
+            
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (lang[key]) {
+                    el.textContent = lang[key];
+                }
+            });
+
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                if (lang[key]) {
+                    el.placeholder = lang[key];
+                }
+            });
+            
+            document.getElementById('langToggle').textContent = currentLang === 'en' ? '🌐 ES' : '🌐 EN';
+        }
+
+        async function searchOrder() {
+            const orderId = document.getElementById('orderIdInput').value.trim().toUpperCase();
+            
+            if (!orderId) {
+                alert(currentLang === 'en' ? 'Please enter an Order ID' : 'Por favor ingresa un ID de Orden');
+                return;
+            }
+
+            try {
+                const response = await fetch(
+                    `${SERVER_CONFIG.baseUrl}${SERVER_CONFIG.endpoints.getOrder.replace(':id', orderId)}`,
+                    {
+                        headers: {
+                            'ngrok-skip-browser-warning': 'true'
+                        }
+                    }
+                );
+
+                if (response.status === 404) {
+                    document.getElementById('orderDisplay').classList.remove('active');
+                    document.getElementById('noOrder').style.display = 'block';
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch order');
+                }
+
+                currentOrder = await response.json();
+                displayOrder(currentOrder);
+                
+                document.getElementById('noOrder').style.display = 'none';
+                document.getElementById('orderDisplay').classList.add('active');
+                document.getElementById('orderDisplay').scrollIntoView({ behavior: 'smooth' });
+
+            } catch (error) {
+                console.error('Error fetching order:', error);
+                alert(currentLang === 'en' ? 'Failed to fetch order. Please check your connection and try again.' : 'Error al obtener orden. Por favor verifica tu conexión e intenta de nuevo.');
+            }
+        }
+
+        function displayOrder(order) {
+            const lang = translations[currentLang];
+            const statusClass = `status-${order.status}`;
+            const orderDate = new Date(order.timestamp).toLocaleString();
+            
+            const statusText = {
+                'pending': lang.pending,
+                'in-progress': lang.inProgress,
+                'ready': lang.ready,
+                'completed': lang.completed,
+                'cancelled': lang.cancelled
+            }[order.status] || order.status;
+            
+            const additionsHTML = order.specifications.additions.length > 0
+                ? order.specifications.additions.map(add => 
+                    `<span class="addition-badge">${formatAddition(add)}</span>`
+                  ).join('')
+                : `<span class="spec-value">${lang.none}</span>`;
+
+            const customerInfo = order.customerName || order.customerId 
+                ? `
+                    <div class="meta-item">
+                        <span class="meta-label">${lang.customer}</span>
+                        <span class="meta-value">${order.customerName || order.customerId || (currentLang === 'en' ? 'Not assigned' : 'No asignado')}</span>
+                    </div>
+                `
+                : '';
+
+            const html = `
+                <div class="order-header">
+                    <div class="order-id">${lang.order} ${order.orderId}</div>
+                    <div class="status-badge ${statusClass}">${statusText}</div>
+                </div>
+
+                <div class="order-meta">
+                    <div class="meta-item">
+                        <span class="meta-label">${lang.orderDate}</span>
+                        <span class="meta-value">${orderDate}</span>
+                    </div>
+                    ${customerInfo}
+                    <div class="meta-item">
+                        <span class="meta-label">${lang.paymentMethod}</span>
+                        <span class="meta-value">${formatPaymentMethod(order.payment.method)}</span>
+                    </div>
+                </div>
+
+                <div class="order-content">
+                    <div class="order-section">
+                        <div class="section-title">${lang.dimensions}</div>
+                        <div class="spec-item">
+                            <span class="spec-label">${lang.width}</span>
+                            <span class="spec-value">${order.dimensions.width}"</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">${lang.height}</span>
+                            <span class="spec-value">${order.dimensions.height}"</span>
+                        </div>
+                    </div>
+
+                    <div class="order-section">
+                        <div class="section-title">${lang.specifications}</div>
+                        <div class="spec-item">
+                            <span class="spec-label">${lang.color}</span>
+                            <span class="spec-value">${formatColor(order.specifications.color)}</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">${lang.thickness}</span>
+                            <span class="spec-value">${order.specifications.thickness}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="order-section">
+                    <div class="section-title">${lang.additionalServices}</div>
+                    <div class="additions-list">
+                        ${additionsHTML}
+                    </div>
+                </div>
+
+                <div class="order-actions">
+                    <button class="action-btn btn-change" onclick="requestChange()">
+                        ${lang.requestChangeBtn}
+                    </button>
+                    <button class="action-btn btn-refresh" onclick="refreshOrder()">
+                        ${lang.refreshStatus}
+                    </button>
+                    <button class="action-btn btn-new" onclick="shareOrder()">
+                        ${lang.shareOrder}
+                    </button>
+                    <button class="action-btn btn-new" onclick="newOrder()">
+                        ${lang.placeNewOrder}
+                    </button>
+                </div>
+            `;
+
+            document.getElementById('orderCard').innerHTML = html;
+        }
+
+        async function requestChange() {
+            if (!currentOrder) return;
+
+            try {
+                const response = await fetch(
+                    `${SERVER_CONFIG.baseUrl}${SERVER_CONFIG.endpoints.generatePin.replace(':id', currentOrder.orderId)}`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'ngrok-skip-browser-warning': 'true'
+                        }
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error('Failed to generate PIN');
+                }
+
+                const result = await response.json();
+                
+                document.getElementById('generatedPin').textContent = result.pin;
+                document.getElementById('pinModal').classList.add('active');
+
+            } catch (error) {
+                console.error('Error generating PIN:', error);
+                alert(currentLang === 'en' ? 'Failed to generate change PIN. Please try again or contact staff.' : 'Error al generar PIN de cambio. Por favor intenta de nuevo o contacta al personal.');
+            }
+        }
+
+        function closePinModal() {
+            document.getElementById('pinModal').classList.remove('active');
+        }
+
+        async function refreshOrder() {
+            if (!currentOrder) return;
+            
+            const orderId = currentOrder.orderId;
+            document.getElementById('orderIdInput').value = orderId;
+            await searchOrder();
+        }
+
+        function newOrder() {
+            window.location.href = 'QGI-KIOSK-v0_4.html';
+        }
+
+        function shareOrder() {
+            if (!currentOrder) return;
+            
+            const orderUrl = `${window.location.origin}${window.location.pathname}?order=${currentOrder.orderId}`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: `${translations[currentLang].order} ${currentOrder.orderId}`,
+                    text: currentLang === 'en' ? `Track my glass order at Quality Glass Industries` : `Rastrear mi orden de vidrio en Quality Glass Industries`,
+                    url: orderUrl
+                }).catch(() => {
+                    copyToClipboard(orderUrl);
+                });
+            } else {
+                copyToClipboard(orderUrl);
+            }
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert((currentLang === 'en' ? 'Order link copied to clipboard!\n\n' : '¡Enlace de orden copiado al portapapeles!\n\n') + text);
+            }).catch(() => {
+                prompt(currentLang === 'en' ? 'Copy this link:' : 'Copia este enlace:', text);
+            });
+        }
+
+        function formatColor(color) {
+            const colorMap = {
+                'en': {
+                    'clear': 'Clear',
+                    'bronze': 'Bronze',
+                    'gray': 'Gray',
+                    'blue': 'Blue',
+                    'green': 'Green',
+                    'antique': 'Antique (Stained)',
+                    'mirror-clear': 'Mirror - Clear',
+                    'mirror-dark': 'Mirror - Dark',
+                    'undiagnosed-autism': '🌈 Undiagnosed Autism'
+                },
+                'es': {
+                    'clear': 'Claro',
+                    'bronze': 'Bronce',
+                    'gray': 'Gris',
+                    'blue': 'Azul',
+                    'green': 'Verde',
+                    'antique': 'Antiguo (Manchado)',
+                    'mirror-clear': 'Espejo - Claro',
+                    'mirror-dark': 'Espejo - Oscuro',
+                    'undiagnosed-autism': '🌈 Autismo Sin Diagnosticar'
+                }
+            };
+            return colorMap[currentLang][color] || color;
+        }
+
+        function formatAddition(addition) {
+            const additionMap = {
+                'en': {
+                    'diamon-fusion': 'Diamon-Fusion®',
+                    'diamond-fusion': 'Diamon-Fusion®',
+                    'tempering': 'Tempering',
+                    'sandblasting': 'Sandblasting',
+                    'beveling': 'Beveling ⚠️',
+                    'edge-rounding': 'Edge Rounding ⚠️',
+                    'special-interest-glass': '✨ Special Interest in Glass',
+                    'autistic-vibes': '♾️ Autistic Vibes'
+                },
+                'es': {
+                    'diamon-fusion': 'Diamon-Fusion®',
+                    'diamond-fusion': 'Diamon-Fusion®',
+                    'tempering': 'Templado',
+                    'sandblasting': 'Arenado',
+                    'beveling': 'Biselado ⚠️',
+                    'edge-rounding': 'Redondeo de Bordes ⚠️',
+                    'special-interest-glass': '✨ Interés Especial en Vidrio',
+                    'autistic-vibes': '♾️ Vibras Autistas'
+                }
+            };
+            return additionMap[currentLang][addition] || addition;
+        }
+
+        function formatPaymentMethod(method) {
+            const methodMap = {
+                'en': {
+                    'credit-debit': 'Credit/Debit Card',
+                    'card': 'Credit/Debit Card',
+                    'cash': 'Cash',
+                    'apple-google-ath': 'Apple Pay / Google Pay / ATH Móvil',
+                    'digital': 'Digital Wallet',
+                    'ath-movil': 'ATH Móvil',
+                    'autistic-vibes-payment': '♾️ Autistic Vibes',
+                    'infodumping-until-forgot-payment': '💬 Infodumping About Glass',
+                    'special-interest-energy-payment': '✨ Special Interest Energy'
+                },
+                'es': {
+                    'credit-debit': 'Tarjeta de Crédito/Débito',
+                    'card': 'Tarjeta',
+                    'cash': 'Efectivo',
+                    'apple-google-ath': 'Apple Pay / Google Pay / ATH Móvil',
+                    'digital': 'Cartera Digital',
+                    'ath-movil': 'ATH Móvil',
+                    'autistic-vibes-payment': '♾️ Vibras Autistas',
+                    'infodumping-until-forgot-payment': '💬 Infodumpear Sobre Vidrio',
+                    'special-interest-energy-payment': '✨ Energía de Interés Especial'
+                }
+            };
+            return methodMap[currentLang][method] || method;
+        }
+
+        document.getElementById('orderIdInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchOrder();
+            }
+        });
+
+        window.addEventListener('DOMContentLoaded', function() {
+            updateLanguage();
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            const orderId = urlParams.get('order');
+            
+            if (orderId) {
+                document.getElementById('orderIdInput').value = orderId.toUpperCase();
+                searchOrder();
+            }
+        });
+
+        // ============================================================
+        // ACCESSIBILITY MENU - because bright purple gradients are NOT for everyone
+        // ============================================================
+        
+        let accessibilitySettings = {
+            highContrast: false,
+            reducedMotion: false,
+            colorTone: 'default', // default (purple), warm, cool, monochrome
+            fontSize: 'default',
+            focusIndicators: false
+        };
+
+        window.MakeMeAccessible = function() {
+            const existingMenu = document.getElementById('accessibility-menu');
+            if (existingMenu) {
+                existingMenu.remove();
+                return;
+            }
+
+            const menu = document.createElement('div');
+            menu.id = 'accessibility-menu';
+            menu.setAttribute('role', 'dialog');
+            menu.setAttribute('aria-modal', 'true');
+            menu.setAttribute('aria-labelledby', 'accessibility-title');
+            menu.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: white;
+                padding: 30px;
+                border-radius: 15px;
+                box-shadow: 0 10px 50px rgba(0,0,0,0.3);
+                z-index: 10000;
+                max-width: 500px;
+                width: 90%;
+                max-height: 80vh;
+                overflow-y: auto;
+            `;
+
+            menu.innerHTML = `
+                <div style="margin-bottom: 20px;">
+                    <h2 id="accessibility-title" style="margin: 0 0 10px 0; color: #2c3e50;">accessibility settings</h2>
+                    <p style="margin: 0; color: #7f8c8d; font-size: 0.9rem;">make this kiosk work better for you</p>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                        <input type="checkbox" id="high-contrast-toggle" ${accessibilitySettings.highContrast ? 'checked' : ''} style="width: 20px; height: 20px;" aria-label="Enable high contrast mode">
+                        <div>
+                            <strong style="display: block; color: #2c3e50;">high contrast mode</strong>
+                            <span style="font-size: 0.85rem; color: #7f8c8d;">makes text easier to read</span>
+                        </div>
+                    </label>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                        <input type="checkbox" id="reduced-motion-toggle" ${accessibilitySettings.reducedMotion ? 'checked' : ''} style="width: 20px; height: 20px;" aria-label="Reduce motion and animations">
+                        <div>
+                            <strong style="display: block; color: #2c3e50;">reduce motion</strong>
+                            <span style="font-size: 0.85rem; color: #7f8c8d;">removes animations and transitions</span>
+                        </div>
+                    </label>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                        <input type="checkbox" id="focus-indicators-toggle" ${accessibilitySettings.focusIndicators ? 'checked' : ''} style="width: 20px; height: 20px;" aria-label="Show enhanced focus indicators">
+                        <div>
+                            <strong style="display: block; color: #2c3e50;">enhanced focus indicators</strong>
+                            <span style="font-size: 0.85rem; color: #7f8c8d;">shows where keyboard focus is</span>
+                        </div>
+                    </label>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label for="color-tone-select" style="display: block; margin-bottom: 8px; color: #2c3e50; font-weight: 600;">color tone</label>
+                    <select id="color-tone-select" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1rem;" aria-label="Choose color scheme">
+                        <option value="default" ${accessibilitySettings.colorTone === 'default' ? 'selected' : ''}>default (purple - BRIGHT AF)</option>
+                        <option value="warm" ${accessibilitySettings.colorTone === 'warm' ? 'selected' : ''}>warm (orange/brown)</option>
+                        <option value="cool" ${accessibilitySettings.colorTone === 'cool' ? 'selected' : ''}>cool (muted blue/teal)</option>
+                        <option value="monochrome" ${accessibilitySettings.colorTone === 'monochrome' ? 'selected' : ''}>monochrome (grayscale)</option>
+                    </select>
+                    <span style="font-size: 0.85rem; color: #7f8c8d; display: block; margin-top: 5px;">the default purple can be sensory hell, pick something easier</span>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label for="font-size-select" style="display: block; margin-bottom: 8px; color: #2c3e50; font-weight: 600;">font size</label>
+                    <select id="font-size-select" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1rem;" aria-label="Choose font size">
+                        <option value="default" ${accessibilitySettings.fontSize === 'default' ? 'selected' : ''}>default</option>
+                        <option value="large" ${accessibilitySettings.fontSize === 'large' ? 'selected' : ''}>large (+20%)</option>
+                        <option value="xlarge" ${accessibilitySettings.fontSize === 'xlarge' ? 'selected' : ''}>extra large (+40%)</option>
+                    </select>
+                </div>
+
+                <div style="display: flex; gap: 10px;">
+                    <button id="apply-accessibility" style="flex: 1; padding: 12px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;" aria-label="Apply accessibility settings">apply settings</button>
+                    <button id="close-accessibility" style="flex: 1; padding: 12px; background: #ecf0f1; color: #2c3e50; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;" aria-label="Close accessibility menu">close</button>
+                </div>
+            `;
+
+            document.body.appendChild(menu);
+
+            // focus trap for accessibility
+            const focusableElements = menu.querySelectorAll('input, select, button');
+            const firstFocusable = focusableElements[0];
+            const lastFocusable = focusableElements[focusableElements.length - 1];
+            
+            firstFocusable.focus();
+
+            menu.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    menu.remove();
+                } else if (e.key === 'Tab') {
+                    if (e.shiftKey && document.activeElement === firstFocusable) {
+                        e.preventDefault();
+                        lastFocusable.focus();
+                    } else if (!e.shiftKey && document.activeElement === lastFocusable) {
+                        e.preventDefault();
+                        firstFocusable.focus();
+                    }
+                }
+            });
+
+            document.getElementById('apply-accessibility').onclick = function() {
+                accessibilitySettings.highContrast = document.getElementById('high-contrast-toggle').checked;
+                accessibilitySettings.reducedMotion = document.getElementById('reduced-motion-toggle').checked;
+                accessibilitySettings.focusIndicators = document.getElementById('focus-indicators-toggle').checked;
+                accessibilitySettings.colorTone = document.getElementById('color-tone-select').value;
+                accessibilitySettings.fontSize = document.getElementById('font-size-select').value;
+                
+                applyAccessibilitySettings();
+                menu.remove();
+                
+                // announce to screen readers
+                const announcement = document.createElement('div');
+                announcement.setAttribute('role', 'status');
+                announcement.setAttribute('aria-live', 'polite');
+                announcement.style.cssText = 'position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden;';
+                announcement.textContent = 'Accessibility settings applied successfully';
+                document.body.appendChild(announcement);
+                setTimeout(() => announcement.remove(), 1000);
+            };
+
+            document.getElementById('close-accessibility').onclick = function() {
+                menu.remove();
+            };
+
+            console.log('accessibility menu opened - customize away!');
+        };
+
+        function applyAccessibilitySettings() {
+            let styleId = 'accessibility-overrides';
+            let existingStyle = document.getElementById(styleId);
+            if (existingStyle) existingStyle.remove();
+
+            let css = '';
+
+            if (accessibilitySettings.highContrast) {
+                css += `
+                    body { filter: contrast(1.3); }
+                    .order-card, .status-card { border: 2px solid #000 !important; }
+                `;
+            }
+
+            if (accessibilitySettings.reducedMotion) {
+                css += `
+                    *, *::before, *::after {
+                        animation-duration: 0.01ms !important;
+                        animation-iteration-count: 1 !important;
+                        transition-duration: 0.01ms !important;
+                    }
+                `;
+            }
+
+            if (accessibilitySettings.focusIndicators) {
+                css += `
+                    *:focus {
+                        outline: 3px solid #fbbf24 !important;
+                        outline-offset: 2px !important;
+                    }
+                `;
+            }
+
+            // THE GOOD SHIT - color tone overrides
+            if (accessibilitySettings.colorTone === 'warm') {
+                css += `
+                    body { background: linear-gradient(135deg, #d35400 0%, #e67e22 100%) !important; }
+                    .header { background: linear-gradient(135deg, #34495e, #5d4037) !important; }
+                    .search-btn { background: linear-gradient(135deg, #d35400, #e67e22) !important; }
+                `;
+            } else if (accessibilitySettings.colorTone === 'cool') {
+                css += `
+                    body { background: linear-gradient(135deg, #2c5f7c 0%, #34788a 100%) !important; }
+                    .header { background: linear-gradient(135deg, #2c3e50, #34495e) !important; }
+                    .search-btn { background: linear-gradient(135deg, #2980b9, #3498db) !important; }
+                `;
+            } else if (accessibilitySettings.colorTone === 'monochrome') {
+                css += `
+                    * { filter: grayscale(100%) !important; }
+                `;
+            }
+
+            if (accessibilitySettings.fontSize === 'large') {
+                css += `
+                    body { font-size: 120% !important; }
+                `;
+            } else if (accessibilitySettings.fontSize === 'xlarge') {
+                css += `
+                    body { font-size: 140% !important; }
+                `;
+            }
+
+            if (css) {
+                const style = document.createElement('style');
+                style.id = styleId;
+                style.textContent = css;
+                document.head.appendChild(style);
+            }
+
+            console.log('accessibility settings applied:', accessibilitySettings);
+        }
+
+        window.getAccessibilitySettings = function() {
+            return accessibilitySettings;
+        };
+
+        console.log('%c🎨 accessibility menu available:', 'font-size: 16px; font-weight: bold; color: #667eea;');
+        console.log('%cwindow.MakeMeAccessible() - open accessibility settings', 'font-size: 14px; color: #764ba2;');
+        console.log('%cbecause that purple gradient is legitimately overwhelming for some folks', 'font-size: 12px; color: #7f8c8d;');
+        console.log('%cMade by Benjamin Lebron, a part of the Lebrones (owners of Quality Glass Industries/Quality Glazing Contractors)', 'font-size: 10px; color: #ffffff;');
+        console.log('%cMADE BY A LEBRON', 'font-size: 16px; font-weight: bold; color: #e91e63; background: #fff; padding: 10px;');
+        console.log('%cMADE BY AN ND', 'font-size: 16px; font-weight: bold; color: #e91e63; background: #fff; padding: 10px;');
+        console.log('%cPROUDLY ACCESSIBLE SITE', 'font-size: 16px; font-weight: bold; color: #e91e63; background: #fff; padding: 10px;');
+        console.log('%cFor the business\'s site:');
+        console.log('%chttps://www.facebook.com/qualityglasspuertorico', 'font-size: 17px; font-weight: bold; color: #23bdf0; background: fff; padding: 5px');
+    </script>
+</body>
+</html>
