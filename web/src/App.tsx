@@ -15,7 +15,7 @@ function Shell() {
           <NavLink className="tab" to="/admin">Admin</NavLink>
           <NavLink className="tab" to="/portal">Customer Portal</NavLink>
         </nav>
-        <span className="hud" style={{ letterSpacing: '.18em' }}>QGI · v1.3.0</span>
+        <span className="hud" style={{ letterSpacing: '.18em' }}>QGI · v1.3.1</span>
       </header>
       <main className="page">
         <Outlet />

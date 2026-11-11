@@ -14,6 +14,17 @@ uhhh. i can 100% defo explain the 2 rickroll links in this page. or the code. de
 
 # Changelog
 
+# 1.3.1 (Nov 11 2026)
+
+Visual restyle only. Same app, same flows, same behavior.
+
+## What changed
+- New material look on all three surfaces: layered glass sheets, soft shadows, edges catching light. Purple count still zero.
+- Color swatches look like glass samples now: light across the face, cut edge along the bottom. Thickness bars look like the edge of the glass.
+- Order cards read like work orders, with a laminated edge down the left side. Stat tiles got the same edge on top.
+- Copy pass on the new strings: shorter, plainer. Original wording (PIN errors, portal steps) untouched.
+- Smoke suite recreated in `web/tests/`: 29 checks, all passing before and after the restyle.
+
 # 1.3.0 (Nov 11 2026)
 
 The rebuild. The whole system was rewritten from scratch in React + TypeScript (Vite), living in `web/`. The old single-file kiosk stays in the repo root as the historical record.
