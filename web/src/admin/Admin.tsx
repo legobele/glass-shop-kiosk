@@ -88,7 +88,7 @@ export default function Admin() {
       <div className="hud" style={{ marginBottom: 8 }}>Quality Glass · Sales</div>
       <h1 className="page-title">Admin Dashboard</h1>
       <p className="sub" style={{ marginTop: 8 }}>
-        Every order from the kiosk, the portal, and this dashboard, in one local-first store.
+        Orders from the kiosk and the portal, all in one place.
       </p>
 
       <div className="grid c5" style={{ margin: '26px 0 8px' }}>
@@ -161,7 +161,7 @@ export default function Admin() {
 
       {/* PIN gate */}
       <Modal open={pinFor != null} title="Enter Change PIN"
-        sub="Order edits are locked. The customer generates a 6-digit change PIN in the customer portal and gives it to sales."
+        sub="Edits need the customer's 6-digit change PIN. They make it in the customer portal and give it to sales."
         onClose={() => setPinFor(null)}>
         {pinError && <div className="err-box">{pinError}</div>}
         <label className="f-label" htmlFor="pin-in">6-digit PIN</label>

@@ -134,7 +134,7 @@ export default function Portal() {
       )}
 
       <Modal open={pinOrder != null} title="Your Change PIN"
-        sub="Keep this PIN safe. You will need it to authorize any change to your order."
+        sub="Keep this PIN safe. You need it to approve any change to your order."
         onClose={() => setPinOrder(null)}>
         <div className="pin-big">{pinOrder?.changePIN}</div>
         <ol className="steps">
