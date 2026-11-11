@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QGI Customer Portal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .welcome-section {
+            padding: 30px;
+            background: white;
+            text-align: center;
+        }
+
+        .customer-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+
+        .controls {
+            padding: 20px 30px;
+            background: white;
+            border-bottom: 2px solid #f1f3f4;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .filter-select, .search-input {
+            padding: 8px 12px;
+            border: 2px solid #e0e6ed;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .search-input {
+            width: 200px;
+        }
+
+        .refresh-btn, .new-order-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .new-order-btn {
+            background: linear-gradient(135deg, #00b894, #00a085);
+            margin-left: 10px;
+        }
+
+        .refresh-btn:hover, .new-order-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px 30px;
+            background: #f8f9fa;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        .orders-grid {
+            display: grid;
+            gap: 20px;
+            padding: 20px 30px;
+        }
+
+        .order-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .order-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            border-color: #667eea;
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f1f3f4;
+        }
+
+        .order-id {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .order-date {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .order-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .order-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .section-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .spec-item {
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .spec-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .spec-value {
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-pending { 
+            background: linear-gradient(135deg, #ffeaa7, #fdcb6e); 
+            color: #d63031; 
+        }
+        .status-in-progress { 
+            background: linear-gradient(135deg, #74b9ff, #0984e3); 
+            color: white; 
+        }
+        .status-ready { 
+            background: linear-gradient(135deg, #00b894, #00a085); 
+            color: white; 
+        }
+        .status-completed { 
+            background: linear-gradient(135deg, #6c757d, #495057); 
+            color: white; 
+        }
+        .status-cancelled { 
+            background: linear-gradient(135deg, #fd79a8, #e84393); 
+            color: white; 
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e9ecef;
+            border-radius: 3px;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        .order-actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-view { 
+            background: linear-gradient(135deg, #667eea, #764ba2); 
+            color: white; 
+        }
+        .btn-track { 
+            background: linear-gradient(135deg, #00b894, #00a085); 
+            color: white; 
+        }
+        .btn-contact { 
+            background: linear-gradient(135deg, #fd79a8, #e84393); 
+            color: white; 
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 3% auto;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f1f3f4;
+        }
+
+        .close {
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #aaa;
+            transition: color 0.3s ease;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .order-details {
+            display: grid;
+            gap: 20px;
+        }
+
+        .detail-group {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+        }
+
+        .detail-label {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: #6c757d;
+            font-size: 1.1rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 30px;
+            color: #6c757d;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        @media (max-width: 768px) {
+            .order-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .filter-group {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="header">
+            <h1>QGI Customer Portal</h1>
+            <p>Track your custom glass orders</p>
+        </div>
+
+        <div class="welcome-section">
+            <div class="customer-info">
+                <h3>Welcome back, <span id="customerName">Customer</span>!</h3>
+                <p>Manage and track your glass orders</p>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="filter-group">
+                <select class="filter-select" id="statusFilter">
+                    <option value="">All Orders</option>
+                    <option value="pending">Pending</option>
+                    <option value="in-progress">In Progress</option>
+                    <option value="ready">Ready for Pickup</option>
+                    <option value="completed">Completed</option>
+                </select>
+                <input type="text" class="search-input" id="searchInput" placeholder="Search orders...">
+            </div>
+            <div>
+                <button class="refresh-btn" onclick="loadOrders()">🔄 Refresh</button>
+                <a href="file:///C:/Users/Benjamin Lebron/OneDrive/Desktop/orders2/glass_kiosk_updated.html" class="new-order-btn">+ New Order</a>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="totalOrders">-</div>
+                <div class="stat-label">Total Orders</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="activeOrders">-</div>
+                <div class="stat-label">Active Orders</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="readyOrders">-</div>
+                <div class="stat-label">Ready for Pickup</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="completedOrders">-</div>
+                <div class="stat-label">Completed</div>
+            </div>
+        </div>
+
+        <div class="orders-grid" id="ordersContainer">
+            <div class="loading">Loading your orders...</div>
+        </div>
+    </div>
+
+    <!-- Order Details Modal -->
+    <div id="orderModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Order Details</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div id="orderDetails" class="order-details"></div>
+        </div>
+    </div>
+
+    <script>
+        const SERVER_URL = 'http://localhost:3000';
+        let allOrders = [];
+        let filteredOrders = [];
+
+        // Load orders on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadOrders();
+            
+            // Set up event listeners
+            document.getElementById('statusFilter').addEventListener('change', filterOrders);
+            document.getElementById('searchInput').addEventListener('input', filterOrders);
+        });
+
+        async function loadOrders() {
+            try {
+                // In a real app, this would filter by customer ID
+                const response = await fetch(`${SERVER_URL}/api/orders`);
+                if (!response.ok) throw new Error('Failed to fetch orders');
+                
+                allOrders = await response.json();
+                filteredOrders = [...allOrders];
+                
+                updateStats();
+                renderOrders();
+                
+            } catch (error) {
+                console.error('Error loading orders:', error);
+                document.getElementById('ordersContainer').innerHTML = 
+                    '<div class="loading">Unable to load orders. Please check your connection and try again.</div>';
+            }
+        }
+
+        function updateStats() {
+            const stats = allOrders.reduce((acc, order) => {
+                acc.total++;
+                if (['pending', 'in-progress'].includes(order.status)) {
+                    acc.active++;
+                }
+                if (order.status === 'ready') {
+                    acc.ready++;
+                }
+                if (order.status === 'completed') {
+                    acc.completed++;
+                }
+                return acc;
+            }, { total: 0, active: 0, ready: 0, completed: 0 });
+
+            document.getElementById('totalOrders').textContent = stats.total;
+            document.getElementById('activeOrders').textContent = stats.active;
+            document.getElementById('readyOrders').textContent = stats.ready;
+            document.getElementById('completedOrders').textContent = stats.completed;
+        }
+
+        function filterOrders() {
+            const statusFilter = document.getElementById('statusFilter').value;
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+            filteredOrders = allOrders.filter(order => {
+                const matchesStatus = !statusFilter || order.status === statusFilter;
+                const matchesSearch = !searchTerm || 
+                    order.orderId.toLowerCase().includes(searchTerm) ||
+                    order.specifications.color.toLowerCase().includes(searchTerm);
+                
+                return matchesStatus && matchesSearch;
+            });
+
+            renderOrders();
+        }
+
+        function getProgressPercentage(status) {
+            const progressMap = {
+                'pending': 25,
+                'in-progress': 60,
+                'ready': 90,
+                'completed': 100,
+                'cancelled': 0
+            };
+            return progressMap[status] || 0;
+        }
+
+        function renderOrders() {
+            if (filteredOrders.length === 0) {
+                document.getElementById('ordersContainer').innerHTML = `
+                    <div class="empty-state">
+                        <h3>No orders found</h3>
+                        <p>You haven't placed any orders yet, or no orders match your current filters.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const ordersHtml = filteredOrders.map(order => `
+                <div class="order-card">
+                    <div class="order-header">
+                        <div>
+                            <div class="order-id">${order.orderId}</div>
+                            <div class="order-date">${new Date(order.timestamp).toLocaleDateString('en-US', { 
+                                year: 'numeric', 
+                                month: 'long', 
+                                day: 'numeric' 
+                            })}</div>
+                        </div>
+                        <span class="status-badge status-${order.status}">${order.status.replace('-', ' ')}</span>
+                    </div>
+                    
+                    <div class="order-content">
+                        <div class="order-section">
+                            <div class="section-title">Glass Specifications</div>
+                            <div class="spec-item">
+                                <span class="spec-label">Size:</span>
+                                <span class="spec-value">${order.dimensions.width}" × ${order.dimensions.height}"</span>
+                            </div>
+                            <div class="spec-item">
+                                <span class="spec-label">Color:</span>
+                                <span class="spec-value">${order.specifications.color}</span>
+                            </div>
+                            <div class="spec-item">
+                                <span class="spec-label">Thickness:</span>
+                                <span class="spec-value">${order.specifications.thickness}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="order-section">
+                            <div class="section-title">Order Status</div>
+                            <div class="spec-item">
+                                <span class="spec-label">Current Status:</span>
+                                <span class="spec-value">${order.status.replace('-', ' ')}</span>
+                            </div>
+                            <div class="spec-item">
+                                <span class="spec-label">Payment:</span>
+                                <span class="spec-value">${order.payment.method}</span>
+                            </div>
+                            ${order.specifications.additions.length > 0 ? `
+                            <div class="spec-item">
+                                <span class="spec-label">Additions:</span>
+                                <span class="spec-value">${order.specifications.additions.length} item(s)</span>
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                    
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${getProgressPercentage(order.status)}%"></div>
+                    </div>
+                    
+                    <div class="order-actions">
+                        <button class="action-btn btn-view" onclick="viewOrder('${order.orderId}')">
+                            📋 View Details
+                        </button>
+                        <button class="action-btn btn-track" onclick="trackOrder('${order.orderId}')">
+                            📍 Track Order
+                        </button>
+                        <button class="action-btn btn-contact" onclick="contactSupport('${order.orderId}')">
+                            💬 Contact Support
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('ordersContainer').innerHTML = ordersHtml;
+        }
+
+        function viewOrder(orderId) {
+            const order = allOrders.find(o => o.orderId === orderId);
+            if (!order) return;
+
+            const detailsHtml = `
+                <div class="detail-group">
+                    <div class="detail-label">📋 Order Information</div>
+                    <p><strong>Order ID:</strong> ${order.orderId}</p>
+                    <p><strong>Order Date:</strong> ${new Date(order.timestamp).toLocaleString()}</p>
+                    <p><strong>Current Status:</strong> <span class="status-badge status-${order.status}">${order.status.replace('-', ' ')}</span></p>
+                </div>
+                
+                <div class="detail-group">
+                    <div class="detail-label">🪟 Glass Specifications</div>
+                    <p><strong>Dimensions:</strong> ${order.dimensions.width}" × ${order.dimensions.height}"</p>
+                    <p><strong>Color:</strong> ${order.specifications.color}</p>
+                    <p><strong>Thickness:</strong> ${order.specifications.thickness}</p>
+                </div>
+                
+                ${order.specifications.additions.length > 0 ? `
+                <div class="detail-group">
+                    <div class="detail-label">➕ Additional Features</div>
+                    <ul style="margin-left: 20px;">
+                        ${order.specifications.additions.map(addition => `<li>${addition.replace('-', ' ')}</li>`).join('')}
+                    </ul>
+                </div>
+                ` : ''}
+                
+                <div class="detail-group">
+                    <div class="detail-label">💳 Payment Information</div>
+                    <p><strong>Payment Method:</strong> ${order.payment.method}</p>
+                    <p><strong>Payment Status:</strong> <span style="color: #00b894; font-weight: bold;">Confirmed</span></p>
+                </div>
+                
+                <div class="detail-group">
+                    <div class="detail-label">📞 Need Help?</div>
+                    <p>Questions about your order? Contact our support team:</p>
+                    <p><strong>Phone:</strong> (787) 764-9404</p>
+                    <p><strong>Email:</strong> quotes@qgipr.com</p>
+                </div>
+            `;
+
+            document.getElementById('orderDetails').innerHTML = detailsHtml;
+            document.getElementById('orderModal').style.display = 'block';
+        }
+
+        function trackOrder(orderId) {
+            const order = allOrders.find(o => o.orderId === orderId);
+            if (!order) return;
+
+            const statusMessages = {
+                'pending': 'Your order has been received and is waiting to be processed.',
+                'in-progress': 'Your custom glass is currently being manufactured.',
+                'ready': 'Great news! Your order is ready for pickup.',
+                'completed': 'Your order has been completed and picked up.',
+                'cancelled': 'This order has been cancelled.'
+            };
+
+            alert(`Order Status: ${order.status.replace('-', ' ').toUpperCase()}\n\n${statusMessages[order.status]}`);
+        }
+
+        function contactSupport(orderId) {
+            const message = `Hello, I need assistance with my order ${orderId}. `;
+            const encodedMessage = encodeURIComponent(message);
+            window.open(`mailto:quotes@qgipr.com?subject=Support Request - Order ${orderId}&body=${encodedMessage}`, '_blank');
+        }
+
+        function closeModal() {
+            document.getElementById('orderModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('orderModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
