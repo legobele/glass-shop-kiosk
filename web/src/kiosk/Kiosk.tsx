@@ -12,20 +12,17 @@ import type {
 } from '../lib/types';
 import { emptyAdditions, generateOrderId } from '../lib/types';
 import {
-  THICK_MM,
   TYPE_I18N_KEY,
   colorsForThickness,
   isFullLite,
   resolveGlassType,
-  thickValue,
   thicknessesForType,
 } from '../lib/catalog';
-import { ER_FRACS, toFracStr } from '../lib/frac';
+import { toFracStr } from '../lib/frac';
 import { makeT } from '../lib/i18n';
 import { addOrder } from '../lib/store';
 import { colorName } from '../lib/format';
 import { Swatch } from '../components/Swatch';
-import { BevelDiagram, EdgeRoundingDiagram, SizeDiagram } from '../components/Diagrams';
 import { NumpadModal } from '../components/NumpadModal';
 import GlassStage, { type StageTrigger } from './stage/GlassStage';
 
@@ -40,6 +37,40 @@ const DOT_INDEX: Record<SlideId, number | null> = {
 
 function fracShort(v: number): string {
   return toFracStr(v).replace(/^0 /, '');
+}
+
+function parseInches(s: string): number | null {
+  const str = s.trim().replace(/["″]/g, '').trim();
+  if (!str) return null;
+  let m = str.match(/^(\d+(?:\.\d+)?)$/);
+  if (m) return parseFloat(m[1]);
+  m = str.match(/^(\d+)\s+(\d+)\s*\/\s*(\d+)$/);
+  if (m && +m[3]) return +m[1] + +m[2] / +m[3];
+  m = str.match(/^(\d+)\s*\/\s*(\d+)$/);
+  if (m && +m[2]) return +m[1] / +m[2];
+  return null;
+}
+
+// exact typed entry for an inch value; shows live updates from on-glass handles while not focused
+function InchInput({ value, onCommit, ariaLabel }: { value: number; onCommit: (v: number) => void; ariaLabel?: string }) {
+  const [txt, setTxt] = useState(() => fracShort(value));
+  const [editing, setEditing] = useState(false);
+  useEffect(() => { if (!editing) setTxt(fracShort(value)); }, [value, editing]);
+  const commit = () => {
+    setEditing(false);
+    const v = parseInches(txt);
+    if (v != null) onCommit(v); else setTxt(fracShort(value));
+  };
+  return (
+    <input className="field mono inch-input" value={txt} aria-label={ariaLabel} inputMode="decimal"
+      onFocus={() => setEditing(true)}
+      onChange={(e) => setTxt(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+        if (e.key === 'Escape') { setTxt(fracShort(value)); setEditing(false); (e.target as HTMLInputElement).blur(); }
+      }} />
+  );
 }
 
 function portalUrl(orderId: string): string {
@@ -84,6 +115,7 @@ export default function Kiosk() {
   const [clearance, setClearance] = useState<Partial<Record<'e1' | 'e2' | 'e3' | 'e4', number>>>({});
   const [desnivel, setDesnivel] = useState<Partial<Record<'c1' | 'c2' | 'c3' | 'c4', { offset: number; dir: 'h' | 'v' }>>>({});
   const [measSel, setMeasSel] = useState<{ kind: 'edge' | 'corner'; id: string } | null>(null);
+  const [roundSel, setRoundSel] = useState<string | null>(null);
   const [placedId, setPlacedId] = useState<string | null>(null);
   const [placing, setPlacing] = useState(false);
   const [trig, setTrig] = useState<StageTrigger>(null);
@@ -358,9 +390,52 @@ export default function Kiosk() {
     ) : null;
 
   /* ---------------- slides ---------------- */
-  const showStage = ['device', 'type', 'size', 'qty', 'thick', 'color', 'add', 'pay', 'review'].includes(slide);
+  const setMeasVal = (v: number) => {
+    if (!measSel) return;
+    if (measSel.kind === 'edge') setClearance({ ...clearance, [measSel.id]: Math.min(1, Math.max(0, v)) });
+    else setDesnivel({ ...desnivel, [measSel.id]: { offset: Math.min(2, Math.max(0, v)), dir: desnivel[measSel.id as 'c1']?.dir ?? 'h' } });
+  };
+
+  // tap an edge marker: off -> on + select, on + unselected -> select, on + selected -> off
+  const onBevEdgeTap = (e: 'e1' | 'e2' | 'e3' | 'e4') => {
+    const on = additions.beveling.sides[e];
+    if (!on) {
+      setAdditions({ ...additions, beveling: { ...additions.beveling, sides: { ...additions.beveling.sides, [e]: true } } });
+      setBevelEdge(e); setRoundSel(null);
+    } else if (bevelEdge !== e) { setBevelEdge(e); setRoundSel(null); }
+    else {
+      setAdditions({ ...additions, beveling: { ...additions.beveling, sides: { ...additions.beveling.sides, [e]: false } } });
+      setBevelEdge(null);
+    }
+  };
+
+  const onRoundTap = (id: string) => {
+    const on = additions.edgerounding.corners[id as 'c1'];
+    if (!on) {
+      setAdditions({ ...additions, edgerounding: { ...additions.edgerounding, corners: { ...additions.edgerounding.corners, [id]: true } } });
+      setRoundSel(id); setBevelEdge(null);
+    } else if (roundSel !== id) { setRoundSel(id); setBevelEdge(null); }
+    else {
+      setAdditions({ ...additions, edgerounding: { ...additions.edgerounding, corners: { ...additions.edgerounding.corners, [id]: false } } });
+      setRoundSel(null);
+    }
+  };
+
+  // per-corner radius (inches) for the 3D pane: corner rounded when the corner or either adjacent edge is on
+  const erCorners3d: [number, number, number, number] | undefined = (() => {
+    const er = additions.edgerounding;
+    if (!er.active || er.radius <= 0) return undefined;
+    return [
+      er.corners.c1 || er.edges.e1 || er.edges.e2 ? er.radius : 0,
+      er.corners.c2 || er.edges.e2 || er.edges.e3 ? er.radius : 0,
+      er.corners.c3 || er.edges.e3 || er.edges.e4 ? er.radius : 0,
+      er.corners.c4 || er.edges.e4 || er.edges.e1 ? er.radius : 0,
+    ];
+  })();
+
+  const showStage = ['device', 'type', 'size', 'qty', 'thick', 'color', 'add', 'pay', 'review', 'success'].includes(slide);
   return (
-    <div className={`kiosk-shell${showStage ? ' staged' : ''}`}>
+    <div className={`kiosk-shell${showStage ? ' staged' : ''}${slide === 'thick' ? ' thick-full' : ''}`}>
       {showStage && (
         <GlassStage
           lang={lang} slide={slide} glassType={glassType} color={color} thickness={thickness}
@@ -374,10 +449,32 @@ export default function Kiosk() {
           qty={qty}
           edgePick={slide === 'add' && additions.beveling.active}
           edgeSel={bevelEdge}
-          onEdgePick={(e) => setBevelEdge(e)}
+          onEdgePick={onBevEdgeTap}
+          bevSides={additions.beveling.sides}
+          bevWidth={bevelEdge ? (additions.beveling.perEdge?.[bevelEdge]?.width ?? 0.5) : 0}
+          bevWidthTxt={fracShort(bevelEdge ? (additions.beveling.perEdge?.[bevelEdge]?.width ?? 0.5) : 0) + '"'}
+          onBevWidth={(w) => {
+            if (!bevelEdge) return;
+            const cur = additions.beveling.perEdge?.[bevelEdge];
+            setAdditions({ ...additions, beveling: { ...additions.beveling, perEdge: { ...additions.beveling.perEdge, [bevelEdge]: { angle: cur?.angle ?? additions.beveling.angle, width: w } } } });
+          }}
+          roundCorners={slide === 'add' && additions.edgerounding.active ? additions.edgerounding.corners : undefined}
+          roundSel={roundSel}
+          onRoundPick={onRoundTap}
+          roundRadius={additions.edgerounding.radius}
+          roundRadiusTxt={fracShort(additions.edgerounding.radius) + '"'}
+          onRoundRadius={(r) => setAdditions({ ...additions, edgerounding: { ...additions.edgerounding, radius: r } })}
+          erCorners3d={erCorners3d}
+          temperOn={temp}
+          frostOn={additions.sandblasting.active}
           measPick={slide === 'size' && width != null && height != null}
           measSel={measSel}
           onMeasPick={(s) => setMeasSel(s)}
+          measVal={measSel ? (measSel.kind === 'edge' ? (clearance[measSel.id as 'e1'] ?? 0) : (desnivel[measSel.id as 'c1']?.offset ?? 0)) : 0}
+          measDir={measSel?.kind === 'corner' ? (desnivel[measSel.id as 'c1']?.dir ?? 'h') : 'h'}
+          measValTxt={fracShort(measSel ? (measSel.kind === 'edge' ? (clearance[measSel.id as 'e1'] ?? 0) : (desnivel[measSel.id as 'c1']?.offset ?? 0)) : 0) + '"'}
+          measSetIds={[...Object.entries(clearance).filter(([, v]) => (v ?? 0) > 0).map(([k]) => k), ...Object.entries(desnivel).filter(([, v]) => (v?.offset ?? 0) > 0).map(([k]) => k)]}
+          onMeasVal={setMeasVal}
           rackColors={slide === 'color' && glassType && thickness
             ? (() => {
                 const all = colorsForThickness(glassType, thickness).map(([key, info]) => ({ key, name: t(info.key) }));
@@ -582,9 +679,6 @@ export default function Kiosk() {
                 <div className={`sf-val${height ? ' has' : ''}`}>{height ? toFracStr(height) : '—'}</div>
               </button>
             </div>
-            <div className="diagram-box" style={{ marginBottom: 16 }}>
-              <SizeDiagram w={width} h={height} />
-            </div>
             {fullLite && (
               <div className="note warn">
                 <b>{t('flTitle')}</b>
@@ -598,21 +692,17 @@ export default function Kiosk() {
                 {measSel?.kind === 'edge' && (
                   <div className="card" style={{ display: 'block' }}>
                     <label className="f-label">
-                      {t('clearLabel')} · {t(`side${measSel.id.slice(1)}`)}: {fracShort(clearance[measSel.id as 'e1'] ?? 0)}"
+                      {t('clearLabel')} · {t(`side${measSel.id.slice(1)}`)}
                     </label>
-                    <input type="range" min={0} max={1} step={0.0625}
-                      value={clearance[measSel.id as 'e1'] ?? 0}
-                      onChange={(e) => setClearance({ ...clearance, [measSel.id]: parseFloat(e.target.value) })} />
+                    <InchInput value={clearance[measSel.id as 'e1'] ?? 0} onCommit={(v) => setMeasVal(Math.min(1, Math.max(0, v)))} ariaLabel={t('clearLabel')} />
                   </div>
                 )}
                 {measSel?.kind === 'corner' && (
                   <div className="card" style={{ display: 'block' }}>
                     <label className="f-label">
-                      {t('desnLabel')} · {t(`erCorner${measSel.id.slice(1)}`)}: {fracShort(desnivel[measSel.id as 'c1']?.offset ?? 0)}"
+                      {t('desnLabel')} · {t(`erCorner${measSel.id.slice(1)}`)}
                     </label>
-                    <input type="range" min={0} max={2} step={0.0625}
-                      value={desnivel[measSel.id as 'c1']?.offset ?? 0}
-                      onChange={(e) => setDesnivel({ ...desnivel, [measSel.id]: { offset: parseFloat(e.target.value), dir: desnivel[measSel.id as 'c1']?.dir ?? 'h' } })} />
+                    <InchInput value={desnivel[measSel.id as 'c1']?.offset ?? 0} onCommit={(v) => setMeasVal(Math.min(2, Math.max(0, v)))} ariaLabel={t('desnLabel')} />
                     <div className="seg" style={{ marginTop: 10 }}>
                       {(['h', 'v'] as const).map((d) => (
                         <button key={d} aria-pressed={(desnivel[measSel.id as 'c1']?.dir ?? 'h') === d}
@@ -664,37 +754,13 @@ export default function Kiosk() {
         </section>
       )}
 
-      {/* THICKNESS */}
+      {/* THICKNESS: slider ruler on the stage, no card grid */}
       {slide === 'thick' && glassType && (
-        <section className="slide active">
+        <section className="slide active k-thick-sec">
           {chrome}
-          <div className="slide-inner">
-            <h1 className="slide-title">{t('thickTitle')}</h1>
-            <p className="slide-sub">{t('thickSub')}</p>
-            <div className="opt-grid c3">
-              {thicknessesForType(glassType).map((th) => {
-                const v = thickValue(th);
-                return (
-                  <button key={th} className={`opt-card${thickness === th ? ' sel' : ''}`}
-                    aria-pressed={thickness === th}
-                    onClick={() => pickThickness(th)}>
-                    <span className="oc-check">{thickness === th ? '✓' : ''}</span>
-                    <div className="th-visual">
-                      <div className="th-bar" style={{ height: `${10 + v * 58}px` }}>
-                        <span>{THICK_MM[th] ?? ''}</span>
-                      </div>
-                    </div>
-                    <div className="oc-name mono">{th}</div>
-                    {glassType === 'laminated' && (
-                      <div className="oc-desc mono" style={{ fontSize: '.78rem' }}>
-                        {fracShort(v / 2)} + PVB + {fracShort(v / 2)}
-                      </div>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-            {foot()}
+          <div className="k-thicknav">
+            <button className="btn ghost lg" onClick={goBack}>{t('back')}</button>
+            <button className="btn lg" disabled={!canContinue[slide]} onClick={goNext}>{t('continueBtn')}</button>
           </div>
         </section>
       )}
@@ -741,32 +807,8 @@ export default function Kiosk() {
               </button>
               {additions.beveling.active && (
                 <div className="add-body" style={{ display: 'block' }}>
-                  <div className="diagram-box" style={{ marginBottom: 14 }}>
-                    <BevelDiagram angle={additions.beveling.angle} sides={additions.beveling.sides} />
-                  </div>
-                  <label className="f-label">{t('bevelAngle')}: {additions.beveling.angle}°</label>
-                  <input type="range" min={5} max={45} step={1} value={additions.beveling.angle}
-                    onChange={(e) => setAdditions({ ...additions, beveling: { ...additions.beveling, angle: parseInt(e.target.value, 10) } })} />
-                  <label className="f-label" style={{ marginTop: 14 }}>{t('bevelSides')}</label>
-                  <div className="grid c2">
-                    {(['e1', 'e2', 'e3', 'e4'] as const).map((k, i) => (
-                      <label key={k} className={`checkrow${additions.beveling.sides[k] ? ' on' : ''}`}>
-                        <input type="checkbox" checked={additions.beveling.sides[k]}
-                          onChange={(e) => setAdditions({ ...additions, beveling: { ...additions.beveling, sides: { ...additions.beveling.sides, [k]: e.target.checked } } })} />
-                        {t(`side${i + 1}`)}
-                      </label>
-                    ))}
-                  </div>
-                  <label className="f-label" style={{ marginTop: 14 }}>{t('bevelPerEdge')}</label>
-                  <p className="sub" style={{ fontSize: '.84rem', marginBottom: 8 }}>{t('bevelTapEnd')}</p>
-                  <div className="seg" style={{ marginBottom: 12 }}>
-                    {(['e1', 'e2', 'e3', 'e4'] as const).map((k, i) => (
-                      <button key={k} aria-pressed={bevelEdge === k} onClick={() => setBevelEdge(bevelEdge === k ? null : k)}>
-                        {t(`side${i + 1}`)}
-                      </button>
-                    ))}
-                  </div>
-                  {bevelEdge && (() => {
+                  <p className="sub" style={{ fontSize: '.84rem', marginBottom: 8 }}>{t('bevGlassHint')}</p>
+                  {bevelEdge && additions.beveling.sides[bevelEdge] && (() => {
                     const cur = additions.beveling.perEdge?.[bevelEdge];
                     const ang = cur?.angle ?? additions.beveling.angle;
                     const wid = cur?.width ?? 0.5;
@@ -774,12 +816,12 @@ export default function Kiosk() {
                       setAdditions({ ...additions, beveling: { ...additions.beveling, perEdge: { ...additions.beveling.perEdge, [bevelEdge]: { angle: ang, width: wid, ...patch } } } });
                     return (
                       <div className="card" style={{ display: 'block' }}>
-                        <label className="f-label">{t('bevelAngle')}: {ang}°</label>
-                        <input type="range" min={5} max={45} step={1} value={ang}
-                          onChange={(e) => setEdge({ angle: parseInt(e.target.value, 10) })} />
-                        <label className="f-label" style={{ marginTop: 12 }}>{t('bevelWidth')}: {fracShort(wid)}</label>
-                        <input type="range" min={0.125} max={1.5} step={0.0625} value={wid}
-                          onChange={(e) => setEdge({ width: parseFloat(e.target.value) })} />
+                        <label className="f-label">{t('bevelAngle')} (°)</label>
+                        <input className="field mono inch-input" type="number" min={5} max={45} key={bevelEdge} defaultValue={ang}
+                          onBlur={(e) => { const a = Math.min(45, Math.max(5, parseInt(e.target.value, 10) || 5)); setEdge({ angle: a }); }}
+                          onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }} />
+                        <label className="f-label" style={{ marginTop: 12 }}>{t('bevelWidth')}</label>
+                        <InchInput value={wid} onCommit={(v) => setEdge({ width: Math.min(1.5, Math.max(0.125, v)) })} ariaLabel={t('bevelWidth')} />
                         <div style={{ marginTop: 10 }}>
                           <button className="btn sm ghost" onClick={() => {
                             const pe = { ...additions.beveling.perEdge };
@@ -839,43 +881,16 @@ export default function Kiosk() {
               </button>
               {additions.edgerounding.active && (
                 <div className="add-body" style={{ display: 'block' }}>
-                  <div className="diagram-box" style={{ marginBottom: 14 }}>
-                    <EdgeRoundingDiagram
-                      radius={additions.edgerounding.radius}
-                      edges={additions.edgerounding.edges}
-                      corners={additions.edgerounding.corners}
-                    />
-                  </div>
+                  <p className="sub" style={{ fontSize: '.84rem', marginBottom: 8 }}>{t('erGlassHint')}</p>
                   <label className="f-label">{t('erRadius')}</label>
-                  <div className="frac-grid" style={{ marginBottom: 6 }}>
-                    {ER_FRACS.filter((f) => f.val > 0).map((f) => (
-                      <button key={f.label}
-                        className={additions.edgerounding.radius === f.val ? 'sel' : ''}
-                        aria-pressed={additions.edgerounding.radius === f.val}
-                        onClick={() => setAdditions({ ...additions, edgerounding: { ...additions.edgerounding, radius: f.val } })}>
-                        {f.label}
-                      </button>
-                    ))}
-                  </div>
-                  <p className="sub" style={{ fontSize: '.84rem', marginBottom: 14 }}>{t('erRadiusNote')}</p>
-                  <label className="f-label">{t('erEdges')}</label>
-                  <div className="grid c2" style={{ marginBottom: 14 }}>
+                  <InchInput value={additions.edgerounding.radius} onCommit={(v) => setAdditions({ ...additions, edgerounding: { ...additions.edgerounding, radius: Math.min(0.5, Math.max(0, v)) } })} ariaLabel={t('erRadius')} />
+                  <label className="f-label" style={{ marginTop: 14 }}>{t('erEdges')}</label>
+                  <div className="seg" style={{ marginBottom: 4 }}>
                     {(['e1', 'e2', 'e3', 'e4'] as const).map((k, i) => (
-                      <label key={k} className={`checkrow${additions.edgerounding.edges[k] ? ' on' : ''}`}>
-                        <input type="checkbox" checked={additions.edgerounding.edges[k]}
-                          onChange={(e) => setAdditions({ ...additions, edgerounding: { ...additions.edgerounding, edges: { ...additions.edgerounding.edges, [k]: e.target.checked } } })} />
+                      <button key={k} aria-pressed={additions.edgerounding.edges[k]}
+                        onClick={() => setAdditions({ ...additions, edgerounding: { ...additions.edgerounding, edges: { ...additions.edgerounding.edges, [k]: !additions.edgerounding.edges[k] } } })}>
                         {t(`erEdge${i + 1}`)}
-                      </label>
-                    ))}
-                  </div>
-                  <label className="f-label">{t('erCorners')}</label>
-                  <div className="grid c2">
-                    {(['c1', 'c2', 'c3', 'c4'] as const).map((k, i) => (
-                      <label key={k} className={`checkrow${additions.edgerounding.corners[k] ? ' on' : ''}`}>
-                        <input type="checkbox" checked={additions.edgerounding.corners[k]}
-                          onChange={(e) => setAdditions({ ...additions, edgerounding: { ...additions.edgerounding, corners: { ...additions.edgerounding.corners, [k]: e.target.checked } } })} />
-                        {t(`erCorner${i + 1}`)}
-                      </label>
+                      </button>
                     ))}
                   </div>
                 </div>
