@@ -2,7 +2,7 @@
 ## aka: the world's stupidest tool
 the one and only tool, that runs off my laptop fully, because i cant be bothered to migrate this to whatever fucking [servers](https://www.youtube.com/watch?v=dQw4w9WgXcQ) i can get off google and/or pay with a giftcard
 the tool that is just **so** stupidly autistic it cant be bothered to not be vibecoded
-the one tool i used up all my [claude dot ai](https://www.youtube.com/watch?v=dQw4w9WgXcQ) usage on
+the one tool i used up all my [~~claude dot ai~~ instinct](https://www.youtube.com/watch?v=dQw4w9WgXcQ) usage on
 
 that is right
 # this glass shop kiosk
