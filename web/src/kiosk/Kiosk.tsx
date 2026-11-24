@@ -444,7 +444,7 @@ export default function Kiosk() {
           filoOn={!!additions.filomatado?.active}
           thicknessOptions={glassType ? thicknessesForType(glassType) : undefined}
           onThickness={pickThickness}
-          vfdValues={computeVfd(pricing, glassType, width, height, qty ?? 1)}
+          vfdValues={computeVfd(pricing, (color === 'ultra-clear' && (glassType === 'float' || glassType === 'tempered') ? (('ultra-clear-' + glassType) as GlassTypeKey) : glassType), width, height, qty ?? 1)}
           qty={qty}
           edgePick={slide === 'add' && additions.beveling.active}
           edgeSel={bevelEdge}
