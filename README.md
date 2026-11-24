@@ -1,18 +1,19 @@
 # QGI [Quality Glass Industries] glass shop kiosk
 ## aka: the world's stupidest tool
-the one and only tool, that runs off my laptop fully, because i cant be bothered to migrate this to whatever fucking [servers](https://www.youtube.com/watch?v=dQw4w9WgXcQ) i can get off google and/or pay with a giftcard
-the tool that is just **so** stupidly autistic it cant be bothered to not be vibecoded
+the one and only tool, that runs ~~off my laptop fully~~ off cloudflare workers, ~~because i cant be bothered to migrate this to whatever fucking [servers](https://www.youtube.com/watch?v=dQw4w9WgXcQ) i can get off google and/or pay with a giftcard~~
+the tool that is just **so** stupidly autistic it cant be bothered to not be vibecoded (lmao the irony) 
 the one tool i used up all my [~~claude dot ai~~ instinct](https://www.youtube.com/watch?v=dQw4w9WgXcQ) usage on
 
 that is right
 # this glass shop kiosk
-built for my family's glass shop
-except its also for some reason on github
-because i couldnt be bothered to just use [localhost](https://reddit.com/r/evilautism) (<- yes that is a reddit link in my real github profile thats public
-## r u hr? or my unc?
-uhhh. i can 100% defo explain the 2 rickroll links in this page. or the code. definitely. totally. /j
+is vibecoded
 
-# Changelog
+
+built for my family's glass shop (fw quality glass industries)
+## hr? unc? ilya sutskever?
+uh. idk feel the agi i spent like 3 hours with my ai tweaking ONE GRAPH
+
+# Changelog for if ur too lazy to bother using the commits button
 
 # 1.3.1 (Nov 11 2026)
 
