@@ -22,6 +22,42 @@ import { Modal, StatusBadge } from '../components/ui';
 
 const PIN_ERROR = 'Invalid PIN. Customer must generate a change PIN from the customer portal.';
 
+const STATUS_FLOW = ['pending', 'in-progress', 'ready', 'completed'] as const;
+
+// discrete status slider: drag commits only on release, so no intermediate states are saved; cancel stays a separate deliberate action
+function StatusSlider({ current, onCommit }: { current: OrderStatus; onCommit: (s: OrderStatus) => void }) {
+  const [draft, setDraft] = useState<number | null>(null);
+  const cur = STATUS_FLOW.indexOf(current as (typeof STATUS_FLOW)[number]);
+  const idx = draft ?? (cur < 0 ? 0 : cur);
+  const commit = () => {
+    if (draft != null && STATUS_FLOW[draft] !== current) onCommit(STATUS_FLOW[draft]);
+    setDraft(null);
+  };
+  return (
+    <div className="status-slider">
+      <input type="range" min={0} max={3} step={1} value={idx} aria-label="Order status"
+        disabled={current === 'cancelled'}
+        onChange={(e) => setDraft(parseInt(e.target.value, 10))}
+        onPointerUp={commit}
+        onKeyUp={(e) => { if (e.key.startsWith('Arrow') || e.key === 'Home' || e.key === 'End' || e.key === 'PageUp' || e.key === 'PageDown') commit(); }}
+        onBlur={() => setDraft(null)} />
+      <div className="status-stops">
+        {STATUS_FLOW.map((s, i) => (
+          <span key={s} className={i === idx ? 'on' : ''}>{STATUS_LABEL[s]}</span>
+        ))}
+      </div>
+      {current === 'cancelled' ? (
+        <>
+          <div className="note warn" style={{ marginTop: 12 }}>This order is cancelled.</div>
+          <button className="btn ghost sm" style={{ marginTop: 8 }} onClick={() => onCommit('pending')}>Reopen as pending</button>
+        </>
+      ) : (
+        <button className="btn ghost sm danger" style={{ marginTop: 14 }} onClick={() => onCommit('cancelled')}>Cancel order</button>
+      )}
+    </div>
+  );
+}
+
 type Filter = 'all' | OrderStatus;
 
 export default function Admin() {
@@ -87,10 +123,6 @@ export default function Admin() {
     <div className="wrap">
       <div className="hud" style={{ marginBottom: 8 }}>Quality Glass · Sales</div>
       <h1 className="page-title">Admin Dashboard</h1>
-      <p className="sub" style={{ marginTop: 8 }}>
-        Orders from the kiosk and the portal, all in one place.
-      </p>
-
       <div className="grid c5" style={{ margin: '26px 0 8px' }}>
         <div className="stat"><div className="s-label">Total Orders</div><div className="s-val">{stats.total}</div></div>
         <div className="stat"><div className="s-label">Today's Orders</div><div className="s-val">{stats.todayCount}</div></div>
@@ -143,20 +175,13 @@ export default function Admin() {
       <Modal open={statusFor != null} title="Change Status"
         sub={statusFor ? `Order ${statusFor.orderId}` : ''}
         onClose={() => setStatusFor(null)}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {STATUS_ORDER.map((s) => (
-            <button key={s} className="btn ghost" style={{ justifyContent: 'flex-start' }}
-              disabled={statusFor?.status === s}
-              onClick={() => {
-                if (!statusFor) return;
-                updateOrder(statusFor.orderId, { status: s });
-                logActivity('admin', 'status_changed', statusFor.orderId, `Status changed to ${STATUS_LABEL[s]}.`);
-                setStatusFor(null);
-              }}>
-              <StatusBadge status={s} />
-            </button>
-          ))}
-        </div>
+        {statusFor && (
+          <StatusSlider current={statusFor.status} onCommit={(s) => {
+            updateOrder(statusFor.orderId, { status: s });
+            logActivity('admin', 'status_changed', statusFor.orderId, `Status changed to ${STATUS_LABEL[s]}.`);
+            setStatusFor(null);
+          }} />
+        )}
       </Modal>
 
       {/* PIN gate */}
