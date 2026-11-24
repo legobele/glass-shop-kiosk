@@ -452,7 +452,7 @@ export default function Kiosk() {
           onEdgePick={onBevEdgeTap}
           bevSides={additions.beveling.sides}
           bevWidth={bevelEdge ? (additions.beveling.perEdge?.[bevelEdge]?.width ?? 0.5) : 0}
-          bevWidthTxt={fracShort(bevelEdge ? (additions.beveling.perEdge?.[bevelEdge]?.width ?? 0.5) : 0) + '"'}
+          bevWidthTxt={fracShort(bevelEdge ? (additions.beveling.perEdge?.[bevelEdge]?.width ?? 0.5) : 0)}
           onBevWidth={(w) => {
             if (!bevelEdge) return;
             const cur = additions.beveling.perEdge?.[bevelEdge];
@@ -462,7 +462,7 @@ export default function Kiosk() {
           roundSel={roundSel}
           onRoundPick={onRoundTap}
           roundRadius={additions.edgerounding.radius}
-          roundRadiusTxt={fracShort(additions.edgerounding.radius) + '"'}
+          roundRadiusTxt={fracShort(additions.edgerounding.radius)}
           onRoundRadius={(r) => setAdditions({ ...additions, edgerounding: { ...additions.edgerounding, radius: r } })}
           erCorners3d={erCorners3d}
           temperOn={temp}
@@ -472,7 +472,7 @@ export default function Kiosk() {
           onMeasPick={(s) => setMeasSel(s)}
           measVal={measSel ? (measSel.kind === 'edge' ? (clearance[measSel.id as 'e1'] ?? 0) : (desnivel[measSel.id as 'c1']?.offset ?? 0)) : 0}
           measDir={measSel?.kind === 'corner' ? (desnivel[measSel.id as 'c1']?.dir ?? 'h') : 'h'}
-          measValTxt={fracShort(measSel ? (measSel.kind === 'edge' ? (clearance[measSel.id as 'e1'] ?? 0) : (desnivel[measSel.id as 'c1']?.offset ?? 0)) : 0) + '"'}
+          measValTxt={fracShort(measSel ? (measSel.kind === 'edge' ? (clearance[measSel.id as 'e1'] ?? 0) : (desnivel[measSel.id as 'c1']?.offset ?? 0)) : 0)}
           measSetIds={[...Object.entries(clearance).filter(([, v]) => (v ?? 0) > 0).map(([k]) => k), ...Object.entries(desnivel).filter(([, v]) => (v?.offset ?? 0) > 0).map(([k]) => k)]}
           onMeasVal={setMeasVal}
           rackColors={slide === 'color' && glassType && thickness
