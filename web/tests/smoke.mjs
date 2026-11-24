@@ -40,9 +40,10 @@ const PIN_ERROR = 'Invalid PIN. Customer must generate a change PIN from the cus
 
 async function main() {
   await waitServer();
-  const browser = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
+  const browser = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox', '--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] }); // software GL so the 3D stage renders headless
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
   const page = await ctx.newPage();
+  page.setDefaultTimeout(15000);
   const active = (sel, opts) => page.locator(`section.slide.active ${sel}`, opts);
   const footBtn = () => active('.slide-foot .btn').first();
 
@@ -69,6 +70,27 @@ async function main() {
     (await active('.card .hud').innerText()).toUpperCase().includes('TEMPERED'));
   await footBtn().click();
 
+  const thickCard = active('.opt-card', { hasText: '3/8"' }).first();
+  await thickCard.click();
+  check('08 thickness 3/8 card selects',
+    (await thickCard.getAttribute('aria-pressed')) === 'true');
+  await footBtn().click();
+
+  const rackBtns = await page.locator('.k-rackbtn').count();
+  check('38 color slide renders the 3D rack with one tap chip per shown color',
+    rackBtns >= 3);
+  const cardNames = await active('.opt-card .oc-name').allInnerTexts();
+  await page.locator('.k-rackbtn').nth(2).dispatchEvent('click');
+  await page.waitForTimeout(300);
+  const rackPickName = (await active('.opt-card.sel .oc-name').first().innerText()).trim();
+  const colorCard = active('.opt-card', { hasText: 'Gray' }).first();
+  await colorCard.click();
+  check('09 color Gray selects',
+    (await colorCard.getAttribute('aria-pressed')) === 'true');
+  check('39 rack chip tap selects the matching color card',
+    rackPickName.length > 0 && rackPickName === cardNames[2].trim());
+  await footBtn().click();
+
   await active('.size-field').first().click();
   await page.locator('.np-key', { hasText: /^3$/ }).click();
   await page.locator('.np-key', { hasText: /^6$/ }).click();
@@ -83,23 +105,41 @@ async function main() {
   await page.locator('.sheet .btn', { hasText: /^OK$/ }).click();
   check('07 height field shows 72 after Done',
     (await active('.size-field .sf-val').nth(1).innerText()).includes('72'));
+  await page.locator('.k-edgebtn[data-m="e2"]').dispatchEvent('click');
+  check('35 clearance editor opens for a tapped side',
+    (await active('.slide-inner').innerText()).toLowerCase().includes('clearance'));
+  await active('.card input[type=range]').first().evaluate((el, v) => {
+    const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+    setter.call(el, v); el.dispatchEvent(new Event('input', { bubbles: true }));
+  }, '0.5');
   await footBtn().click();
 
-  const thickCard = active('.opt-card', { hasText: '3/8"' }).first();
-  await thickCard.click();
-  check('08 thickness 3/8 card selects',
-    (await thickCard.getAttribute('aria-pressed')) === 'true');
-  await footBtn().click();
-
-  const colorCard = active('.opt-card', { hasText: 'Gray' }).first();
-  await colorCard.click();
-  check('09 color Gray selects',
-    (await colorCard.getAttribute('aria-pressed')) === 'true');
+  check('30 qty slide appears after size with the stack prompt',
+    (await active('.slide-title').innerText()).includes('How many glass pieces'));
+  const qtyCard = active('.opt-card', { hasText: '2×' }).first();
+  await qtyCard.click();
+  check('31 qty 2x selects',
+    (await qtyCard.getAttribute('aria-pressed')) === 'true');
+  await active('#k-qty').fill('4');
+  // software keyboards (iPad) deliver letters on input events, often with key:'Unidentified' -
+  // the pasta unlock must work from that path too, typed inside a text field
+  await active('#k-qty').evaluate((el) => {
+    for (const ch of 'pasta') el.dispatchEvent(new InputEvent('input', { data: ch, bubbles: true }));
+  });
   await footBtn().click();
 
   await active('.add-head').first().click();
   check('10 beveling opens with its SVG cross-section diagram',
-    await active('.add-card.sel .diagram-box svg').isVisible());
+    await active('.add-card.sel .diagram-box svg').first().isVisible());
+  check('37 pasta unlocks via input events typed inside a text field',
+    await active('.add-card', { hasText: 'Pasta' }).first().isVisible());
+  await active('.seg button', { hasText: 'Edge 2' }).click();
+  check('33 per-end bevel editor opens for Edge 2',
+    (await active('.slide-inner').innerText()).toLowerCase().includes('bevel width'));
+  await active('.add-card.sel .card input[type=range]').first().evaluate((el, v) => {
+    const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+    setter.call(el, v); el.dispatchEvent(new Event('input', { bubbles: true }));
+  }, '25');
   await footBtn().click();
 
   const payCard = active('.opt-card', { hasText: 'Credit / Debit Card' }).first();
@@ -109,8 +149,8 @@ async function main() {
   await footBtn().click();
 
   const reviewText = await active('.slide-inner').innerText();
-  check('12 review shows dimensions 36 1/2 x 72',
-    reviewText.includes('36 1/2') && reviewText.includes('72'));
+  check('12 review shows dimensions 36 1/2 x 72 with qty prefix',
+    reviewText.includes('36 1/2') && reviewText.includes('72') && reviewText.includes('4 ×'));
   check('13 review shows Tempered, Gray, Credit / Debit Card',
     reviewText.includes('Tempered') && reviewText.includes('Gray') && reviewText.includes('Credit / Debit Card'));
 
@@ -122,6 +162,12 @@ async function main() {
   const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('qgi.orders.v1') || '[]'));
   check('15 shared store holds the placed order plus the seed order',
     stored.length === 2 && stored.some((o) => o.orderId === placedId) && stored.some((o) => o.orderId === 'QG1HZLVYSG'));
+  check('32 stored order keeps custom quantity 4',
+    (stored.find((o) => o.orderId === placedId) || {}).specifications?.quantity === 4);
+  check('36 stored order keeps side clearance',
+    (stored.find((o) => o.orderId === placedId) || {}).dimensions?.clearance?.e2 === 0.5);
+  check('34 stored order keeps per-end bevel override',
+    !!((stored.find((o) => o.orderId === placedId) || {}).specifications?.additions?.beveling?.perEdge?.e2));
 
   /* ---------- admin ---------- */
   await page.goto(BASE + '/#/admin');
@@ -225,7 +271,7 @@ async function main() {
 
   await browser.close();
   console.log(`\nSMOKE: ${pass} passed, ${fail} failed, ${pass + fail} total`);
-  if (fail > 0 || pass !== 29) process.exitCode = 1;
+  if (fail > 0 || pass !== 36) process.exitCode = 1;
 }
 
 main()
