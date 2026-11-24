@@ -1,3 +1,8 @@
+# CLAUDESLOP BELOW
+# BEWARE
+
+---
+
 # QGI System (web)
 
 The 1.3.0 rebuild of the Quality Glass kiosk system: React + TypeScript + Vite, one SPA with three surfaces.
