@@ -30,7 +30,7 @@ function orderSpec(o: Order): GlassSpec {
     sand: o.specifications.additions.sandblasting.active ? 1 : 0,
     kind: gt === 'laminated' ? 'lam' : gt === 'tempered' || gt === 'ultra-clear-tempered' ? 'temp' : 'clear',
     temper: 0,
-    ultra: gt.startsWith('ultra'),
+    ultra: gt.startsWith('ultra') || o.specifications.color === 'ultra-clear',
     color: o.specifications.color || 'clear',
     labelW: toFracStr(o.dimensions.width),
     labelH: toFracStr(o.dimensions.height),
