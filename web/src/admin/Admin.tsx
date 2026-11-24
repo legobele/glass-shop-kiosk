@@ -259,7 +259,7 @@ function OrderCard({
       )}
 
       <div className="kv2">
-        <div><div className="k">Dimensions</div><div className="v mono">{toFracStr(o.dimensions.width)} × {toFracStr(o.dimensions.height)}</div></div>
+        <div><div className="k">Dimensions</div><div className="v mono">{o.specifications.quantity && o.specifications.quantity > 1 ? `${o.specifications.quantity} × ` : ''}{toFracStr(o.dimensions.width)} × {toFracStr(o.dimensions.height)}</div></div>
         <div><div className="k">Glass Type</div><div className="v">{typeName(o)}</div></div>
         <div><div className="k">Color</div><div className="v">{colorName(o.specifications.color)}</div></div>
         <div><div className="k">Thickness</div><div className="v mono">{o.specifications.thickness}</div></div>
