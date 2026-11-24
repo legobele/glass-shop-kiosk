@@ -456,7 +456,8 @@ export default function GlassStage(p: StageProps) {
   const planchaDone = useRef(false);
   const raf = useRef(0);
   const traf = useRef(0);
-  const { kind, ultra } = kindOf(p.glassType);
+  const { kind, ultra: ultraType } = kindOf(p.glassType);
+  const ultra = ultraType || p.color === 'ultra-clear';
   const w = p.width ?? 36, h = p.height ?? 72;
   const th = p.thickness ? thickValue(p.thickness) : 0.375;
 
