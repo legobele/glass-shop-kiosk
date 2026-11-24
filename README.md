@@ -1,7 +1,9 @@
 # QGI [Quality Glass Industries] glass shop kiosk
 ## aka: the world's stupidest tool
 the one and only tool, that runs ~~off my laptop fully~~ off cloudflare workers, ~~because i cant be bothered to migrate this to whatever fucking [servers](https://www.youtube.com/watch?v=dQw4w9WgXcQ) i can get off google and/or pay with a giftcard~~
-the tool that is just **so** stupidly autistic it cant be bothered to not be vibecoded (lmao the irony) 
+
+the tool that is just **so** stupidly autistic it cant be bothered to not be vibecoded (lmao the irony)
+<br>
 the one tool i used up all my [~~claude dot ai~~ instinct](https://www.youtube.com/watch?v=dQw4w9WgXcQ) usage on
 
 that is right
