@@ -1,3 +1,4 @@
+import { computeVfd, usePricing } from '../lib/pricing';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import QRCode from 'react-qr-code';
@@ -15,7 +16,6 @@ import {
   TYPE_I18N_KEY,
   colorsForThickness,
   isFullLite,
-  liteSizesFor,
   resolveGlassType,
   thickValue,
   thicknessesForType,
@@ -27,14 +27,15 @@ import { colorName } from '../lib/format';
 import { Swatch } from '../components/Swatch';
 import { BevelDiagram, EdgeRoundingDiagram, SizeDiagram } from '../components/Diagrams';
 import { NumpadModal } from '../components/NumpadModal';
+import GlassStage, { type StageTrigger } from './stage/GlassStage';
 
 type SlideId =
-  | 'lang' | 'customer' | 'device' | 'type' | 'size' | 'thick'
+  | 'lang' | 'customer' | 'device' | 'type' | 'size' | 'qty' | 'thick'
   | 'color' | 'add' | 'pay' | 'review' | 'success';
 
 const DOT_INDEX: Record<SlideId, number | null> = {
-  lang: null, customer: 0, device: null, type: 1, size: 2, thick: 3,
-  color: 4, add: 5, pay: 6, review: 7, success: 8,
+  lang: null, customer: 0, device: null, type: 1, thick: 2, color: 3,
+  size: 4, qty: 5, add: 6, pay: 7, review: 8, success: 9,
 };
 
 function fracShort(v: number): string {
@@ -71,12 +72,57 @@ export default function Kiosk() {
   const glassType: GlassTypeKey | null = resolveGlassType(base, temp, uc);
   const [width, setWidth] = useState<number | null>(null);
   const [height, setHeight] = useState<number | null>(null);
+  const [qty, setQty] = useState<number | null>(null);
   const [thickness, setThickness] = useState<string | null>(null);
   const [color, setColor] = useState<string | null>(null);
-  const [additions, setAdditions] = useState<Additions>(emptyAdditions());
+  const newOrderAdditions = (): Additions => ({ ...emptyAdditions(), filomatado: { active: true } });
+  const [additions, setAdditions] = useState<Additions>(newOrderAdditions());
   const [payment, setPayment] = useState<PaymentMethod | null>(null);
+  const [pastaUnlocked, setPastaUnlocked] = useState(false);
+  const [pasta, setPasta] = useState(false);
+  const [bevelEdge, setBevelEdge] = useState<'e1' | 'e2' | 'e3' | 'e4' | null>(null);
+  const [clearance, setClearance] = useState<Partial<Record<'e1' | 'e2' | 'e3' | 'e4', number>>>({});
+  const [desnivel, setDesnivel] = useState<Partial<Record<'c1' | 'c2' | 'c3' | 'c4', { offset: number; dir: 'h' | 'v' }>>>({});
+  const [measSel, setMeasSel] = useState<{ kind: 'edge' | 'corner'; id: string } | null>(null);
   const [placedId, setPlacedId] = useState<string | null>(null);
   const [placing, setPlacing] = useState(false);
+  const [trig, setTrig] = useState<StageTrigger>(null);
+  const [stageKey, setStageKey] = useState(0);
+  const reduced = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  const fire = (name: NonNullable<StageTrigger>['name']) => setTrig({ name, n: Date.now() });
+
+  // pasta easter egg: typing "pasta" anywhere (including inside a text field) unlocks it
+  const pastaBuf = useRef('');
+  useEffect(() => {
+    const feed = (ch: string) => {
+      pastaBuf.current = (pastaBuf.current + ch).slice(-5);
+      if (pastaBuf.current === 'pasta') { pastaBuf.current = ''; setPastaUnlocked(true); setPasta(true); fire('pasta'); }
+    };
+    // physical keyboards: keydown carries the letter
+    let lastKey: { ch: string; t: number } | null = null;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key.length !== 1 || !/[a-z]/i.test(e.key)) { if (e.key.length === 1) pastaBuf.current = ''; return; }
+      lastKey = { ch: e.key.toLowerCase(), t: performance.now() };
+      feed(e.key.toLowerCase());
+    };
+    // software keyboards (iPad) often send key:'Unidentified' or no keydown at all;
+    // the letter arrives on the input event instead, so feed from there too.
+    const onInput = (e: Event) => {
+      const data = (e as InputEvent).data;
+      if (!data) return;
+      for (const raw of data) {
+        if (!/[a-z]/i.test(raw)) { pastaBuf.current = ''; continue; }
+        const ch = raw.toLowerCase();
+        // skip when the matching keydown already counted this keystroke
+        if (lastKey && lastKey.ch === ch && performance.now() - lastKey.t < 200) { lastKey = null; continue; }
+        feed(ch);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    window.addEventListener('input', onInput, true);
+    return () => { window.removeEventListener('keydown', onKey); window.removeEventListener('input', onInput, true); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // numpad + qr handoff + save tabs
   const [npField, setNpField] = useState<'width' | 'height' | null>(null);
@@ -111,10 +157,11 @@ export default function Kiosk() {
       case 'lang': return 'customer';
       case 'customer': return inShop ? 'device' : 'type';
       case 'device': return 'type';
-      case 'type': return 'size';
-      case 'size': return 'thick';
+      case 'type': return 'thick';
       case 'thick': return 'color';
-      case 'color': return 'add';
+      case 'color': return 'size';
+      case 'size': return 'qty';
+      case 'qty': return 'add';
       case 'add': return 'pay';
       case 'pay': return 'review';
       default: return id;
@@ -128,10 +175,12 @@ export default function Kiosk() {
     setContact({ tab: 'none', phone: '', email: '', type: 'personal', extension: '' });
     setBase(null); setTemp(false); setUc(false);
     setWidth(null); setHeight(null);
+    setClearance({}); setDesnivel({}); setMeasSel(null);
+    setQty(null);
     setThickness(null); setColor(null);
-    setAdditions(emptyAdditions());
+    setAdditions(newOrderAdditions());
     setPayment(null); setPlacedId(null); setPlacing(false);
-    setHistory([]); setSlide('lang');
+    setHistory([]); setSlide('lang'); setStageKey((x) => x + 1);
   }
 
   /* ---------------- device QR countdown ---------------- */
@@ -156,6 +205,7 @@ export default function Kiosk() {
   /* ---------------- type changes invalidate downstream picks ---------------- */
   function applyType(nb: 'float' | 'laminated' | null, nt: boolean, nu: boolean) {
     setBase(nb); setTemp(nt); setUc(nu);
+    if (nt && !temp) fire('temper');
     const gt = resolveGlassType(nb, nt, nu);
     if (!gt) return;
     const ths = thicknessesForType(gt);
@@ -164,6 +214,16 @@ export default function Kiosk() {
       setColor(null);
     } else if (thickness && color) {
       const cols = colorsForThickness(gt, thickness).map(([k]) => k);
+      if (!cols.includes(color)) setColor(null);
+    }
+  }
+
+  const pricing = usePricing();
+
+  function pickThickness(th: string) {
+    setThickness(th);
+    if (glassType && color) {
+      const cols = colorsForThickness(glassType, th).map(([key]) => key);
       if (!cols.includes(color)) setColor(null);
     }
   }
@@ -178,9 +238,14 @@ export default function Kiosk() {
       customerName: name.trim(),
       projectName: project.trim(),
       contact,
-      dimensions: { width, height },
+      dimensions: {
+        width, height,
+        ...(Object.keys(clearance).length > 0 ? { clearance } : {}),
+        ...(Object.keys(desnivel).length > 0 ? { desnivel } : {}),
+      },
       specifications: {
         glassType, color, thickness, additions, isFullLite: fullLite, lang,
+        quantity: qty ?? 1,
       },
       payment: { method: payment },
       status: 'pending',
@@ -246,6 +311,7 @@ export default function Kiosk() {
     customer: name.trim().length > 0,
     type: glassType != null,
     size: width != null && height != null,
+    qty: qty != null,
     thick: thickness != null,
     color: color != null,
     add: true,
@@ -266,7 +332,7 @@ export default function Kiosk() {
       <span className="k-brand">{t('brand')}</span>
       {dotIdx != null && (
         <span className="dots" aria-hidden="true">
-          {Array.from({ length: 9 }, (_, i) => (
+          {Array.from({ length: 10 }, (_, i) => (
             <i key={i} className={i < dotIdx ? 'done' : i === dotIdx ? 'now' : ''} />
           ))}
         </span>
@@ -292,8 +358,39 @@ export default function Kiosk() {
     ) : null;
 
   /* ---------------- slides ---------------- */
+  const showStage = ['device', 'type', 'size', 'qty', 'thick', 'color', 'add', 'pay', 'review'].includes(slide);
   return (
-    <div className="kiosk-shell">
+    <div className={`kiosk-shell${showStage ? ' staged' : ''}`}>
+      {showStage && (
+        <GlassStage
+          lang={lang} slide={slide} glassType={glassType} color={color} thickness={thickness}
+          width={width} height={height}
+          bevel={additions.beveling.active} rounding={additions.edgerounding.active}
+          phone={slide === 'device' && qrOpen} trigger={trig} resetKey={stageKey} reduced={!!reduced}
+          filoOn={!!additions.filomatado?.active}
+          thicknessOptions={glassType ? thicknessesForType(glassType) : undefined}
+          onThickness={pickThickness}
+          vfdValues={computeVfd(pricing, glassType, width, height, qty ?? 1)}
+          qty={qty}
+          edgePick={slide === 'add' && additions.beveling.active}
+          edgeSel={bevelEdge}
+          onEdgePick={(e) => setBevelEdge(e)}
+          measPick={slide === 'size' && width != null && height != null}
+          measSel={measSel}
+          onMeasPick={(s) => setMeasSel(s)}
+          rackColors={slide === 'color' && glassType && thickness
+            ? (() => {
+                const all = colorsForThickness(glassType, thickness).map(([key, info]) => ({ key, name: t(info.key) }));
+                if (all.length > 6 && color && !all.slice(0, 6).some((c) => c.key === color)) {
+                  const sel = all.find((c) => c.key === color);
+                  if (sel) return [...all.slice(0, 5), sel];
+                }
+                return all;
+              })()
+            : undefined}
+          onRackPick={(key) => setColor(key)}
+        />
+      )}
       {/* LANGUAGE */}
       {slide === 'lang' && (
         <section className="slide active">
@@ -488,18 +585,6 @@ export default function Kiosk() {
             <div className="diagram-box" style={{ marginBottom: 16 }}>
               <SizeDiagram w={width} h={height} />
             </div>
-            {glassType && (
-              <div className="card" style={{ marginBottom: 16 }}>
-                <h3>{t('maxCutHdr')}</h3>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
-                  {liteSizesFor(glassType, color, thickness).map((s) => (
-                    <span key={`${s.w}x${s.h}`} className="chip mono">
-                      {toFracStr(s.w)} × {toFracStr(s.h)} {t('liteWord')}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
             {fullLite && (
               <div className="note warn">
                 <b>{t('flTitle')}</b>
@@ -507,6 +592,73 @@ export default function Kiosk() {
                 {t('flDesc')}
               </div>
             )}
+            {width != null && height != null && (
+              <>
+                <p className="sub" style={{ fontSize: '.84rem', marginBottom: 8 }}>{t('measHint')}</p>
+                {measSel?.kind === 'edge' && (
+                  <div className="card" style={{ display: 'block' }}>
+                    <label className="f-label">
+                      {t('clearLabel')} · {t(`side${measSel.id.slice(1)}`)}: {fracShort(clearance[measSel.id as 'e1'] ?? 0)}"
+                    </label>
+                    <input type="range" min={0} max={1} step={0.0625}
+                      value={clearance[measSel.id as 'e1'] ?? 0}
+                      onChange={(e) => setClearance({ ...clearance, [measSel.id]: parseFloat(e.target.value) })} />
+                  </div>
+                )}
+                {measSel?.kind === 'corner' && (
+                  <div className="card" style={{ display: 'block' }}>
+                    <label className="f-label">
+                      {t('desnLabel')} · {t(`erCorner${measSel.id.slice(1)}`)}: {fracShort(desnivel[measSel.id as 'c1']?.offset ?? 0)}"
+                    </label>
+                    <input type="range" min={0} max={2} step={0.0625}
+                      value={desnivel[measSel.id as 'c1']?.offset ?? 0}
+                      onChange={(e) => setDesnivel({ ...desnivel, [measSel.id]: { offset: parseFloat(e.target.value), dir: desnivel[measSel.id as 'c1']?.dir ?? 'h' } })} />
+                    <div className="seg" style={{ marginTop: 10 }}>
+                      {(['h', 'v'] as const).map((d) => (
+                        <button key={d} aria-pressed={(desnivel[measSel.id as 'c1']?.dir ?? 'h') === d}
+                          onClick={() => setDesnivel({ ...desnivel, [measSel.id]: { offset: desnivel[measSel.id as 'c1']?.offset ?? 0, dir: d } })}>
+                          {d === 'h' ? t('desnDirH') : t('desnDirV')}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+            {foot()}
+          </div>
+        </section>
+      )}
+
+      {/* QTY (pieces of the measured size) */}
+      {slide === 'qty' && (
+        <section className="slide active">
+          {chrome}
+          <div className="slide-inner">
+            <h1 className="slide-title">{t('qtyTitle')}</h1>
+            <p className="slide-sub">{t('qtySub')}</p>
+            <div className="opt-grid c5">
+              {[1, 2, 3, 4, 5].map((n) => (
+                <button key={n} className={`opt-card${qty === n ? ' sel' : ''}`} aria-pressed={qty === n}
+                  onClick={() => setQty(n)}>
+                  <span className="oc-check">{qty === n ? '✓' : ''}</span>
+                  <div className="oc-name mono" style={{ fontSize: '1.5rem' }}>{n}×</div>
+                  <div className="oc-desc">{t('qtyPieces')}</div>
+                </button>
+              ))}
+            </div>
+            <div style={{ maxWidth: 260, marginTop: 4 }}>
+              <label className="f-label" htmlFor="k-qty">{t('qtyCustom')}</label>
+              <input id="k-qty" className="field" inputMode="numeric" pattern="[0-9]*"
+                value={qty ?? ''} placeholder="1"
+                onChange={(e) => {
+                  const v = e.target.value.replace(/[^0-9]/g, '');
+                  if (v === '') { setQty(null); return; }
+                  const n = Math.max(1, Math.min(999, parseInt(v, 10)));
+                  setQty(n);
+                }} />
+            </div>
+            <p className="sub" style={{ fontSize: '.84rem', marginTop: 12 }}>{t('qtyNote')}</p>
             {foot()}
           </div>
         </section>
@@ -525,13 +677,7 @@ export default function Kiosk() {
                 return (
                   <button key={th} className={`opt-card${thickness === th ? ' sel' : ''}`}
                     aria-pressed={thickness === th}
-                    onClick={() => {
-                      setThickness(th);
-                      if (color) {
-                        const cols = colorsForThickness(glassType, th).map(([k]) => k);
-                        if (!cols.includes(color)) setColor(null);
-                      }
-                    }}>
+                    onClick={() => pickThickness(th)}>
                     <span className="oc-check">{thickness === th ? '✓' : ''}</span>
                     <div className="th-visual">
                       <div className="th-bar" style={{ height: `${10 + v * 58}px` }}>
@@ -586,7 +732,7 @@ export default function Kiosk() {
             {/* Beveling */}
             <div className={`add-card${additions.beveling.active ? ' sel' : ''}`}>
               <button className="add-head" aria-pressed={additions.beveling.active}
-                onClick={() => setAdditions({ ...additions, beveling: { ...additions.beveling, active: !additions.beveling.active } })}>
+                onClick={() => { const on = !additions.beveling.active; if (on) fire('bevel'); setAdditions({ ...additions, beveling: { ...additions.beveling, active: on } }); }}>
                 <span style={{ flex: 1 }}>
                   <span className="ah-name">{t('addBevName')}</span>
                   <span className="ah-desc" style={{ display: 'block' }}>{t('addBevDesc')}</span>
@@ -611,6 +757,39 @@ export default function Kiosk() {
                       </label>
                     ))}
                   </div>
+                  <label className="f-label" style={{ marginTop: 14 }}>{t('bevelPerEdge')}</label>
+                  <p className="sub" style={{ fontSize: '.84rem', marginBottom: 8 }}>{t('bevelTapEnd')}</p>
+                  <div className="seg" style={{ marginBottom: 12 }}>
+                    {(['e1', 'e2', 'e3', 'e4'] as const).map((k, i) => (
+                      <button key={k} aria-pressed={bevelEdge === k} onClick={() => setBevelEdge(bevelEdge === k ? null : k)}>
+                        {t(`side${i + 1}`)}
+                      </button>
+                    ))}
+                  </div>
+                  {bevelEdge && (() => {
+                    const cur = additions.beveling.perEdge?.[bevelEdge];
+                    const ang = cur?.angle ?? additions.beveling.angle;
+                    const wid = cur?.width ?? 0.5;
+                    const setEdge = (patch: Partial<{ angle: number; width: number }>) =>
+                      setAdditions({ ...additions, beveling: { ...additions.beveling, perEdge: { ...additions.beveling.perEdge, [bevelEdge]: { angle: ang, width: wid, ...patch } } } });
+                    return (
+                      <div className="card" style={{ display: 'block' }}>
+                        <label className="f-label">{t('bevelAngle')}: {ang}°</label>
+                        <input type="range" min={5} max={45} step={1} value={ang}
+                          onChange={(e) => setEdge({ angle: parseInt(e.target.value, 10) })} />
+                        <label className="f-label" style={{ marginTop: 12 }}>{t('bevelWidth')}: {fracShort(wid)}</label>
+                        <input type="range" min={0.125} max={1.5} step={0.0625} value={wid}
+                          onChange={(e) => setEdge({ width: parseFloat(e.target.value) })} />
+                        <div style={{ marginTop: 10 }}>
+                          <button className="btn sm ghost" onClick={() => {
+                            const pe = { ...additions.beveling.perEdge };
+                            delete pe[bevelEdge];
+                            setAdditions({ ...additions, beveling: { ...additions.beveling, perEdge: pe } });
+                          }}>{t('bevelResetEdge')}</button>
+                        </div>
+                      </div>
+                    );
+                  })()}
                   <p className="sub" style={{ marginTop: 12, fontSize: '.84rem' }}>{t('bevelNote')}</p>
                 </div>
               )}
@@ -619,7 +798,7 @@ export default function Kiosk() {
             {/* Diamon-Fusion */}
             <div className={`add-card${additions.diamonfusion.active ? ' sel' : ''}`}>
               <button className="add-head" aria-pressed={additions.diamonfusion.active}
-                onClick={() => setAdditions({ ...additions, diamonfusion: { active: !additions.diamonfusion.active } })}>
+                onClick={() => { if (!additions.diamonfusion.active) { fire('dfusion'); setPasta(false); } setAdditions({ ...additions, diamonfusion: { active: !additions.diamonfusion.active } }); }}>
                 <span style={{ flex: 1 }}>
                   <span className="ah-name">{t('addDFName')}</span>
                   <span className="ah-desc" style={{ display: 'block' }}>{t('addDFDesc')}</span>
@@ -703,10 +882,36 @@ export default function Kiosk() {
               )}
             </div>
 
+            {/* Filo Matado */}
+            <div className={`add-card${additions.filomatado?.active ? ' sel' : ''}`}>
+              <button className="add-head" aria-pressed={!!additions.filomatado?.active}
+                onClick={() => setAdditions({ ...additions, filomatado: { active: !additions.filomatado?.active } })}>
+                <span style={{ flex: 1 }}>
+                  <span className="ah-name">{t('addFMName')}</span>
+                  <span className="ah-desc" style={{ display: 'block' }}>{t('addFMDesc')}</span>
+                </span>
+                <span className="oc-check" style={{ position: 'static' }}>{additions.filomatado?.active ? '✓' : ''}</span>
+              </button>
+            </div>
+
+            {/* Pasta easter egg (appears after typing "pasta"; Diamon-Fusion cleans it) */}
+            {pastaUnlocked && (
+              <div className={`add-card${pasta ? ' sel' : ''}`}>
+                <button className="add-head" aria-pressed={pasta}
+                  onClick={() => { const on = !pasta; setPasta(on); if (on) fire('pasta'); }}>
+                  <span style={{ flex: 1 }}>
+                    <span className="ah-name">{t('addPastaName')}</span>
+                    <span className="ah-desc" style={{ display: 'block' }}>{t('addPastaDesc')}</span>
+                  </span>
+                  <span className="oc-check" style={{ position: 'static' }}>{pasta ? '✓' : ''}</span>
+                </button>
+              </div>
+            )}
+
             {/* Sandblasting */}
             <div className={`add-card${additions.sandblasting.active ? ' sel' : ''}`}>
               <button className="add-head" aria-pressed={additions.sandblasting.active}
-                onClick={() => setAdditions({ ...additions, sandblasting: { active: !additions.sandblasting.active } })}>
+                onClick={() => { if (!additions.sandblasting.active) fire('sand'); setAdditions({ ...additions, sandblasting: { active: !additions.sandblasting.active } }); }}>
                 <span style={{ flex: 1 }}>
                   <span className="ah-name">{t('addSBName')}</span>
                   <span className="ah-desc" style={{ display: 'block' }}>{t('addSBDesc')}</span>
@@ -735,7 +940,7 @@ export default function Kiosk() {
             <div className="opt-grid c3" style={{ marginBottom: 16 }}>
               {(['cash', 'credit-debit', 'apple-google-ath'] as PaymentMethod[]).map((m) => (
                 <button key={m} className={`opt-card${payment === m ? ' sel' : ''}`}
-                  aria-pressed={payment === m} onClick={() => setPayment(m)}>
+                  aria-pressed={payment === m} onClick={() => { setPayment(m); fire(m === 'cash' ? 'cash' : m === 'credit-debit' ? 'card' : 'phone'); }}>
                   <span className="oc-check">{payment === m ? '✓' : ''}</span>
                   <div className="oc-name" style={{ fontSize: '.98rem' }}>{payLabel(m)}</div>
                 </button>
@@ -781,8 +986,20 @@ export default function Kiosk() {
             <button className="review-sec" onClick={() => goTo('size')}>
               <div className="review-row">
                 <span className="rl">{t('revDims')}</span>
-                <span className="rv mono">{toFracStr(width)} × {toFracStr(height)}</span>
+                <span className="rv mono">{qty && qty > 1 ? `${qty} × ` : ''}{toFracStr(width)} × {toFracStr(height)}</span>
               </div>
+              {Object.keys(clearance).length > 0 && (
+                <div className="review-row">
+                  <span className="rl">{t('clearLabel')}</span>
+                  <span className="rv mono">{Object.entries(clearance).map(([k, v]) => `${t(`side${k.slice(1)}`)} +${fracShort(v ?? 0)}"`).join(', ')}</span>
+                </div>
+              )}
+              {Object.keys(desnivel).length > 0 && (
+                <div className="review-row">
+                  <span className="rl">{t('desnLabel')}</span>
+                  <span className="rv mono">{Object.entries(desnivel).map(([k, v]) => `${t(`erCorner${k.slice(1)}`)} ${fracShort(v?.offset ?? 0)}" ${v?.dir === 'v' ? t('desnDirV') : t('desnDirH')}`).join(', ')}</span>
+                </div>
+              )}
             </button>
 
             <button className="review-sec" onClick={() => goTo('add')}>
@@ -790,7 +1007,7 @@ export default function Kiosk() {
                 <span className="rl">{t('revAdditions')}</span>
                 <span className="rv">
                   {[
-                    additions.beveling.active && `${t('addBevName')} ${additions.beveling.angle}°`,
+                    additions.beveling.active && `${t('addBevName')} ${additions.beveling.angle}°${additions.beveling.perEdge && Object.keys(additions.beveling.perEdge).length > 0 ? ` · ${Object.keys(additions.beveling.perEdge).length} ${t('bevelCustomEdges')}` : ''}`,
                     additions.diamonfusion.active && t('addDFName'),
                     additions.edgerounding.active && `${t('addERName')} ${t('diagRadius')}=${fracShort(additions.edgerounding.radius)}`,
                     additions.sandblasting.active && t('addSBName'),
@@ -832,6 +1049,7 @@ export default function Kiosk() {
             </div>
             <p className="sub" style={{ margin: '12px auto 0' }}>{t('qrScan')}</p>
 
+            {!inShop && (
             <div className="save-tabs" style={{ textAlign: 'left' }}>
               <div className="seg" role="tablist" style={{ justifyContent: 'center', marginBottom: 14 }}>
                 <button aria-pressed={saveTab === 'link'} onClick={() => setSaveTab('link')}>{t('saveTabLink')}</button>
@@ -864,12 +1082,14 @@ export default function Kiosk() {
                 </div>
               )}
             </div>
+            )}
 
             <div className="note" style={{ textAlign: 'left', marginTop: 20 }}>
               <b>{t('successNextTitle')}</b>
               <br />
               {t('successNextDesc')}
             </div>
+            {!inShop && (
             <div className="note" style={{ textAlign: 'left', marginTop: 12 }}>
               <b>{t('mobileTipTitle')}</b>
               <ol className="steps" style={{ marginTop: 8 }}>
@@ -878,6 +1098,7 @@ export default function Kiosk() {
                 <li>{t('mobileTip3')}</li>
               </ol>
             </div>
+            )}
             <div className="slide-foot" style={{ margin: '24px 0 0' }}>
               <button className="btn lg ghost" onClick={resetAll}>{t('newOrderBtn')}</button>
             </div>
@@ -901,7 +1122,7 @@ export default function Kiosk() {
 
       {/* device handoff QR */}
       {qrOpen && (
-        <div className="overlay open" role="dialog" aria-modal="true" aria-label={t('kioskQRTitle')}>
+        <div className="overlay open overlay-qr" role="dialog" aria-modal="true" aria-label={t('kioskQRTitle')}>
           <div className="sheet" style={{ textAlign: 'center' }}>
             <h3>{t('kioskQRTitle')}</h3>
             <div className="sheet-sub">{t('kioskQRDesc')}</div>
@@ -917,4 +1138,4 @@ export default function Kiosk() {
       )}
     </div>
   );
-}
+                }
