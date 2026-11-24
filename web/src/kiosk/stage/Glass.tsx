@@ -209,18 +209,17 @@ export function GlassViewer({ spec, reduced, fxApi, labels }: { spec: GlassSpec;
         const U = (n: string) => gl.getUniformLocation(prog, n);
         const u = { res: U('uRes'), R: U('uR'), half: U('uHalf'), rad: U('uRad'), ior: U('uIor'), disp: U('uDisp'), abs: U('uAbsorb'), refl: U('uRefl'), tint: U('uReflTint'), haze: U('uHaze'), back: U('uBack'), bevel: U('uBevel'), sand: U('uSand'), hide: U('uHide'), cor: U('uCor'), er: U('uEr'), bg: U('uBg'), colT: U('uColT'), mir: U('uMir'), glare: U('uGlare'), heat: U('uHeat'), off: U('uOff'), surf: U('uSurf'), n: U('uN'), brk: U('uBrk'), keep: U('uKeep'), lamp: U('uLamp'), rack: U('uRack'), rackCol: U('uRackCol[0]'), rackSel: U('uRackSel') };
         const tex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, tex); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0, 0])); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE); gl.uniform1i(u.surf, 0);
-        let lampV = 0, stk = 0;
+        let lampV = 0, stk = 0, lastNow = 0;
         let raf = 0, alive = true;
         const frame = (now: number, hide: boolean) => {
+            const dtF = lastNow ? Math.min((now - lastNow) / 1000, 0.35) : 0.016; lastNow = now;
+            const ease = (tau: number) => 1 - Math.exp(-dtF / tau);
             const v = view.current;
             const s0 = specRef.current; const tpv = s0.temper;
             if (tpv > 0 && tpv < 1) { v.ty = 0; v.tp = 0.02; }
             else if (s0.cam) { v.ty = s0.cam.yaw; v.tp = s0.cam.pitch; lastFocus.current = 9; }
             else { const m = s0.focus ? 1 : s0.front ? 2 : 0; if (m !== lastFocus.current) { lastFocus.current = m; if (m === 1) { v.ty = 1.45; v.tp = 0.04; } else if (m === 2) { v.ty = 0; v.tp = 0; } else { v.ty = 0.5; v.tp = 0.18; } } }
-            if (!v.drag) {
-                if (!reduced) { const k = Math.sin(now / 2200) * 0.12; v.yaw += (v.ty + k - v.yaw) * 0.06; v.pitch += (v.tp - v.pitch) * 0.06; }
-                else { v.yaw += (v.ty - v.yaw) * 0.2; v.pitch += (v.tp - v.pitch) * 0.2; }
-            }
+            if (!v.drag) { const k = reduced ? 0 : Math.sin(now / 2200) * 0.12; const e2 = ease(reduced ? 0.09 : 0.25); v.yaw += (v.ty + k - v.yaw) * e2; v.pitch += (v.tp - v.pitch) * e2; }
             const dpr = Math.min(window.devicePixelRatio || 1, 2);
             const cw = Math.max(2, Math.floor(canvas.clientWidth * dpr)), ch = Math.max(2, Math.floor(canvas.clientHeight * dpr));
             if (canvas.width !== cw || canvas.height !== ch) { canvas.width = cw; canvas.height = ch; }
@@ -233,7 +232,7 @@ export function GlassViewer({ spec, reduced, fxApi, labels }: { spec: GlassSpec;
             const s = pm > 0 ? { ...s0b, w: s0b.w + (3 - s0b.w) * pm, h: s0b.h + (6.4 - s0b.h) * pm } : s0b;
             let sc = 2.5 / Math.max(s.h * 1.0, s.w * 1.15, 1);
             if (s.rack && s.rack.length) sc *= 0.5;
-            if (fxApi && fxApi.zoom && fxApi.zoomT) { const zT = fxApi.zoomT.current; let zc = fxApi.zoom.current + (zT - fxApi.zoom.current) * 0.12; if (Math.abs(zT - zc) < 0.004) zc = zT; fxApi.zoom.current = zc; sc *= zc; }
+            if (fxApi && fxApi.zoom && fxApi.zoomT) { const zT = fxApi.zoomT.current; let zc = fxApi.zoom.current + (zT - fxApi.zoom.current) * ease(0.13); if (Math.abs(zT - zc) < 0.004) zc = zT; fxApi.zoom.current = zc; sc *= zc; }
             const halfW = 1.58 * cw / ch, ex = Math.max(halfW + 1.0, 2.4);
             let ox = 0, heat = 0, shrink = 1;
             const tp = s.temper;
@@ -252,7 +251,7 @@ export function GlassViewer({ spec, reduced, fxApi, labels }: { spec: GlassSpec;
             const hz = Math.max(hx * (s.t / Math.max(s.w, 1)) * 5, 0.012); // thickness tracks the real t/w ratio (5x for readability)
             const base = { flat: 0.004, pencil: hz * 0.55, bull: hz * 0.98, bevel: 0.075 }[s.edge];
             const rad = Math.min(Math.max(base, s.filo ? 0.014 : 0), hz * 0.98);
-            const fvT = s.flat ? 1 : 0; fv.current += (fvT - fv.current) * (reduced ? 0.35 : 0.08); if (Math.abs(fvT - fv.current) < 0.002) fv.current = fvT;
+            const fvT = s.flat ? 1 : 0; fv.current += (fvT - fv.current) * ease(reduced ? 0.05 : 0.2); if (Math.abs(fvT - fv.current) < 0.002) fv.current = fvT;
             if (s.flat && !flatSeen.current) { flatSeen.current = true; if (!v.drag) v.tp = Math.max(v.tp, 0.72); }
             if (!s.flat) flatSeen.current = false;
             const lay = fv.current * Math.PI / 2;
