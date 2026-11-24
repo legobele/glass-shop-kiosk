@@ -25,6 +25,8 @@ export interface BevelingSpec {
   active: boolean;
   angle: number; // degrees, 5..45
   sides: { e1: boolean; e2: boolean; e3: boolean; e4: boolean };
+  /** Optional per-end overrides: angle (deg) and width (inward footprint, inches). */
+  perEdge?: Partial<Record<'e1' | 'e2' | 'e3' | 'e4', { angle: number; width: number }>>;
 }
 
 export interface EdgeRoundingSpec {
@@ -39,6 +41,8 @@ export interface Additions {
   diamonfusion: { active: boolean };
   edgerounding: EdgeRoundingSpec;
   sandblasting: { active: boolean };
+  /** Filo Matado (light sanding pass on the sharp arris). Optional: older orders do not have it. */
+  filomatado?: { active: boolean };
 }
 
 export interface ContactInfo {
@@ -55,7 +59,14 @@ export interface Order {
   customerName: string;
   projectName: string;
   contact: ContactInfo | null;
-  dimensions: { width: number; height: number }; // decimal inches
+  dimensions: {
+    width: number;
+    height: number;
+    /** Clearance added outside a side (inches). Optional, absent on older orders. */
+    clearance?: Partial<Record<'e1' | 'e2' | 'e3' | 'e4', number>>;
+    /** Corner desnivel offset + direction. Optional, absent on older orders. */
+    desnivel?: Partial<Record<'c1' | 'c2' | 'c3' | 'c4', { offset: number; dir: 'h' | 'v' }>>;
+  };
   specifications: {
     glassType: GlassTypeKey;
     color: string; // catalog color key
@@ -63,6 +74,8 @@ export interface Order {
     additions: Additions;
     isFullLite: boolean;
     lang: Lang;
+    /** Pieces ordered. Optional: older orders do not have it (treat as 1). */
+    quantity?: number;
   };
   payment: { method: PaymentMethod };
   status: OrderStatus;
