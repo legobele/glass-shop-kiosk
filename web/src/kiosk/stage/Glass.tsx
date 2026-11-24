@@ -72,7 +72,10 @@ vec3 refr(vec3 p, vec3 n, vec3 rd, float ior){
   }
   vec3 ro = refract(rin, -no, ior);
   if (dot(ro, ro) < .001) ro = reflect(rin, -no);
-  return env(uR * ro, 0.) * exp(-uAbsorb * s);
+  return bgCol(uR * ro) * exp(-uAbsorb * s);
+}
+vec3 bgCol(vec3 d){
+  return uBg > .5 ? mix(vec3(.012,.013,.022), vec3(.004,.005,.010), smoothstep(-.7, .8, normalize(d).y)) + vec3(.022,.024,.030) * exp(-pow(length(normalize(d).xy - vec2(0., .18)) * 1.5, 2.)) : env(d, 0.);
 }
 vec3 paneC(float k){
   if (uRack > .5) {
@@ -94,7 +97,7 @@ vec3 paneTint(float pid){
 void main(){
   vec2 uv = (gl_FragCoord.xy - .5 * uRes) / uRes.y;
   vec3 ro = vec3(0., 0., -6.), rd = normalize(vec3(uv, 1.9));
-  vec3 bg = uBg > .5 ? mix(vec3(.012,.013,.022), vec3(.004,.005,.010), smoothstep(-.7, .8, normalize(rd).y)) + vec3(.022,.024,.030) * exp(-pow(length(normalize(rd).xy - vec2(0., .18)) * 1.5, 2.)) : env(rd, 0.);
+  vec3 bg = bgCol(rd);
   vec3 rdo = rd * uR;
   vec3 roo = (ro - uOff) * uR;
   float t = 3.2; bool hit = false; float pid = 0.;
