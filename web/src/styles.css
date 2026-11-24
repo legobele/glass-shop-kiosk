@@ -484,3 +484,7 @@ input[type="range"]{width:100%;accent-color:#fafafa}
 .pf-label{font-family:var(--mono-font,monospace);font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--dim,#8a8f98);text-align:center}
 .pf-step.now .pf-label{color:#ffd27a}
 .pf-step.done .pf-label{color:#e8e8e8}
+
+.k-handle::before{content:'';position:absolute;inset:-16px;border-radius:32px}
+.k-stage{overflow:hidden}
+.k-stage .gv-dimsvg{overflow:hidden}
