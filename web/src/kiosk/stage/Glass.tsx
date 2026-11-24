@@ -222,7 +222,7 @@ export function GlassViewer({ spec, reduced, fxApi, labels }: { spec: GlassSpec;
             if (tpv > 0 && tpv < 1) { v.ty = 0; v.tp = 0.02; }
             else if (s0.cam) { v.ty = s0.cam.yaw; v.tp = s0.cam.pitch; lastFocus.current = 9; }
             else { const m = s0.focus ? 1 : s0.front ? 2 : 0; if (m !== lastFocus.current) { lastFocus.current = m; if (m === 1) { v.ty = 1.45; v.tp = 0.04; } else if (m === 2) { v.ty = 0; v.tp = 0; } else { v.ty = 0.5; v.tp = 0.18; } } }
-            if (!v.drag) { const k = reduced ? 0 : Math.sin(now / 2200) * 0.12; const e2 = ease(reduced ? 0.09 : 0.25); v.yaw += (v.ty + k - v.yaw) * e2; v.pitch += (v.tp - v.pitch) * e2; }
+            if (!v.drag) { const k = (reduced || document.querySelector('.k-handle')) ? 0 : Math.sin(now / 2200) * 0.12; const e2 = ease(reduced ? 0.09 : 0.25); v.yaw += (v.ty + k - v.yaw) * e2; v.pitch += (v.tp - v.pitch) * e2; }
             const dpr = Math.min(window.devicePixelRatio || 1, 2);
             const cw = Math.max(2, Math.floor(canvas.clientWidth * dpr)), ch = Math.max(2, Math.floor(canvas.clientHeight * dpr));
             if (canvas.width !== cw || canvas.height !== ch) { canvas.width = cw; canvas.height = ch; }
@@ -401,7 +401,10 @@ export function GlassViewer({ spec, reduced, fxApi, labels }: { spec: GlassSpec;
         const v = view.current;
         v.drag = true; v.lx = e.clientX; v.ly = e.clientY;
         (e.target as HTMLElement).setPointerCapture(e.pointerId);
-        if (e.isPrimary) {
+        const hd = document.querySelector('.k-handle');
+        let nearHandle = false;
+        if (hd) { const hr = hd.getBoundingClientRect(); nearHandle = Math.hypot(e.clientX - (hr.left + hr.width / 2), e.clientY - (hr.top + hr.height / 2)) < 90; }
+        if (e.isPrimary && !nearHandle) {
             holdPt.current = { x: e.clientX, y: e.clientY };
             window.clearTimeout(holdT.current);
             holdT.current = window.setTimeout(fireHold, 550);
