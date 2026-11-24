@@ -472,6 +472,7 @@ input[type="range"]{width:100%;accent-color:#fafafa}
 /* portal */
 .portal-empty{min-height:calc(100vh - 170px);display:flex;flex-direction:column;justify-content:center}
 .portal-glass{position:relative;height:280px;margin:14px 0 4px;border-radius:14px;overflow:hidden;background:radial-gradient(ellipse at 50% 40%,#14161f 0%,#0a0b10 70%)}
+.portal-glass .gv{height:100%}
 .portal-flow{display:flex;gap:0;margin:16px 0 4px}
 .pf-step{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;position:relative}
 .pf-step::before{content:'';position:absolute;top:5px;left:-50%;width:100%;height:2px;background:#2a2d38}
