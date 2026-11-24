@@ -13,7 +13,7 @@ export type VfdMsg = { es: string; en: string };
 
 // No prices exist yet, so every readout shows dashes. "active" lights the segments, otherwise they sit dark red.
 export function Vfd({ big, lang, auto, values }: { big?: boolean; lang: 'en' | 'es'; auto?: boolean; values?: [string, string, string] | null }) {
-    const tabs = ['Subtotal', 'Total', 'Tax'];
+    const tabs = lang === 'es' ? ['Subtotal', 'Total', 'Impuesto'] : ['Subtotal', 'Total', 'Tax'];
     const [tab, setTab] = useState(0);
     const [cur, setCur] = useState(0);
     useEffect(() => { if (!auto || !values) return; const i = window.setInterval(() => setTab((t) => (t + 1) % 3), 2200); return () => window.clearInterval(i); }, [auto]);
@@ -22,7 +22,7 @@ export function Vfd({ big, lang, auto, values }: { big?: boolean; lang: 'en' | '
     return <div className={'vfd' + (big ? ' vfd-big' : '')} role="group" aria-label={values ? (lang === 'es' ? 'Precio' : 'Price') : (lang === 'es' ? 'Precio: sin precio todavia' : 'Price: no price yet')} onClick={() => setTab((t) => (t + 1) % 3)}>
         <div className="vfd-tabs">{tabs.map((x, i) => <span key={x} className={i === tab ? 'on' : ''}>{x}</span>)}</div>
         <div className="vfd-row">
-            <div className="vfd-cur">{['$', '\u20ac', '\u00a5'].map((c, i) => <button type="button" key={c} className={i === cur ? 'on' : ''} onClick={(e) => { e.stopPropagation(); setCur(i); }} aria-label={'Currency ' + c}>{c}</button>)}</div>
+            <div className="vfd-cur">{['$', '\u20ac', '\u00a5'].map((c, i) => <button type="button" key={c} className={i === cur ? 'on' : ''} onClick={(e) => { e.stopPropagation(); setCur(i); }} aria-label={(lang === 'es' ? 'Moneda ' : 'Currency ') + c}>{c}</button>)}</div>
             <div className="vfd-digits">{(() => { const s = values ? values[tab].padStart(n, ' ').slice(-n) : '-'.repeat(n); return Array.from({ length: n }, (_, i) => <Digit key={i} ch={s[i] === '.' ? ' ' : s[i]} on={true} w={w} />); })()}</div>
             {big && <div className="vfd-tax"><small>IVU / Tax</small><div>{[0, 1].map((i) => <Digit key={i} ch={values ? (values[2].replace('.', '').slice(0, -2) || '0').padStart(2, '0').slice(-2)[i] : '-'} on={true} w={14} />)}</div></div>}
         </div>
