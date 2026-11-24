@@ -7,7 +7,7 @@ import { useSyncExternalStore } from 'react';
 import type { GlassTypeKey } from './types';
 
 const KEY = 'qgi.pricing.v1';
-export const PRICED_TYPES: GlassTypeKey[] = ['float', 'tempered', 'ultra-clear-float', 'ultra-clear-tempered', 'laminated'];
+export const PRICED_TYPES: GlassTypeKey[] = ['float', 'tempered', 'laminated'];
 
 export interface PricingConfig {
   enabled: boolean;
