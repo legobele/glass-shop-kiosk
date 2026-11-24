@@ -53,6 +53,9 @@ vec3 env(vec3 d, float soft){
   }
   return col;
 }
+vec3 bgCol(vec3 d){
+  return uBg > .5 ? mix(vec3(.012,.013,.022), vec3(.004,.005,.010), smoothstep(-.7, .8, normalize(d).y)) + vec3(.022,.024,.030) * exp(-pow(length(normalize(d).xy - vec2(0., .18)) * 1.5, 2.)) : env(d, 0.);
+}
 vec3 refr(vec3 p, vec3 n, vec3 rd, float ior){
   vec3 rin = refract(rd, n, 1. / ior);
   vec3 q = p - n * .004;
@@ -73,9 +76,6 @@ vec3 refr(vec3 p, vec3 n, vec3 rd, float ior){
   vec3 ro = refract(rin, -no, ior);
   if (dot(ro, ro) < .001) ro = reflect(rin, -no);
   return bgCol(uR * ro) * exp(-uAbsorb * s);
-}
-vec3 bgCol(vec3 d){
-  return uBg > .5 ? mix(vec3(.012,.013,.022), vec3(.004,.005,.010), smoothstep(-.7, .8, normalize(d).y)) + vec3(.022,.024,.030) * exp(-pow(length(normalize(d).xy - vec2(0., .18)) * 1.5, 2.)) : env(d, 0.);
 }
 vec3 paneC(float k){
   if (uRack > .5) {
