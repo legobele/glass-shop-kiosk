@@ -12,6 +12,39 @@ import {
 } from '../lib/format';
 import { logActivity, updateOrder, useStore } from '../lib/store';
 import { Modal, StatusBadge } from '../components/ui';
+import { STATUS_LABEL } from '../lib/format';
+import { thickValue } from '../lib/catalog';
+import { GlassViewer, type GlassSpec } from '../kiosk/stage/Glass';
+
+const FLOW = ['pending', 'in-progress', 'ready', 'completed'] as const;
+
+function orderSpec(o: Order): GlassSpec {
+  const gt = o.specifications.glassType;
+  const er = o.specifications.additions.edgerounding;
+  return {
+    w: o.dimensions.width,
+    h: o.dimensions.height,
+    t: thickValue(o.specifications.thickness),
+    edge: o.specifications.additions.beveling.active ? 'bevel' : 'pencil',
+    filo: !!o.specifications.additions.filomatado?.active,
+    sand: o.specifications.additions.sandblasting.active ? 1 : 0,
+    kind: gt === 'laminated' ? 'lam' : gt === 'tempered' || gt === 'ultra-clear-tempered' ? 'temp' : 'clear',
+    temper: 0,
+    ultra: gt.startsWith('ultra'),
+    color: o.specifications.color || 'clear',
+    labelW: toFracStr(o.dimensions.width),
+    labelH: toFracStr(o.dimensions.height),
+    labelT: o.specifications.thickness,
+    erCorners: er.active && er.radius > 0 ? [
+      er.corners.c1 || er.edges.e1 || er.edges.e2 ? er.radius : 0,
+      er.corners.c2 || er.edges.e2 || er.edges.e3 ? er.radius : 0,
+      er.corners.c3 || er.edges.e3 || er.edges.e4 ? er.radius : 0,
+      er.corners.c4 || er.edges.e4 || er.edges.e1 ? er.radius : 0,
+    ] : undefined,
+  };
+}
+
+const GL_LABELS = { drag: 'Drag to rotate', hold: 'Hold to break', unbreak: 'Hold to restore', noGl: '3D unavailable', note: '', dims: '', brokeNote: '', furnace: '', quench: '', tempNote: '' };
 
 export default function Portal() {
   const { orders } = useStore();
@@ -62,7 +95,7 @@ export default function Portal() {
   const adds = order ? additionLabels(order.specifications.additions) : [];
 
   return (
-    <div className="wrap narrow">
+    <div className={`wrap narrow${!order ? ' portal-empty' : ''}`}>
       <div className="hud" style={{ marginBottom: 8 }}>Quality Glass · Customer Portal</div>
       <h1 className="page-title">Track Your Order</h1>
       <p className="sub" style={{ marginTop: 8 }}>
@@ -101,6 +134,27 @@ export default function Portal() {
               {refreshing ? 'Refreshing…' : 'Refresh Status'}
             </button>
           </div>
+
+          <div className="portal-glass">
+            <GlassViewer spec={orderSpec(order)} reduced={false} labels={GL_LABELS} />
+          </div>
+
+          {order.status === 'cancelled' ? (
+            <div className="note warn" style={{ margin: '14px 0' }}>This order was cancelled. Contact the sales team with any questions.</div>
+          ) : (
+            <div className="portal-flow">
+              {FLOW.map((s) => {
+                const cur = FLOW.indexOf(order.status as (typeof FLOW)[number]);
+                const i = FLOW.indexOf(s);
+                return (
+                  <div key={s} className={`pf-step${i < cur ? ' done' : ''}${i === cur ? ' now' : ''}`}>
+                    <span className="pf-dot" />
+                    <span className="pf-label">{STATUS_LABEL[s]}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
           <div className="kv2">
             <div><div className="k">Customer</div><div className="v">{order.customerName || 'Walk-in'}</div></div>
