@@ -5,23 +5,31 @@ export type FxName = 'sand' | 'dfusion' | 'pasta' | 'cash' | 'card' | 'phone' | 
 export type FxCmd = { name: FxName; n: number; shatter: boolean } | null;
 type P = { x: number; y: number; vx: number; vy: number; r: number; life: number; c: string; rot?: number; vr?: number };
 
-export function FxLayer({ cmd, reduced, onShatter, resetKey, api, aspect }: { cmd: FxCmd; reduced: boolean; onShatter: () => void; resetKey: number; api: FxApi; aspect: number }) {
+export function FxLayer({ cmd, reduced, onShatter, resetKey, api, aspect, heat = 0, frostOn = true }: { cmd: FxCmd; reduced: boolean; onShatter: () => void; resetKey: number; api: FxApi; aspect: number; heat?: number; frostOn?: boolean }) {
     const cv = useRef<HTMLCanvasElement>(null);
-    const st = useRef({ frost: 0, pasta: [] as { x: number; y: number; a: number }[], sauce: [] as { x: number; y: number; r: number }[], drops: [] as { x: number; y: number; r: number }[], parts: [] as P[], anim: null as null | { name: FxName; t0: number; dur: number; shatter: boolean; hit?: boolean }, cracks: [] as number[][], wipe: -1, raf: 0, aspect: 0.5 });
+    const st = useRef({ frost: 0, cook: 0, pasta: [] as { x: number; y: number; a: number }[], sauce: [] as { x: number; y: number; r: number }[], drops: [] as { x: number; y: number; r: number }[], parts: [] as P[], anim: null as null | { name: FxName; t0: number; dur: number; shatter: boolean; hit?: boolean }, cracks: [] as number[][], wipe: -1, raf: 0, aspect: 0.5, bills: [] as { u: number; v: number; x: number; y: number; vx: number; vy: number; rot: number; tr: number; c: string; born: number }[], cardO: null as null | { x: number; y: number; vx: number; vy: number; rot: number; vr: number; hit: boolean; kind: string; hitAt: number } });
     const shatterRef = useRef(onShatter); shatterRef.current = onShatter;
     st.current.aspect = aspect;
+    st.current.cook = Math.max(st.current.cook, heat);
 
-    useEffect(() => { const s = st.current; s.frost = 0; s.pasta = []; s.sauce = []; s.drops = []; s.parts = []; s.cracks = []; s.anim = null; s.wipe = -1; }, [resetKey]);
+    useEffect(() => { const s = st.current; s.frost = 0; s.cook = 0; s.pasta = []; s.sauce = []; s.drops = []; s.parts = []; s.cracks = []; s.anim = null; s.wipe = -1; s.bills = []; s.cardO = null; }, [resetKey]);
+
+    // deselecting sandblasting clears the frost right away, even mid-animation
+    useEffect(() => { const s = st.current; if (!frostOn) { s.frost = 0; if (s.anim && s.anim.name === 'sand') s.anim = null; } }, [frostOn]);
 
     useEffect(() => {
         if (!cmd) return;
         const s = st.current;
         const dur = reduced ? 300 : ({ sand: 5600, dfusion: 4200, pasta: 1700, cash: 2800, card: 1700, phone: 1800, bevel: 2600 } as const)[cmd.name];
         if (cmd.name === 'dfusion') { s.drops = []; s.wipe = -1; }
+        if (cmd.name !== 'cash') s.bills = [];
+        if (cmd.name !== 'card' && cmd.name !== 'phone') s.cardO = null;
+        if (cmd.name === 'cash') { s.bills = []; for (let i = 0; i < 7; i++) s.bills.push({ u: 0.12 + (i / 6) * 0.76, v: 0.28 + (i % 3) * 0.2 + Math.random() * 0.06, x: 0, y: 0, vx: 0, vy: 0, rot: 0, tr: (i - 3) * 0.16 + (Math.random() - 0.5) * 0.12, c: i % 2 ? '#4ea05a' : '#6dbb76', born: i * 0.09 }); }
+        if (cmd.name === 'card' || cmd.name === 'phone') { const c0 = cv.current; s.cardO = { x: -70, y: (c0 ? c0.clientHeight : 400) * 0.82, vx: 13 + Math.random() * 5, vy: -(5.5 + Math.random() * 3), rot: Math.random() * 2, vr: 0.22 + Math.random() * 0.22, hit: false, kind: cmd.name, hitAt: 0 }; }
         s.anim = { name: cmd.name, t0: performance.now(), dur, shatter: cmd.shatter };
         if (reduced) {
             if (cmd.name === 'sand') s.frost = 1;
-            if (cmd.name === 'pasta') { for (let i = 0; i < 14; i++) s.pasta.push({ x: Math.random(), y: Math.random(), a: Math.random() * 6 }); s.sauce.push({ x: 0.5, y: 0.5, r: 0.08 }); }
+            if (cmd.name === 'pasta') { s.cook = 0; for (let i = 0; i < 14; i++) s.pasta.push({ x: Math.random(), y: Math.random(), a: Math.random() * 6 }); s.sauce.push({ x: 0.5, y: 0.5, r: 0.08 }); }
             if (cmd.name === 'dfusion') { s.pasta = []; s.sauce = []; s.drops = []; }
         }
     }, [cmd, reduced]);
@@ -54,7 +62,7 @@ export function FxLayer({ cmd, reduced, onShatter, resetKey, api, aspect }: { cm
             }
             s.sauce.forEach((p) => { sx.fillStyle = 'rgba(176,34,18,.95)'; sx.beginPath(); sx.ellipse(p.x * SW, p.y * SH, p.r * SW, p.r * SW * 0.85, 0, 0, 7); sx.fill(); });
             sx.lineCap = 'round';
-            s.pasta.forEach((p) => { sx.strokeStyle = 'rgb(243,206,98)'; sx.lineWidth = 9; sx.beginPath(); const x = p.x * SW, y = p.y * SH; sx.moveTo(x, y); sx.bezierCurveTo(x + 40 * Math.cos(p.a), y - 30, x - 34, y + 40 * Math.sin(p.a), x + 50, y + 22); sx.stroke(); });
+            s.pasta.forEach((p) => { sx.strokeStyle = s.cook >= 0.5 ? 'rgb(252,231,174)' : 'rgb(243,206,98)'; sx.lineWidth = 9; sx.beginPath(); const x = p.x * SW, y = p.y * SH; sx.moveTo(x, y); sx.bezierCurveTo(x + 40 * Math.cos(p.a), y - 30, x - 34, y + 40 * Math.sin(p.a), x + 50, y + 22); sx.stroke(); });
             s.drops.forEach((d) => { sx.fillStyle = 'rgba(120,190,255,.55)'; sx.strokeStyle = 'rgba(255,255,255,.95)'; sx.lineWidth = 2; sx.beginPath(); sx.ellipse(d.x * SW, d.y * SH, d.r * SW, d.r * SW * 1.15, 0, 0, 7); sx.fill(); sx.stroke(); sx.fillStyle = 'rgba(255,255,255,.95)'; sx.beginPath(); sx.arc(d.x * SW - d.r * SW * 0.3, d.y * SH - d.r * SW * 0.35, d.r * SW * 0.25, 0, 7); sx.fill(); });
             void ar;
             // ---- screen overlay using true projection
@@ -102,28 +110,49 @@ export function FxLayer({ cmd, reduced, onShatter, resetKey, api, aspect }: { cm
                     ctx.fillStyle = '#d9dde3'; ctx.beginPath(); ctx.moveTo(hx[0] - 8, hx[1] - 10); ctx.lineTo(hx[0] + 8, hx[1] - 10); ctx.lineTo(hx[0], hx[1] + 6); ctx.closePath(); ctx.fill();
                     for (let i = 0; i < 6; i++) s.parts.push({ x: hx[0], y: hx[1] + 2, vx: (Math.random() - 0.5) * 6, vy: -Math.random() * 4 - 1, r: 1.8, life: 12, c: '#ffd27a' });
                 }
-                if (a.name === 'cash') {
-                    if (p < 0.85) for (let i = 0; i < 3; i++) s.parts.push({ x: W / 2 + (Math.random() - 0.5) * 40, y: H * 0.6, vx: (Math.random() - 0.5) * 10, vy: -3 - Math.random() * 6, r: 15, life: 100, c: Math.random() > 0.4 ? '#4ea05a' : '#7bc47f', rot: Math.random() * 6, vr: (Math.random() - 0.5) * 0.3 });
-                }
-                if (a.name === 'card' || a.name === 'phone') {
-                    const hp = 0.55, q = Math.min(p / hp, 1);
-                    const x = -80 + q * (ctr[0] + 80), y = H * 0.85 + (ctr[1] - H * 0.85) * q - Math.sin(q * Math.PI) * 70;
-                    if (p < hp) {
-                        ctx.save(); ctx.translate(x, y); ctx.rotate(q * 14);
-                        if (a.name === 'card') { ctx.fillStyle = '#d4a017'; ctx.fillRect(-28, -17, 56, 34); ctx.fillStyle = '#222'; ctx.fillRect(-28, -8, 56, 7); }
-                        else { ctx.fillStyle = '#111'; ctx.fillRect(-15, -30, 30, 60); ctx.fillStyle = '#4a90e2'; ctx.fillRect(-12, -26, 24, 46); }
-                        ctx.restore();
-                    } else if (!a.hit) {
-                        a.hit = true;
-                        for (let i = 0; i < 14; i++) s.parts.push({ x: ctr[0], y: ctr[1], vx: (Math.random() - 0.5) * 8, vy: -Math.random() * 6, r: 2.5, life: 26, c: a.name === 'phone' ? (i % 2 ? '#ffb02e' : '#ff4d2e') : '#ffd966' });
-                        if (a.name === 'card' && a.shatter) {
-                            for (let i = 0; i < 26; i++) { const an = Math.random() * 6.28, l = 40 + Math.random() * Math.min(W, H) * 0.3; s.cracks.push([ctr[0], ctr[1], ctr[0] + Math.cos(an) * l, ctr[1] + Math.sin(an) * l]); }
-                            shatterRef.current();
-                        }
-                    }
-                    if (a.hit && a.name === 'phone') { ctx.fillStyle = `rgba(255,150,40,${0.4 * (1 - p)})`; ctx.beginPath(); ctx.arc(ctr[0], ctr[1], 20 + p * 80, 0, 7); ctx.fill(); }
+                if (a.name === 'cash') { /* bills are spawned on cmd and updated below every frame */ }
+                if ((a.name === 'card' || a.name === 'phone') && s.cardO && s.cardO.hit && !a.hit) {
+                    a.hit = true;
+                    if (a.name === 'phone') s.cardO.hitAt = now;
                 }
                 if (p >= 1) { s.anim = null; if (a.name === 'sand') s.frost = 1; setTimeout(() => { s.cracks = []; }, 1200); }
+            }
+            // ---- cash: bills slide across the pane and rest spread out on the glass
+            if (s.bills.length) {
+                s.bills.forEach((b, i) => {
+                    const [tx2, ty2] = UV(b.u, b.v, 0.06);
+                    if (b.x === 0 && b.y === 0) { const [cx, cy] = UV(0.5, 0.5, 0.06); b.x = cx; b.y = cy; b.vx = (Math.random() - 0.5) * 6; b.vy = -2 - Math.random() * 3; b.rot = Math.random() * 6; }
+                    b.vx += (tx2 - b.x) * 0.045; b.vy += (ty2 - b.y) * 0.045;
+                    b.vx *= 0.86; b.vy *= 0.86; b.x += b.vx; b.y += b.vy;
+                    b.rot += (b.tr - b.rot) * 0.12;
+                    ctx.save(); ctx.translate(b.x, b.y); ctx.rotate(b.rot);
+                    ctx.fillStyle = b.c; ctx.fillRect(-30, -14, 60, 28);
+                    ctx.strokeStyle = 'rgba(10,40,16,.8)'; ctx.lineWidth = 1.5; ctx.strokeRect(-30, -14, 60, 28);
+                    ctx.fillStyle = 'rgba(10,40,16,.75)'; ctx.beginPath(); ctx.ellipse(0, 0, 9, 7, 0, 0, 7); ctx.fill();
+                    ctx.font = 'bold 9px monospace'; ctx.textAlign = 'center'; ctx.fillText('$', 0, 3);
+                    ctx.restore(); void i;
+                });
+            }
+            // ---- card/phone: real toss - momentum, tumble, gravity, bounce off the pane
+            if (s.cardO) {
+                const o = s.cardO;
+                o.vy += 0.5; o.x += o.vx; o.y += o.vy; o.rot += o.vr;
+                const ctr = UV(0.5, 0.45);
+                if (!o.hit && o.vx > 0 && o.x >= ctr[0]) {
+                    o.hit = true; o.hitAt = now;
+                    o.vx = -o.vx * 0.34; o.vy = -Math.abs(o.vy) * 0.3 - 1.5; o.vr *= -0.55;
+                    for (let i = 0; i < 14; i++) s.parts.push({ x: ctr[0], y: ctr[1], vx: (Math.random() - 0.5) * 8, vy: -Math.random() * 6, r: 2.5, life: 26, c: o.kind === 'phone' ? (i % 2 ? '#ffb02e' : '#ff4d2e') : '#ffd966' });
+                    if (o.kind === 'card' && s.anim && s.anim.shatter) {
+                        for (let i = 0; i < 26; i++) { const an = Math.random() * 6.28, l = 40 + Math.random() * Math.min(W, H) * 0.3; s.cracks.push([ctr[0], ctr[1], ctr[0] + Math.cos(an) * l, ctr[1] + Math.sin(an) * l]); }
+                        shatterRef.current();
+                    }
+                }
+                ctx.save(); ctx.translate(o.x, o.y); ctx.rotate(o.rot);
+                if (o.kind === 'card') { ctx.fillStyle = '#d4a017'; ctx.fillRect(-28, -17, 56, 34); ctx.fillStyle = '#222'; ctx.fillRect(-28, -8, 56, 7); }
+                else { ctx.fillStyle = '#111'; ctx.fillRect(-15, -30, 30, 60); ctx.fillStyle = '#4a90e2'; ctx.fillRect(-12, -26, 24, 46); }
+                ctx.restore();
+                if (o.hit && o.kind === 'phone') { const q = Math.min((now - o.hitAt) / 700, 1); ctx.fillStyle = `rgba(255,150,40,${0.4 * (1 - q)})`; ctx.beginPath(); ctx.arc(ctr[0], ctr[1], 20 + q * 80, 0, 7); ctx.fill(); }
+                if (o.y > H + 90 || o.x < -160 || o.x > W + 160) s.cardO = null;
             }
             ctx.strokeStyle = 'rgba(255,255,255,.85)'; ctx.lineWidth = 1.5;
             s.cracks.forEach((l) => { ctx.beginPath(); ctx.moveTo(l[0], l[1]); ctx.lineTo(l[2], l[3]); ctx.stroke(); });

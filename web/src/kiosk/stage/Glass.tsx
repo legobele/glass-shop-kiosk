@@ -9,11 +9,12 @@ const VERT = `attribute vec2 p; void main(){ gl_Position = vec4(p, 0., 1.); }`;
 const FRAG = `
 precision highp float;
 uniform vec2 uRes; uniform mat3 uR; uniform vec3 uHalf; uniform float uRad;
-uniform float uIor; uniform float uDisp; uniform vec3 uAbsorb; uniform float uRefl; uniform vec3 uReflTint; uniform float uHaze; uniform float uBack; uniform float uBevel; uniform float uSand; uniform float uCor; uniform vec3 uColT; uniform float uMir; uniform float uGlare; uniform float uHide; uniform float uHeat; uniform sampler2D uSurf; uniform float uN; uniform float uBrk; uniform float uKeep; uniform float uLamp; uniform vec3 uOff; uniform float uRack; uniform vec3 uRackCol[7]; uniform float uRackSel;
+uniform float uIor; uniform float uDisp; uniform vec3 uAbsorb; uniform float uRefl; uniform vec3 uReflTint; uniform float uHaze; uniform float uBack; uniform float uBevel; uniform float uSand; uniform float uCor; uniform vec4 uEr; uniform float uBg; uniform vec3 uColT; uniform float uMir; uniform float uGlare; uniform float uHide; uniform float uHeat; uniform sampler2D uSurf; uniform float uN; uniform float uBrk; uniform float uKeep; uniform float uLamp; uniform vec3 uOff; uniform float uRack; uniform vec3 uRackCol[7]; uniform float uRackSel;
 float sdBox(vec3 p){
-  if (uCor > .001) {
-    vec2 q2 = abs(p.xy) - (uHalf.xy - vec2(uCor));
-    float d2 = length(max(q2, 0.)) + min(max(q2.x, q2.y), 0.) - uCor + uRad;
+  float rc = max(uCor, p.x > 0. ? (p.y > 0. ? uEr.x : uEr.y) : (p.y > 0. ? uEr.w : uEr.z));
+  if (rc > .001) {
+    vec2 q2 = abs(p.xy) - (uHalf.xy - vec2(rc));
+    float d2 = length(max(q2, 0.)) + min(max(q2.x, q2.y), 0.) - rc + uRad;
     float dz = abs(p.z) - (uHalf.z - uRad);
     vec2 w = vec2(d2, dz);
     return min(max(w.x, w.y), 0.) + length(max(w, 0.)) - uRad;
@@ -76,8 +77,8 @@ vec3 refr(vec3 p, vec3 n, vec3 rd, float ior){
 vec3 paneC(float k){
   if (uRack > .5) {
     float mid = (uN + 1.) * .5;
-    float dx = (k - mid) * (uHalf.x * 1.28);
-    return uOff + vec3(dx, -uHalf.y * .12, .8 + .3 * abs(k - mid) + .06 * k);
+    float dx = (k - mid) * (uHalf.x * 2.15);
+    return uOff + vec3(dx, -uHalf.y * .12, .8 + .12 * abs(k - mid) + .03 * k);
   }
   return uOff + vec3(.16 * k * uHalf.x * .35 + .1 * k, .035 * k + (k > uKeep ? uBrk * uBrk * -4. : 0.), .22 * k);
 }
@@ -93,7 +94,7 @@ vec3 paneTint(float pid){
 void main(){
   vec2 uv = (gl_FragCoord.xy - .5 * uRes) / uRes.y;
   vec3 ro = vec3(0., 0., -6.), rd = normalize(vec3(uv, 1.9));
-  vec3 bg = env(rd, 0.);
+  vec3 bg = uBg > .5 ? mix(vec3(.012,.013,.022), vec3(.004,.005,.010), smoothstep(-.7, .8, normalize(rd).y)) + vec3(.022,.024,.030) * exp(-pow(length(normalize(rd).xy - vec2(0., .18)) * 1.5, 2.)) : env(rd, 0.);
   vec3 rdo = rd * uR;
   vec3 roo = (ro - uOff) * uR;
   float t = 3.2; bool hit = false; float pid = 0.;
@@ -159,10 +160,10 @@ const TYPES: Record<GlassKind, { ior: number; absorb: [number, number, number]; 
     lowe: { ior: 1.52, absorb: [0.6, 0.3, 0.5], refl: 3.2, tint: [0.7, 1.0, 0.95], haze: 0 },
 };
 
-export type FxApi = { surf: React.MutableRefObject<HTMLCanvasElement | null>; proj: React.MutableRefObject<(x: number, y: number, z: number) => [number, number]>; projU: React.MutableRefObject<(x: number, y: number, z: number) => [number, number]>; geo: React.MutableRefObject<{ hx: number; hy: number; hz: number }>; cut?: React.MutableRefObject<number | null>; pm?: React.MutableRefObject<number> };
-export type GlassSpec = { w: number; h: number; t: number; edge: EdgeKind; filo: boolean; sand: number; kind: GlassKind; temper: number; ultra?: boolean; focus?: boolean; front?: boolean; phone?: boolean; color?: string; labelW?: string; labelH?: string; labelT?: string; breakKey?: number; light?: boolean; stack?: number; stackKeep?: number; stackBrk?: boolean; rack?: [number, number, number][]; rackSel?: number; cam?: { yaw: number; pitch: number } | null };
+export type FxApi = { surf: React.MutableRefObject<HTMLCanvasElement | null>; proj: React.MutableRefObject<(x: number, y: number, z: number) => [number, number]>; projU: React.MutableRefObject<(x: number, y: number, z: number) => [number, number]>; geo: React.MutableRefObject<{ hx: number; hy: number; hz: number; sc: number }>; cut?: React.MutableRefObject<number | null>; pm?: React.MutableRefObject<number>; zoom?: React.MutableRefObject<number>; zoomT?: React.MutableRefObject<number>; throwT?: React.MutableRefObject<number> };
+export type GlassSpec = { w: number; h: number; t: number; edge: EdgeKind; filo: boolean; sand: number; kind: GlassKind; temper: number; ultra?: boolean; focus?: boolean; front?: boolean; phone?: boolean; color?: string; labelW?: string; labelH?: string; labelT?: string; breakKey?: number; light?: boolean; stack?: number; stackKeep?: number; stackBrk?: boolean; rack?: [number, number, number][]; rackSel?: number; cam?: { yaw: number; pitch: number } | null; flat?: boolean; erCorners?: [number, number, number, number] };
 
-export function GlassViewer({ spec, reduced, fxApi, labels }: { spec: GlassSpec; reduced: boolean; fxApi?: FxApi; labels: { drag: string; front: string; angle: string; edge: string; noGl: string; note: string; dims: string; brk: string; restore: string; brokeNote: string; furnace: string; quench: string; tempNote: string} }) {
+export function GlassViewer({ spec, reduced, fxApi, labels }: { spec: GlassSpec; reduced: boolean; fxApi?: FxApi; labels: { drag: string; hold: string; unbreak: string; noGl: string; note: string; dims: string; brokeNote: string; furnace: string; quench: string; tempNote: string} }) {
     const ref = useRef<HTMLCanvasElement>(null);
     const specRef = useRef(spec);
     const view = useRef({ yaw: 0.5, pitch: 0.18, ty: 0.5, tp: 0.18, drag: false, lx: 0, ly: 0, last: 0 });
@@ -179,7 +180,10 @@ export function GlassViewer({ spec, reduced, fxApi, labels }: { spec: GlassSpec;
     const furn = useRef<HTMLDivElement>(null);
     const qj = useRef<HTMLDivElement>(null);
     const breakFn = useRef<(x: number, y: number) => void>(() => {});
-    const downAt = useRef({ x: 0, y: 0 });
+    const holdT = useRef(0);
+    const holdPt = useRef<{ x: number; y: number } | null>(null);
+    const fv = useRef(0);
+    const flatSeen = useRef(false);
     specRef.current = spec;
 
     useEffect(() => {
@@ -203,7 +207,7 @@ export function GlassViewer({ spec, reduced, fxApi, labels }: { spec: GlassSpec;
         gl.enableVertexAttribArray(loc);
         gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
         const U = (n: string) => gl.getUniformLocation(prog, n);
-        const u = { res: U('uRes'), R: U('uR'), half: U('uHalf'), rad: U('uRad'), ior: U('uIor'), disp: U('uDisp'), abs: U('uAbsorb'), refl: U('uRefl'), tint: U('uReflTint'), haze: U('uHaze'), back: U('uBack'), bevel: U('uBevel'), sand: U('uSand'), hide: U('uHide'), cor: U('uCor'), colT: U('uColT'), mir: U('uMir'), glare: U('uGlare'), heat: U('uHeat'), off: U('uOff'), surf: U('uSurf'), n: U('uN'), brk: U('uBrk'), keep: U('uKeep'), lamp: U('uLamp'), rack: U('uRack'), rackCol: U('uRackCol[0]'), rackSel: U('uRackSel') };
+        const u = { res: U('uRes'), R: U('uR'), half: U('uHalf'), rad: U('uRad'), ior: U('uIor'), disp: U('uDisp'), abs: U('uAbsorb'), refl: U('uRefl'), tint: U('uReflTint'), haze: U('uHaze'), back: U('uBack'), bevel: U('uBevel'), sand: U('uSand'), hide: U('uHide'), cor: U('uCor'), er: U('uEr'), bg: U('uBg'), colT: U('uColT'), mir: U('uMir'), glare: U('uGlare'), heat: U('uHeat'), off: U('uOff'), surf: U('uSurf'), n: U('uN'), brk: U('uBrk'), keep: U('uKeep'), lamp: U('uLamp'), rack: U('uRack'), rackCol: U('uRackCol[0]'), rackSel: U('uRackSel') };
         const tex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, tex); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0, 0])); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE); gl.uniform1i(u.surf, 0);
         let lampV = 0, stk = 0;
         let raf = 0, alive = true;
@@ -229,6 +233,7 @@ export function GlassViewer({ spec, reduced, fxApi, labels }: { spec: GlassSpec;
             const s = pm > 0 ? { ...s0b, w: s0b.w + (3 - s0b.w) * pm, h: s0b.h + (6.4 - s0b.h) * pm } : s0b;
             let sc = 2.5 / Math.max(s.h * 1.0, s.w * 1.15, 1);
             if (s.rack && s.rack.length) sc *= 0.5;
+            if (fxApi && fxApi.zoom && fxApi.zoomT) { const zT = fxApi.zoomT.current; let zc = fxApi.zoom.current + (zT - fxApi.zoom.current) * 0.12; if (Math.abs(zT - zc) < 0.004) zc = zT; fxApi.zoom.current = zc; sc *= zc; }
             const halfW = 1.58 * cw / ch, ex = Math.max(halfW + 1.0, 2.4);
             let ox = 0, heat = 0, shrink = 1;
             const tp = s.temper;
@@ -238,13 +243,20 @@ export function GlassViewer({ spec, reduced, fxApi, labels }: { spec: GlassSpec;
                 else { const q = sm(0, 1, (tp - 0.78) / 0.22); ox = -ex * (1 - q); shrink = 0.55 + 0.45 * q; }
             }
             sc *= shrink;
+            let tx = 0, ty2 = 0;
+            if (fxApi && fxApi.throwT && fxApi.throwT.current > 0) { const te = (now - fxApi.throwT.current) / 1000; tx = te * te * 11; ty2 = te * te * 5.5; if (!v.drag) { v.yaw += 0.2 + te * 0.55; v.pitch += te * 0.03; } }
+            const ox2 = ox + tx;
             if (furn.current) { furn.current.style.width = (1.3 / (2 * halfW) * 100) + '%'; furn.current.style.opacity = tp > 0 && tp < 0.8 ? '1' : '0'; }
             if (qj.current) { qj.current.style.width = (1.6 / (2 * halfW) * 100) + '%'; qj.current.style.left = (50 + 0.65 / (2 * halfW) * 100) + '%'; qj.current.style.opacity = tp > 0.3 && tp < 0.78 ? '1' : '0'; }
-            const hz = (0.1 + s.t * 0.4) / 2;
             const hx = (s.w * sc) / 2, hy = (s.h * sc) / 2;
+            const hz = Math.max(hx * (s.t / Math.max(s.w, 1)) * 5, 0.012); // thickness tracks the real t/w ratio (5x for readability)
             const base = { flat: 0.004, pencil: hz * 0.55, bull: hz * 0.98, bevel: 0.075 }[s.edge];
             const rad = Math.min(Math.max(base, s.filo ? 0.014 : 0), hz * 0.98);
-            const cy = Math.cos(v.yaw), sy = Math.sin(v.yaw), cp = Math.cos(v.pitch), sp = Math.sin(v.pitch);
+            const fvT = s.flat ? 1 : 0; fv.current += (fvT - fv.current) * (reduced ? 0.35 : 0.08); if (Math.abs(fvT - fv.current) < 0.002) fv.current = fvT;
+            if (s.flat && !flatSeen.current) { flatSeen.current = true; if (!v.drag) v.tp = Math.max(v.tp, 0.72); }
+            if (!s.flat) flatSeen.current = false;
+            const lay = fv.current * Math.PI / 2;
+            const cy = Math.cos(v.yaw), sy = Math.sin(v.yaw), cp = Math.cos(v.pitch + lay), sp = Math.sin(v.pitch + lay);
             // R = Ry * Rx, column-major
             const m = [cy, 0, -sy, sy * sp, cp, cy * sp, sy * cp, -sp, cy * cp];
             gl.uniform2f(u.res, cw, ch);
@@ -263,6 +275,9 @@ export function GlassViewer({ spec, reduced, fxApi, labels }: { spec: GlassSpec;
             gl.uniform1f(u.haze, ty.haze);
             gl.uniform1f(u.back, 0);
             gl.uniform1f(u.bevel, s.edge === 'bevel' ? 1 : 0);
+            const erc = s.erCorners; const ercap = (r: number) => Math.min(r * sc, hx * 0.98, hy * 0.98);
+            if (u.er) gl.uniform4f(u.er, ercap(erc?.[0] ?? 0), ercap(erc?.[1] ?? 0), ercap(erc?.[2] ?? 0), ercap(erc?.[3] ?? 0));
+            if (u.bg) gl.uniform1f(u.bg, 1);
             gl.uniform1f(u.sand, s.filo ? s.sand : 0);
             if (svgRef.current) {
                 const sv = svgRef.current, cssK = canvas.clientHeight / ch;
@@ -303,10 +318,10 @@ export function GlassViewer({ spec, reduced, fxApi, labels }: { spec: GlassSpec;
             gl.uniform1f(u.brk, rk ? 0 : (reduced ? (specRef.current.stackBrk ? 1 : 0) : stk));
             lampV += ((specRef.current.light ? 1 : 0) - lampV) * 0.08; gl.uniform1f(u.lamp, lampV);
             const sf = fxApi?.surf.current; if (sf && sf.width > 1) { gl.bindTexture(gl.TEXTURE_2D, tex); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, sf); }
-            if (fxApi) { fxApi.geo.current = { hx, hy, hz }; fxApi.proj.current = (x: number, y: number, z: number): [number, number] => { const wx = cy * x + sy * sp * y + sy * cp * z + ox, wy = cp * y - sp * z, wz = -sy * x + cy * sp * y + cy * cp * z; const k = 1.9 / (wz + 6); return [(cw / 2 + wx * k * ch) * (canvas.clientHeight / ch), (ch / 2 - wy * k * ch) * (canvas.clientHeight / ch)]; }; fxApi.projU.current = (x: number, y: number, z: number): [number, number] => { const k = 1.9 / (z + 6); return [(cw / 2 + x * k * ch) * (canvas.clientHeight / ch), (ch / 2 - y * k * ch) * (canvas.clientHeight / ch)]; }; }
+            if (fxApi) { fxApi.geo.current = { hx, hy, hz, sc }; fxApi.proj.current = (x: number, y: number, z: number): [number, number] => { const wx = cy * x + sy * sp * y + sy * cp * z + ox2, wy = cp * y - sp * z + ty2, wz = -sy * x + cy * sp * y + cy * cp * z; const k = 1.9 / (wz + 6); return [(cw / 2 + wx * k * ch) * (canvas.clientHeight / ch), (ch / 2 - wy * k * ch) * (canvas.clientHeight / ch)]; }; fxApi.projU.current = (x: number, y: number, z: number): [number, number] => { const k = 1.9 / (z + 6); return [(cw / 2 + x * k * ch) * (canvas.clientHeight / ch), (ch / 2 - y * k * ch) * (canvas.clientHeight / ch)]; }; }
             gl.uniform1f(u.hide, hide ? 1 : 0);
             gl.uniform1f(u.heat, heat);
-            gl.uniform3f(u.off, ox, 0, 0);
+            gl.uniform3f(u.off, ox2, ty2, 0);
             gl.drawArrays(gl.TRIANGLES, 0, 3);
         };
         const draw = (now: number) => {
@@ -371,23 +386,42 @@ export function GlassViewer({ spec, reduced, fxApi, labels }: { spec: GlassSpec;
         return () => { alive = false; cancelAnimationFrame(raf); };
     }, [reduced]);
 
-    const down = (e: React.PointerEvent) => { downAt.current = { x: e.clientX, y: e.clientY }; const v = view.current; v.drag = true; v.lx = e.clientX; v.ly = e.clientY; (e.target as HTMLElement).setPointerCapture(e.pointerId); };
-    const move = (e: React.PointerEvent) => { const v = view.current; if (!v.drag) return; v.yaw += (e.clientX - v.lx) * 0.01; v.pitch = Math.max(-1.2, Math.min(1.2, v.pitch + (e.clientY - v.ly) * 0.01)); v.ty = v.yaw; v.tp = v.pitch; v.lx = e.clientX; v.ly = e.clientY; };
-    const up = (e: React.PointerEvent) => {
-        view.current.drag = false;
-        if (e.type === 'pointerup' && Math.hypot(e.clientX - downAt.current.x, e.clientY - downAt.current.y) < 4) hitAt(e.clientX, e.clientY);
+    // Press-and-hold breaks the glass (touch devices expose no usable force to the web,
+    // so a held press is the reliable gesture); moving past 10px cancels into a rotate drag.
+    const fireHold = () => {
+        const c = ref.current, pt = holdPt.current; if (!c || !pt) return;
+        holdPt.current = null;
+        if (brokenRef.current) { restore(); return; }
+        const r = c.getBoundingClientRect();
+        breakFn.current(((pt.x - r.left) / r.width) * c.width, ((pt.y - r.top) / r.height) * c.height);
     };
-    const hits = useRef(0);
-    const hitAt = (cx: number, cy: number) => {
-        const c = ref.current; if (!c) return;
-        hits.current += 1;
-        if (hits.current >= 3) { hits.current = 0; const r = c.getBoundingClientRect(); breakFn.current((cx - r.left) / r.width * c.width, (cy - r.top) / r.height * c.height); }
+    const down = (e: React.PointerEvent) => {
+        const v = view.current;
+        v.drag = true; v.lx = e.clientX; v.ly = e.clientY;
+        (e.target as HTMLElement).setPointerCapture(e.pointerId);
+        if (e.isPrimary) {
+            holdPt.current = { x: e.clientX, y: e.clientY };
+            window.clearTimeout(holdT.current);
+            holdT.current = window.setTimeout(fireHold, 550);
+        }
+    };
+    const move = (e: React.PointerEvent) => {
+        const v = view.current; if (!v.drag) return;
+        if (holdPt.current && Math.hypot(e.clientX - holdPt.current.x, e.clientY - holdPt.current.y) > 10) {
+            window.clearTimeout(holdT.current); holdPt.current = null;
+        }
+        v.yaw -= (e.clientX - v.lx) * 0.01;
+        v.pitch = Math.max(-1.2, Math.min(1.2, v.pitch + (e.clientY - v.ly) * 0.01));
+        v.ty = v.yaw; v.tp = v.pitch; v.lx = e.clientX; v.ly = e.clientY;
+    };
+    const up = () => {
+        view.current.drag = false;
+        window.clearTimeout(holdT.current); holdPt.current = null;
     };
     const breakBtn = () => { const c = ref.current; if (!c) return; breakFn.current(c.width / 2, c.height / 2); };
     const bk = useRef(spec.breakKey || 0);
     useEffect(() => { if ((spec.breakKey || 0) !== bk.current) { bk.current = spec.breakKey || 0; if (!brokenRef.current) breakBtn(); } }, [spec.breakKey]);
-    const restore = () => { shards.current = null; brokenRef.current = false; setBroken(false); hits.current = 0; };
-    const preset = (y: number, p: number) => { const v = view.current; v.ty = y; v.tp = p; };
+    const restore = () => { shards.current = null; brokenRef.current = false; setBroken(false); };
 
     return <div className="gv">
         {ok ? <><canvas ref={ref} className="gv-canvas" onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up} role="img" aria-label={labels.dims} /><canvas ref={fx} className="gv-fx" aria-hidden="true" />
@@ -396,14 +430,7 @@ export function GlassViewer({ spec, reduced, fxApi, labels }: { spec: GlassSpec;
             <div ref={qj} className="gv-quench" aria-hidden="true"><b>{labels.quench}</b></div></>
             : <div className="gv-fallback"><div className="gv-fb-pane" style={{ aspectRatio: `${spec.w} / ${spec.h}` }} /><p>{labels.noGl}</p></div>}
         <div className="gv-hud"><span>{labels.dims}</span></div>
-        <div className={`gv-presets${spec.phone ? " gv-ph" : ""}`}>
-            <button type="button" onClick={() => preset(0, 0)}>{labels.front}</button>
-            <button type="button" onClick={() => preset(0.55, 0.2)}>{labels.angle}</button>
-            <button type="button" onClick={() => preset(1.35, 0.05)}>{labels.edge}</button>
-            {broken ? <button type="button" className="gv-restore" onClick={restore}>{labels.restore}</button> : <button type="button" className="gv-break" onClick={breakBtn}>{labels.brk}</button>}
-        </div>
-        {broken && <div className="gv-broke" role="status">{labels.brokeNote}</div>}
+        {broken && <div className="gv-broke" role="status">{labels.brokeNote} {labels.unbreak}</div>}
         {spec.temper > 0 && spec.temper < 1 && <div className="gv-broke gv-temp" role="status">{labels.tempNote}</div>}
-        <p className="gv-hint">{labels.drag} · {labels.note}</p>
     </div>;
               }
