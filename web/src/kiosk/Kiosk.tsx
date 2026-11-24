@@ -99,8 +99,7 @@ export default function Kiosk() {
   });
   const [base, setBase] = useState<'float' | 'laminated' | null>(null);
   const [temp, setTemp] = useState(false);
-  const [uc, setUc] = useState(false);
-  const glassType: GlassTypeKey | null = resolveGlassType(base, temp, uc);
+  const glassType: GlassTypeKey | null = resolveGlassType(base, temp, false);
   const [width, setWidth] = useState<number | null>(null);
   const [height, setHeight] = useState<number | null>(null);
   const [qty, setQty] = useState<number | null>(null);
@@ -205,7 +204,7 @@ export default function Kiosk() {
   function resetAll() {
     setName(''); setProject('');
     setContact({ tab: 'none', phone: '', email: '', type: 'personal', extension: '' });
-    setBase(null); setTemp(false); setUc(false);
+    setBase(null); setTemp(false);
     setWidth(null); setHeight(null);
     setClearance({}); setDesnivel({}); setMeasSel(null);
     setQty(null);
@@ -235,10 +234,10 @@ export default function Kiosk() {
   }, [qrOpen]);
 
   /* ---------------- type changes invalidate downstream picks ---------------- */
-  function applyType(nb: 'float' | 'laminated' | null, nt: boolean, nu: boolean) {
-    setBase(nb); setTemp(nt); setUc(nu);
+  function applyType(nb: 'float' | 'laminated' | null, nt: boolean) {
+    setBase(nb); setTemp(nt);
     if (nt && !temp) fire('temper');
-    const gt = resolveGlassType(nb, nt, nu);
+    const gt = resolveGlassType(nb, nt, false);
     if (!gt) return;
     const ths = thicknessesForType(gt);
     if (thickness && !ths.includes(thickness)) {
@@ -622,13 +621,13 @@ export default function Kiosk() {
             <p className="slide-sub">{t('typeSub')}</p>
             <div className="opt-grid c2" style={{ marginBottom: 18 }}>
               <button className={`opt-card${base === 'float' ? ' sel' : ''}`} aria-pressed={base === 'float'}
-                onClick={() => applyType('float', temp, uc)}>
+                onClick={() => applyType('float', temp)}>
                 <span className="oc-check">{base === 'float' ? '✓' : ''}</span>
                 <div className="oc-name">{t('typeFloat')}</div>
                 <div className="oc-desc">{t('typeFloatDesc')}</div>
               </button>
               <button className={`opt-card${base === 'laminated' ? ' sel' : ''}`} aria-pressed={base === 'laminated'}
-                onClick={() => applyType('laminated', false, false)}>
+                onClick={() => applyType('laminated', false)}>
                 <span className="oc-check">{base === 'laminated' ? '✓' : ''}</span>
                 <div className="oc-name">{t('typeLam')}</div>
                 <div className="oc-desc">{t('typeLamDesc')}</div>
@@ -638,18 +637,10 @@ export default function Kiosk() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                 <label className="switch">
                   <input type="checkbox" checked={temp} disabled={base !== 'float'}
-                    onChange={(e) => applyType(base, e.target.checked, uc)} />
+                    onChange={(e) => applyType(base, e.target.checked)} />
                   <span className="track" />
                 </label>
                 <span style={{ fontWeight: 600 }}>{t('swTemp')}</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                <label className="switch">
-                  <input type="checkbox" checked={uc} disabled={base !== 'float'}
-                    onChange={(e) => applyType(base, temp, e.target.checked)} />
-                  <span className="track" />
-                </label>
-                <span style={{ fontWeight: 600 }}>{t('swUC')}</span>
               </div>
               {glassType && (
                 <div className="hud" style={{ letterSpacing: '.14em' }}>
